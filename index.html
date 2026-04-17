@@ -1,0 +1,2703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel de Gestão de Operações</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg:       #080c18;
+  --bg2:      #0d1222;
+  --bg3:      #141929;
+  --bg4:      #1a2035;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.12);
+  --text:     #e8edf5;
+  --text2:    #7a8599;
+  --text3:    #3d4a60;
+  --neon:     #00d4ff;
+  --neon2:    #0066ff;
+  --green:    #00ff88;
+  --green2:   #00cc6a;
+  --red:      #ff3d5a;
+  --yellow:   #f5c518;
+  --orange:   #ff7b2e;
+  --purple:   #9b6bff;
+  --teal:     #00e5cc;
+  --radius:   12px;
+  --trans:    0.2s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Barlow', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  overflow-x: hidden;
+}
+
+/* ── SCANLINES ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── GRID BG ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,212,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.025) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
+
+/* ══════════════════════════════════════════════
+   HOME VIEW
+══════════════════════════════════════════════ */
+#view-home { position: relative; z-index: 1; }
+
+.home-glow-1 {
+  position: fixed; top: -20%; left: -10%;
+  width: 700px; height: 700px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,102,255,0.07) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+.home-glow-2 {
+  position: fixed; bottom: -10%; right: 0%;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,255,136,0.05) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+.home-inner {
+  position: relative; z-index: 1;
+  max-width: 1140px; margin: 0 auto; padding: 0 28px 80px;
+}
+
+.home-header {
+  padding: 44px 0 36px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 56px;
+  display: flex; justify-content: space-between; align-items: flex-end;
+}
+
+.home-badge {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 18px;
+}
+.pulse-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  animation: pulse-anim 2s ease-in-out infinite;
+}
+@keyframes pulse-anim {
+  0%, 100% { opacity: 1; box-shadow: 0 0 10px var(--green); }
+  50% { opacity: 0.5; box-shadow: 0 0 4px var(--green); }
+}
+.home-badge span {
+  font-size: 11px; letter-spacing: 4px; color: var(--text3);
+  text-transform: uppercase;
+}
+
+.home-title {
+  font-size: 42px; font-weight: 800; letter-spacing: -1.5px;
+  line-height: 1.05; margin-bottom: 14px;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.55) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.home-title-accent {
+  font-size: 30px; font-weight: 300;
+  background: linear-gradient(135deg, var(--neon), var(--neon2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.home-subtitle {
+  font-size: 13px; color: var(--text3); letter-spacing: 3.5px;
+  text-transform: uppercase; margin-top: 6px;
+}
+
+.home-clock {
+  text-align: right;
+}
+.clock-time {
+  font-family: 'Space Mono', monospace;
+  font-size: 30px; color: var(--neon); letter-spacing: 2px;
+}
+.clock-date {
+  font-size: 12px; color: var(--text3); margin-top: 4px;
+}
+
+/* STATUS BAR */
+.status-bar {
+  display: flex; gap: 24px; margin-bottom: 52px;
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.015);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+.status-item {
+  display: flex; align-items: center; gap: 8px;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-label { font-size: 12px; color: var(--text2); }
+.status-val { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; }
+
+/* MODULE CARDS */
+.modules-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  margin-bottom: 24px;
+}
+
+.module-card {
+  position: relative; overflow: hidden;
+  background: rgba(255,255,255,0.03);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  padding: 36px;
+  cursor: pointer;
+  transition: all 0.35s ease;
+}
+.module-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--card-accent), transparent);
+  opacity: 0.8;
+}
+.module-card:hover {
+  background: rgba(255,255,255,0.055);
+  transform: translateY(-5px);
+}
+.module-card:hover .module-arrow { transform: translateX(6px); }
+
+.module-card--neon { --card-accent: #00d4ff; }
+.module-card--neon:hover { border-color: rgba(0,212,255,0.3); box-shadow: 0 24px 48px rgba(0,212,255,0.1); }
+
+.module-card--green { --card-accent: #00ff88; }
+.module-card--green:hover { border-color: rgba(0,255,136,0.3); box-shadow: 0 24px 48px rgba(0,255,136,0.08); }
+
+.module-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 28px;
+}
+.module-label {
+  font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+  margin-bottom: 10px; opacity: 0.6;
+}
+.module-name {
+  font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 10px;
+}
+.module-desc { font-size: 13px; color: var(--text2); line-height: 1.7; }
+
+.module-icon { opacity: 0.75; flex-shrink: 0; }
+
+.module-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+  margin-bottom: 24px;
+}
+.module-stat {
+  border-radius: 10px; padding: 14px 10px; text-align: center;
+  border: 1px solid;
+}
+.module-stat-val {
+  font-family: 'Space Mono', monospace; font-size: 22px;
+  font-weight: 700; line-height: 1;
+}
+.module-stat-lbl {
+  font-size: 10px; color: var(--text2); margin-top: 5px; letter-spacing: 0.3px;
+}
+
+.module-footer {
+  display: flex; justify-content: space-between; align-items: center;
+}
+.module-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.module-tag {
+  font-size: 10px; padding: 3px 8px; border-radius: 4px;
+  border: 1px solid; opacity: 0.7;
+}
+.module-cta {
+  font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 6px;
+}
+.module-arrow { transition: transform 0.25s ease; }
+
+/* CIRCUIT DECORATION */
+.circuit-svg {
+  position: absolute; bottom: 14px; right: 14px; opacity: 0.06;
+  pointer-events: none;
+}
+
+/* COMING SOON CARDS */
+.soon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.soon-card {
+  background: rgba(255,255,255,0.015);
+  border: 1px dashed var(--border);
+  border-radius: 16px; padding: 26px;
+  display: flex; align-items: center; gap: 18px;
+  opacity: 0.45;
+}
+.soon-icon { font-size: 30px; flex-shrink: 0; }
+.soon-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+.soon-desc { font-size: 12px; color: var(--text2); }
+.soon-badge {
+  margin-left: auto; font-size: 10px; letter-spacing: 2px;
+  color: var(--text3); border: 1px solid var(--border);
+  padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+  text-transform: uppercase; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════════
+   VIEWS: LOGÍSTICA & TRANSPORTE (general shell)
+══════════════════════════════════════════════ */
+.module-view { position: relative; z-index: 1; min-height: 100vh; }
+
+.view-top-line {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 200;
+}
+.view-top-line--neon {
+  background: linear-gradient(90deg, transparent, var(--neon) 40%, var(--neon2) 60%, transparent);
+}
+.view-top-line--green {
+  background: linear-gradient(90deg, transparent, var(--green) 40%, var(--teal) 60%, transparent);
+}
+
+.view-header {
+  padding: 28px 0 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.view-header-inner { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+
+.back-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text2); cursor: pointer;
+  font-family: 'Barlow', sans-serif; font-size: 13px;
+  transition: all 0.2s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+.view-module-label {
+  font-size: 10px; letter-spacing: 4px; text-transform: uppercase;
+  margin-bottom: 4px; opacity: 0.6;
+}
+.view-title { font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
+
+/* ══════════════════════════════════════════════
+   LOGÍSTICA VIEW — SUB-MODULES SELECTOR
+══════════════════════════════════════════════ */
+.submod-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  margin-bottom: 32px;
+}
+.submod-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px 20px;
+  cursor: pointer; transition: all 0.25s ease;
+  position: relative; overflow: hidden;
+}
+.submod-card::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--submod-color, var(--neon));
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.submod-card:hover, .submod-card.active {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--border2);
+  transform: translateY(-3px);
+}
+.submod-card:hover::before, .submod-card.active::before { opacity: 1; }
+.submod-card.active { box-shadow: 0 8px 32px rgba(0,212,255,0.1); }
+
+.submod-icon { margin-bottom: 14px; }
+.submod-name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+.submod-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.submod-tag {
+  display: inline-block; margin-top: 12px; font-size: 10px;
+  padding: 3px 8px; border-radius: 12px;
+  background: rgba(0,212,255,0.1); color: var(--neon);
+  border: 1px solid rgba(0,212,255,0.2);
+  letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════════════
+   CARTEIRA DE PEDIDOS — EMBEDDED DARK PANEL
+══════════════════════════════════════════════ */
+#carteira-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  animation: fadeIn 0.35s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* CARTEIRA TOP BAR */
+.cp-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 52px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+.cp-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; font-weight: 700; letter-spacing: -0.3px;
+}
+.cp-logo-icon {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: linear-gradient(135deg, rgba(0,212,255,0.25), rgba(0,102,255,0.25));
+  border: 1px solid rgba(0,212,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+}
+.cp-logo-accent { color: var(--neon); }
+.cp-update { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; }
+
+/* CARTEIRA TABS */
+.cp-tabs {
+  display: flex; gap: 0; padding: 0 20px;
+  background: var(--bg3); border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+}
+.cp-tab {
+  padding: 10px 18px; font-size: 12px; font-weight: 500;
+  color: var(--text3); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: var(--trans);
+  font-family: 'Barlow', sans-serif;
+}
+.cp-tab:hover { color: var(--text2); }
+.cp-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
+
+/* UPLOAD BAR */
+.cp-upload-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px;
+  background: rgba(0,212,255,0.03);
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.cp-upload-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px;
+  background: rgba(0,212,255,0.12);
+  color: var(--neon); border: 1px solid rgba(0,212,255,0.3);
+  border-radius: 8px; cursor: pointer;
+  font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 13px;
+  transition: var(--trans);
+}
+.cp-upload-btn:hover { background: rgba(0,212,255,0.22); }
+.cp-upload-info { font-size: 12px; color: var(--text2); }
+.cp-upload-info strong { color: var(--text); }
+
+/* FILTERS BAR */
+.cp-filters {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  padding: 12px 20px; border-bottom: 1px solid var(--border);
+  background: var(--bg3); align-items: flex-end;
+}
+.cp-filter-group { display: flex; flex-direction: column; gap: 3px; }
+.cp-filter-group label {
+  font-size: 10px; color: var(--text3); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.cp-filter-group select, .cp-filter-group input[type="date"] {
+  padding: 6px 10px;
+  background: var(--bg4); border: 1px solid var(--border2);
+  border-radius: 6px; color: var(--text);
+  font-family: 'Barlow', sans-serif; font-size: 12px;
+  min-width: 130px; cursor: pointer; transition: var(--trans);
+}
+.cp-filter-group select:focus, .cp-filter-group input:focus {
+  outline: none; border-color: var(--neon); box-shadow: 0 0 0 2px rgba(0,212,255,0.1);
+}
+.cp-filter-group select option { background: var(--bg4); }
+.cp-filter-reset {
+  padding: 6px 14px; background: transparent;
+  border: 1px solid var(--border2); border-radius: 6px;
+  color: var(--text2); cursor: pointer; font-family: 'Barlow', sans-serif;
+  font-size: 12px; margin-top: 16px; transition: var(--trans);
+}
+.cp-filter-reset:hover { border-color: var(--neon); color: var(--neon); }
+
+/* CONTENT AREA */
+.cp-content { padding: 20px; }
+.cp-tab-content { display: none; }
+.cp-tab-content.active { display: block; }
+
+/* KPI GRID */
+.cp-kpi-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px; margin-bottom: 20px;
+}
+.cp-kpi {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px 16px;
+  position: relative; overflow: hidden; transition: var(--trans);
+}
+.cp-kpi::before {
+  content: ''; position: absolute;
+  top: 0; left: 0; right: 0; height: 2px;
+  background: var(--k-color, var(--neon));
+  border-radius: 10px 10px 0 0;
+}
+.cp-kpi:hover { border-color: var(--border2); transform: translateY(-1px); }
+.cp-kpi-label {
+  font-size: 10px; color: var(--text2); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 7px;
+}
+.cp-kpi-value {
+  font-size: 20px; font-weight: 700; color: var(--text);
+  letter-spacing: -0.5px; font-family: 'Space Mono', monospace;
+  margin-bottom: 3px;
+}
+.cp-kpi-sub { font-size: 11px; color: var(--text3); }
+
+/* CHARTS */
+.cp-charts-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  margin-bottom: 20px;
+}
+.cp-chart-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px;
+}
+.cp-chart-card.full { grid-column: 1 / -1; }
+.cp-chart-title {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+}
+.cp-chart-container canvas { max-height: 260px; }
+.cp-chart-toggle { display: flex; gap: 5px; margin-bottom: 10px; }
+.cp-toggle-btn {
+  padding: 3px 10px; font-size: 11px;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: transparent; color: var(--text2); cursor: pointer;
+  font-family: 'Barlow', sans-serif; transition: var(--trans);
+}
+.cp-toggle-btn.active { background: rgba(0,212,255,0.15); border-color: var(--neon); color: var(--neon); }
+
+/* TABLES */
+.cp-table-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; margin-bottom: 14px;
+}
+.cp-table-card.full { }
+.cp-table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.cp-table-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text2);
+}
+.cp-table-search {
+  padding: 5px 10px; background: var(--bg4);
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 12px; width: 160px;
+}
+.cp-table-search:focus { outline: none; border-color: var(--neon); }
+.cp-table-wrap { overflow-x: auto; max-height: 340px; overflow-y: auto; }
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  padding: 7px 12px; text-align: left;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text3); background: var(--bg4);
+  position: sticky; top: 0; z-index: 1;
+  white-space: nowrap; cursor: pointer; user-select: none;
+}
+th:hover { color: var(--text2); }
+td {
+  padding: 7px 12px; border-bottom: 1px solid var(--border);
+  font-size: 12px; color: var(--text); white-space: nowrap;
+}
+tr:hover td { background: rgba(255,255,255,0.02); }
+.num { font-family: 'Space Mono', monospace; text-align: right; font-size: 11px; }
+
+/* BADGES */
+.badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  padding: 2px 7px; border-radius: 100px;
+  font-size: 10px; font-weight: 600;
+}
+.badge-green  { background: rgba(0,255,136,0.12); color: var(--green); }
+.badge-blue   { background: rgba(0,212,255,0.12); color: var(--neon); }
+.badge-red    { background: rgba(255,61,90,0.12);  color: var(--red); }
+.badge-orange { background: rgba(255,123,46,0.12); color: var(--orange); }
+.badge-yellow { background: rgba(245,197,24,0.12); color: var(--yellow); }
+.badge-purple { background: rgba(155,107,255,0.12); color: var(--purple); }
+
+/* SEMÁFORO DOTS */
+.sdot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; }
+.sdot-green  { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.sdot-yellow { background: var(--yellow); }
+.sdot-orange { background: var(--orange); }
+.sdot-red    { background: var(--red); box-shadow: 0 0 4px var(--red); }
+
+/* PAGINATION */
+.cp-pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px; border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text2);
+}
+.cp-page-btns { display: flex; gap: 3px; }
+.cp-page-btn {
+  padding: 3px 9px; border: 1px solid var(--border); border-radius: 5px;
+  background: transparent; color: var(--text2); cursor: pointer;
+  font-size: 11px; font-family: 'Barlow', sans-serif; transition: var(--trans);
+}
+.cp-page-btn:hover, .cp-page-btn.active { background: rgba(0,212,255,0.15); border-color: var(--neon); color: var(--neon); }
+.cp-page-btn:disabled { opacity: 0.25; cursor: default; }
+
+/* HISTORY */
+.cp-snapshot-btn {
+  padding: 7px 14px; background: rgba(0,255,136,0.12);
+  color: var(--green); border: 1px solid rgba(0,255,136,0.3);
+  border-radius: 8px; font-family: 'Barlow', sans-serif;
+  font-weight: 600; font-size: 12px; cursor: pointer; transition: var(--trans);
+}
+.cp-snapshot-btn:hover { background: rgba(0,255,136,0.22); }
+.cp-clear-btn {
+  padding: 7px 14px; background: transparent;
+  color: var(--red); border: 1px solid rgba(255,61,90,0.3);
+  border-radius: 8px; font-family: 'Barlow', sans-serif;
+  font-size: 12px; cursor: pointer; transition: var(--trans);
+}
+.cp-clear-btn:hover { background: rgba(255,61,90,0.08); }
+
+/* EMPTY STATE */
+.cp-empty {
+  text-align: center; padding: 60px 20px; color: var(--text2);
+}
+.cp-empty-icon {
+  width: 64px; height: 64px; margin: 0 auto 16px;
+  background: rgba(0,212,255,0.05);
+  border: 1px solid rgba(0,212,255,0.1);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+}
+.cp-empty h3 { font-size: 15px; margin-bottom: 7px; color: var(--text); }
+.cp-empty p { font-size: 12px; }
+
+/* ══════════════════════════════════════════════
+   TRANSPORTE VIEW — SIMPLIFIED PLACEHOLDER
+══════════════════════════════════════════════ */
+.transp-inner {
+  max-width: 1140px; margin: 0 auto; padding: 0 28px 60px;
+}
+.transp-import-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: rgba(0,255,136,0.08);
+  border: 1px solid rgba(0,255,136,0.25);
+  border-radius: 10px; color: var(--green); cursor: pointer;
+  font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 13px;
+  transition: var(--trans);
+}
+.transp-import-btn:hover { background: rgba(0,255,136,0.16); }
+
+.glass-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 14px; padding: 22px;
+  position: relative; overflow: hidden;
+}
+.glass-card-accent-top {
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+}
+
+.kpi-row { display: flex; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+.t-kpi {
+  flex: 1; min-width: 120px;
+  background: rgba(255,255,255,0.03);
+  border-radius: 12px; padding: 18px; text-align: center;
+  border-top: 2px solid;
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.t-kpi-val {
+  font-family: 'Space Mono', monospace; font-size: 34px; font-weight: 700;
+  line-height: 1; margin-bottom: 6px;
+}
+.t-kpi-lbl { font-size: 11px; color: var(--text2); letter-spacing: 0.3px; }
+
+.prog-bar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 4px; height: 6px; overflow: hidden; margin-top: 6px;
+}
+.prog-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+.vehicle-row {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
+}
+.vehicle-row:last-child { margin-bottom: 0; }
+
+/* GENERAL UTILITIES */
+.view-content { max-width: 1140px; margin: 0 auto; padding: 0 28px 60px; }
+
+/* ══════════════════════════════════════════════
+   TRANSPORTE — TABS INTERNAS
+══════════════════════════════════════════════ */
+.transp-tabs-bar {
+  display: flex; gap: 0; padding: 0 28px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  max-width: 100%; overflow-x: auto;
+}
+.transp-tab {
+  padding: 11px 20px; font-size: 12px; font-weight: 600;
+  color: var(--text3); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: var(--trans);
+  font-family: 'Barlow', sans-serif; letter-spacing: 0.3px;
+  display: flex; align-items: center; gap: 7px;
+}
+.transp-tab:hover { color: var(--text2); }
+.transp-tab.active { color: var(--green); border-bottom-color: var(--green); }
+.transp-tab-icon { opacity: 0.7; }
+
+.transp-tab-panel { display: none; }
+.transp-tab-panel.active { display: block; }
+
+/* ── FATURAMENTO PANEL ── */
+#fat-panel {
+  max-width: 1140px; margin: 0 auto; padding: 28px 28px 60px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* CONFIG BAR */
+.fat-config-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: rgba(0,255,136,0.03);
+  border: 1px solid rgba(0,255,136,0.12);
+  border-radius: 10px; margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.fat-config-bar label {
+  font-size: 11px; color: var(--text3); text-transform: uppercase;
+  letter-spacing: 1px; white-space: nowrap;
+}
+.fat-url-input {
+  flex: 1; min-width: 260px;
+  padding: 7px 12px; background: var(--bg4);
+  border: 1px solid var(--border); border-radius: 7px;
+  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 12px;
+}
+.fat-url-input:focus { outline: none; border-color: var(--green); }
+.fat-load-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 18px;
+  background: rgba(0,255,136,0.1);
+  border: 1px solid rgba(0,255,136,0.3);
+  border-radius: 8px; color: var(--green); cursor: pointer;
+  font-family: 'Barlow', sans-serif; font-weight: 600; font-size: 12px;
+  transition: var(--trans); white-space: nowrap;
+}
+.fat-load-btn:hover { background: rgba(0,255,136,0.2); }
+.fat-load-btn:disabled { opacity: 0.4; cursor: default; }
+.fat-status-text { font-size: 11px; font-family: 'Space Mono', monospace; }
+
+/* FILTER BAR */
+.fat-filters {
+  display: flex; gap: 10px; flex-wrap: wrap;
+  align-items: flex-end; margin-bottom: 20px;
+}
+.fat-filter-group { display: flex; flex-direction: column; gap: 3px; }
+.fat-filter-group label {
+  font-size: 10px; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.fat-select, .fat-date-input {
+  padding: 7px 10px; background: var(--bg4);
+  border: 1px solid var(--border); border-radius: 7px;
+  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 12px;
+  cursor: pointer;
+}
+.fat-select:focus, .fat-date-input:focus { outline: none; border-color: var(--green); }
+.fat-apply-btn {
+  padding: 7px 16px;
+  background: rgba(0,255,136,0.1);
+  border: 1px solid rgba(0,255,136,0.25);
+  border-radius: 7px; color: var(--green); cursor: pointer;
+  font-family: 'Barlow', sans-serif; font-size: 12px;
+  font-weight: 600; transition: var(--trans); align-self: flex-end;
+}
+.fat-apply-btn:hover { background: rgba(0,255,136,0.2); }
+
+/* KPI ROW */
+.fat-kpi-row {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 14px; margin-bottom: 22px;
+}
+.fat-kpi {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px 16px; position: relative; overflow: hidden;
+  border-top: 2px solid var(--fat-kpi-color, var(--green));
+}
+.fat-kpi-label {
+  font-size: 10px; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+}
+.fat-kpi-value {
+  font-family: 'Space Mono', monospace; font-size: 20px;
+  font-weight: 700; color: var(--text); margin-bottom: 3px;
+}
+.fat-kpi-sub { font-size: 11px; color: var(--text3); }
+.fat-kpi-icon {
+  position: absolute; right: 12px; top: 14px; opacity: 0.1; font-size: 36px;
+}
+
+/* CHARTS GRID */
+.fat-charts-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  margin-bottom: 20px;
+}
+.fat-chart-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 18px;
+}
+.fat-chart-card.full { grid-column: 1 / -1; }
+.fat-chart-title {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.fat-chart-container canvas { max-height: 240px; }
+
+/* FATURAMENTO TABLE */
+.fat-table-wrap {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+}
+.fat-table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 16px; border-bottom: 1px solid var(--border);
+}
+.fat-table-title {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--text2);
+}
+.fat-table-count {
+  font-size: 11px; color: var(--text3);
+  font-family: 'Space Mono', monospace;
+}
+.fat-table-search {
+  padding: 5px 10px; background: var(--bg4);
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 12px; width: 160px;
+}
+.fat-table-search:focus { outline: none; border-color: var(--green); }
+.fat-tbl-scroll { overflow-x: auto; max-height: 360px; overflow-y: auto; }
+.fat-tag-saida  { background: rgba(0,212,255,0.12); color: var(--neon);  border: 1px solid rgba(0,212,255,0.25); border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
+.fat-tag-retorno { background: rgba(155,107,255,0.12); color: var(--purple); border: 1px solid rgba(155,107,255,0.25); border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
+.fat-tag-outro  { background: rgba(245,197,24,0.12);  color: var(--yellow); border: 1px solid rgba(245,197,24,0.25); border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 600; }
+
+/* EMPTY / LOADING */
+.fat-empty {
+  text-align: center; padding: 70px 20px;
+}
+.fat-empty-icon {
+  width: 70px; height: 70px; margin: 0 auto 18px;
+  background: rgba(0,255,136,0.05);
+  border: 1px solid rgba(0,255,136,0.12);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  color: var(--green);
+}
+.fat-empty h3 { font-size: 15px; margin-bottom: 7px; color: var(--text); }
+.fat-empty p  { font-size: 12px; color: var(--text2); line-height: 1.6; max-width: 420px; margin: 0 auto; }
+.fat-spinner {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid rgba(0,255,136,0.15);
+  border-top-color: var(--green);
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.fat-help-box {
+  background: rgba(0,255,136,0.04);
+  border: 1px solid rgba(0,255,136,0.12);
+  border-radius: 10px; padding: 14px 18px;
+  margin-bottom: 20px; font-size: 12px; color: var(--text2); line-height: 1.7;
+}
+.fat-help-box strong { color: var(--green); }
+.fat-help-box ol { margin-left: 18px; margin-top: 6px; }
+.fat-help-box li { margin-bottom: 3px; }
+
+@media (max-width: 800px) {
+  .fat-kpi-row { grid-template-columns: 1fr 1fr; }
+  .fat-charts-grid { grid-template-columns: 1fr; }
+  .fat-chart-card.full { grid-column: 1; }
+}
+
+@media (max-width: 800px) {
+  .modules-grid, .soon-grid, .submod-grid { grid-template-columns: 1fr; }
+  .cp-charts-grid { grid-template-columns: 1fr; }
+  .cp-chart-card.full { grid-column: 1; }
+  .home-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     HOME VIEW
+═══════════════════════════════════════════════════ -->
+<div id="view-home">
+  <div class="home-glow-1"></div>
+  <div class="home-glow-2"></div>
+  <div class="home-inner">
+
+    <header class="home-header">
+      <div>
+        <div class="home-badge">
+          <div class="pulse-dot"></div>
+          <span>Sistema Ativo</span>
+        </div>
+        <div class="home-title">
+          PAINEL DE GESTÃO<br>
+          <span class="home-title-accent">DE OPERAÇÕES</span>
+        </div>
+        <p class="home-subtitle">Inteligência em Distribuição e Transportes</p>
+      </div>
+      <div class="home-clock">
+        <div class="clock-time" id="homeTime">--:--:--</div>
+        <div class="clock-date" id="homeDate"></div>
+      </div>
+    </header>
+
+    <div class="status-bar">
+      <div class="status-item">
+        <div class="status-dot" style="background:#00ff88;box-shadow:0 0 6px #00ff88"></div>
+        <span class="status-label">Servidor Principal</span>
+        <span class="status-val" style="color:#00ff88">Online</span>
+      </div>
+      <div class="status-item">
+        <div class="status-dot" style="background:#00ff88;box-shadow:0 0 6px #00ff88"></div>
+        <span class="status-label">Integração ERP</span>
+        <span class="status-val" style="color:#00ff88">Online</span>
+      </div>
+      <div class="status-item">
+        <div class="status-dot" style="background:#00ff88;box-shadow:0 0 6px #00ff88"></div>
+        <span class="status-label">API Rastreamento</span>
+        <span class="status-val" style="color:#00ff88">Online</span>
+      </div>
+      <div class="status-item">
+        <div class="status-dot" style="background:#f5c518"></div>
+        <span class="status-label">Sync Excel/ERP</span>
+        <span class="status-val" style="color:#f5c518">Standby</span>
+      </div>
+    </div>
+
+    <div class="modules-grid">
+
+      <!-- CARD LOGÍSTICA -->
+      <div class="module-card module-card--neon" onclick="navigate('logistica')">
+        <div class="module-top">
+          <div>
+            <div class="module-label" style="color:var(--neon)">Módulo 01</div>
+            <div class="module-name">Logística</div>
+            <div class="module-desc">Montagem de Cargas · Roteirização<br>Carteira de Pedidos · Faturamento</div>
+          </div>
+          <div class="module-icon" style="color:var(--neon)">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+              <path d="M3 17l4-8 4 4 4-6 4 4"/><circle cx="3" cy="17" r="1.5" fill="currentColor"/>
+              <circle cx="21" cy="15" r="1.5" fill="currentColor"/><path d="M7 17h10M3 21h18" opacity="0.25"/>
+            </svg>
+          </div>
+        </div>
+        <div class="module-stats">
+          <div class="module-stat" style="background:rgba(0,212,255,0.06);border-color:rgba(0,212,255,0.12)">
+            <div class="module-stat-val" style="color:var(--neon)">48</div>
+            <div class="module-stat-lbl">Rotas Ativas</div>
+          </div>
+          <div class="module-stat" style="background:rgba(0,212,255,0.06);border-color:rgba(0,212,255,0.12)">
+            <div class="module-stat-val" style="color:var(--neon)">312</div>
+            <div class="module-stat-lbl">Entregas/Mês</div>
+          </div>
+          <div class="module-stat" style="background:rgba(0,212,255,0.06);border-color:rgba(0,212,255,0.12)">
+            <div class="module-stat-val" style="color:var(--neon)">94%</div>
+            <div class="module-stat-lbl">Eficiência</div>
+          </div>
+        </div>
+        <div class="module-footer">
+          <div class="module-tags">
+            <span class="module-tag" style="color:var(--neon);border-color:rgba(0,212,255,0.2)">SP</span>
+            <span class="module-tag" style="color:var(--neon);border-color:rgba(0,212,255,0.2)">RJ</span>
+            <span class="module-tag" style="color:var(--neon);border-color:rgba(0,212,255,0.2)">MG</span>
+            <span class="module-tag" style="color:var(--neon);border-color:rgba(0,212,255,0.2)">RS</span>
+            <span class="module-tag" style="color:var(--neon);border-color:rgba(0,212,255,0.2)">BA</span>
+          </div>
+          <div class="module-cta" style="color:var(--neon)">
+            Acessar módulo
+            <svg class="module-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+        <svg class="circuit-svg" width="130" height="90" viewBox="0 0 130 90">
+          <path d="M10 80 L10 45 L45 45 L45 22 L85 22 L85 55 L120 55" stroke="#00d4ff" stroke-width="1" fill="none"/>
+          <circle cx="10" cy="80" r="3" fill="#00d4ff"/><circle cx="45" cy="45" r="2" fill="#00d4ff"/>
+          <circle cx="85" cy="22" r="2" fill="#00d4ff"/><circle cx="120" cy="55" r="3" fill="#00d4ff"/>
+        </svg>
+      </div>
+
+      <!-- CARD TRANSPORTE -->
+      <div class="module-card module-card--green" onclick="navigate('transporte')">
+        <div class="module-top">
+          <div>
+            <div class="module-label" style="color:var(--green)">Módulo 02</div>
+            <div class="module-name">Transporte</div>
+            <div class="module-desc">Gestão de Frota · Tracking em Tempo Real<br>Indicadores de Desempenho</div>
+          </div>
+          <div class="module-icon" style="color:var(--green)">
+            <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+              <path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/>
+              <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="module-stats">
+          <div class="module-stat" style="background:rgba(0,255,136,0.05);border-color:rgba(0,255,136,0.1)">
+            <div class="module-stat-val" style="color:var(--green)">86</div>
+            <div class="module-stat-lbl">Frota Total</div>
+          </div>
+          <div class="module-stat" style="background:rgba(0,255,136,0.05);border-color:rgba(0,255,136,0.1)">
+            <div class="module-stat-val" style="color:var(--green)">54</div>
+            <div class="module-stat-lbl">Em Rota</div>
+          </div>
+          <div class="module-stat" style="background:rgba(0,255,136,0.05);border-color:rgba(0,255,136,0.1)">
+            <div class="module-stat-val" style="color:var(--green)">284K</div>
+            <div class="module-stat-lbl">KM/Mês</div>
+          </div>
+        </div>
+        <div class="module-footer">
+          <div class="module-tags" style="display:flex;gap:12px;align-items:center">
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>Em rota</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--yellow);display:inline-block"></span>Manutenção</span>
+            <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)">
+              <span style="width:6px;height:6px;border-radius:50%;background:var(--red);display:inline-block"></span>Atrasado</span>
+          </div>
+          <div class="module-cta" style="color:var(--green)">
+            Acessar módulo
+            <svg class="module-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+        <svg class="circuit-svg" width="130" height="90" viewBox="0 0 130 90">
+          <path d="M10 45 L30 45 L30 22 L65 22 L65 65 L95 65 L95 35 L120 35" stroke="#00ff88" stroke-width="1" fill="none"/>
+          <circle cx="10" cy="45" r="3" fill="#00ff88"/><circle cx="65" cy="22" r="2" fill="#00ff88"/>
+          <circle cx="95" cy="65" r="2" fill="#00ff88"/><circle cx="120" cy="35" r="3" fill="#00ff88"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- COMING SOON -->
+    <div class="soon-grid">
+      <div class="soon-card">
+        <div class="soon-icon">📊</div>
+        <div><div class="soon-name">Dashboard Executivo</div><div class="soon-desc">KPIs consolidados · Análise gerencial</div></div>
+        <div class="soon-badge">Em breve</div>
+      </div>
+      <div class="soon-card">
+        <div class="soon-icon">📋</div>
+        <div><div class="soon-name">Central de Relatórios</div><div class="soon-desc">Exportação PDF/Excel · Filtros avançados</div></div>
+        <div class="soon-badge">Em breve</div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /view-home -->
+
+<!-- ═══════════════════════════════════════════════════
+     LOGÍSTICA VIEW
+═══════════════════════════════════════════════════ -->
+<div id="view-logistica" style="display:none">
+  <div class="view-top-line view-top-line--neon"></div>
+
+  <div style="background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100">
+    <div class="view-header-inner" style="padding-top:0;padding-bottom:0">
+      <div class="view-header">
+        <div style="display:flex;align-items:center;gap:18px">
+          <button class="back-btn" onclick="navigate('home')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            Voltar
+          </button>
+          <div>
+            <div class="view-module-label" style="color:var(--neon)">Módulo 01</div>
+            <div class="view-title">Logística</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-content">
+
+    <!-- SUB-MODULES -->
+    <div class="submod-grid">
+      <div class="submod-card" id="submod-carteira" style="--submod-color:#00d4ff" onclick="showSubmod('carteira')">
+        <div class="submod-icon" style="color:var(--neon)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/>
+          </svg>
+        </div>
+        <div class="submod-name">Carteira de Pedidos</div>
+        <div class="submod-desc">Dashboard completo com análise de carteira, bloqueios, faixas de idade e histórico.</div>
+        <div class="submod-tag">Excel / ERP</div>
+      </div>
+
+      <div class="submod-card" id="submod-roteirizacao" style="--submod-color:#9b6bff;opacity:0.5;cursor:default">
+        <div class="submod-icon" style="color:var(--purple)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/>
+            <path d="M7 11.5l10-5M7 12.5l10 5"/>
+          </svg>
+        </div>
+        <div class="submod-name">Roteirização</div>
+        <div class="submod-desc">Montagem e otimização de rotas por região, peso e janela de entrega.</div>
+        <div class="submod-tag" style="background:rgba(155,107,255,0.1);color:var(--purple);border-color:rgba(155,107,255,0.2)">Em breve</div>
+      </div>
+
+      <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88;opacity:0.5;cursor:default">
+        <div class="submod-icon" style="color:var(--green)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+        </div>
+        <div class="submod-name">Faturamento</div>
+        <div class="submod-desc">Análise de faturamento por período, meta vs realizado e projeção mensal.</div>
+        <div class="submod-tag" style="background:rgba(0,255,136,0.08);color:var(--green);border-color:rgba(0,255,136,0.2)">Em breve</div>
+      </div>
+    </div>
+
+    <!-- CARTEIRA PANEL (embedded) -->
+    <div id="carteira-panel">
+
+      <!-- TOP BAR -->
+      <div class="cp-topbar">
+        <div class="cp-logo">
+          <div class="cp-logo-icon">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none">
+              <rect width="9" height="9" rx="2" fill="#00d4ff"/><rect x="11" width="9" height="9" rx="2" fill="#00d4ff" opacity="0.5"/>
+              <rect y="11" width="9" height="9" rx="2" fill="#00d4ff" opacity="0.5"/><rect x="11" y="11" width="9" height="9" rx="2" fill="#00d4ff" opacity="0.3"/>
+            </svg>
+          </div>
+          Carteira de <span class="cp-logo-accent">&nbsp;Pedidos</span>
+        </div>
+        <span class="cp-update" id="cpLastUpdate">Nenhum arquivo carregado</span>
+      </div>
+
+      <!-- TABS -->
+      <div class="cp-tabs">
+        <div class="cp-tab active" data-tab="dashboard">Dashboard</div>
+        <div class="cp-tab" data-tab="logistica-reg">Logística</div>
+        <div class="cp-tab" data-tab="representantes">Representantes</div>
+        <div class="cp-tab" data-tab="bloqueios">Bloqueios</div>
+        <div class="cp-tab" data-tab="detalhes">Detalhamento</div>
+        <div class="cp-tab" data-tab="historico">Histórico</div>
+        <div class="cp-tab" data-tab="assistencia">Assistência</div>
+      </div>
+
+      <!-- UPLOAD -->
+      <div class="cp-upload-bar">
+        <button class="cp-upload-btn" onclick="document.getElementById('cpFileInput').click()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          Carregar Excel
+        </button>
+        <input type="file" id="cpFileInput" accept=".xls,.xlsx,.csv" onchange="cpLoadFile(event)" style="display:none">
+        <span class="cp-upload-info" id="cpUploadInfo">Selecione a planilha exportada do ERP (.xls, .xlsx)</span>
+      </div>
+
+      <!-- FILTERS -->
+      <div class="cp-filters">
+        <div class="cp-filter-group"><label>Data Inicial</label><input type="date" id="fDataIni"></div>
+        <div class="cp-filter-group"><label>Data Final</label><input type="date" id="fDataFim"></div>
+        <div class="cp-filter-group"><label>Representante</label><select id="fRep"><option value="">Todos</option></select></div>
+        <div class="cp-filter-group"><label>Micro Região</label><select id="fMicro"><option value="">Todas</option></select></div>
+        <div class="cp-filter-group"><label>Cliente</label><select id="fCliente"><option value="">Todos</option></select></div>
+        <div class="cp-filter-group">
+          <label>Status Carga</label>
+          <select id="fStatus">
+            <option value="">Todos</option>
+            <option value="em_carga">Em Carga</option>
+            <option value="disponivel">Disponível</option>
+          </select>
+        </div>
+        <div class="cp-filter-group">
+          <label>Bloqueio</label>
+          <select id="fBloqueio">
+            <option value="">Todos</option>
+            <option value="LIB">Liberado</option>
+            <option value="BLQ">Bloqueado</option>
+          </select>
+        </div>
+        <div class="cp-filter-group">
+          <label>Tipo Frete</label>
+          <select id="fFrete">
+            <option value="">Todos</option>
+            <option value="Retira">Retira</option>
+            <option value="Entrega">Entrega</option>
+          </select>
+        </div>
+        <button class="cp-filter-reset" onclick="cpResetFilters()">↺ Limpar</button>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="cp-content">
+
+        <!-- DASHBOARD TAB -->
+        <div class="cp-tab-content active" id="cptab-dashboard">
+          <div class="cp-kpi-grid" id="cpKpiGrid">
+            <div class="cp-empty" style="grid-column:1/-1;padding:40px">
+              <div class="cp-empty-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--neon)" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10M7 12h7"/></svg>
+              </div>
+              <h3>Nenhum dado carregado</h3>
+              <p>Carregue a planilha exportada do ERP para visualizar a análise completa.</p>
+            </div>
+          </div>
+          <div class="cp-charts-grid" id="cpChartsGrid" style="display:none">
+            <div class="cp-chart-card">
+              <div class="cp-chart-title">Carteira por Micro Região</div>
+              <div class="cp-chart-toggle">
+                <button class="cp-toggle-btn active" onclick="cpSetMicroChart('valor',this)">Valor</button>
+                <button class="cp-toggle-btn" onclick="cpSetMicroChart('peso',this)">Peso</button>
+              </div>
+              <div class="cp-chart-container"><canvas id="cpChartMicro"></canvas></div>
+            </div>
+            <div class="cp-chart-card">
+              <div class="cp-chart-title">Em Carga vs Disponível</div>
+              <div class="cp-chart-container"><canvas id="cpChartPizza"></canvas></div>
+            </div>
+            <div class="cp-chart-card">
+              <div class="cp-chart-title">Carteira por Representante</div>
+              <div class="cp-chart-container"><canvas id="cpChartRep"></canvas></div>
+            </div>
+            <div class="cp-chart-card">
+              <div class="cp-chart-title">Idade da Carteira</div>
+              <div class="cp-chart-container"><canvas id="cpChartIdade"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- LOGÍSTICA REGIÃO TAB -->
+        <div class="cp-tab-content" id="cptab-logistica-reg">
+          <div class="cp-table-card full">
+            <div class="cp-table-header">
+              <span class="cp-table-title">Visão Logística por Região</span>
+              <input type="text" class="cp-table-search" placeholder="Buscar..." oninput="cpFilterTable('tLogistica',this.value)">
+            </div>
+            <div class="cp-table-wrap">
+              <table id="tLogistica"><thead><tr>
+                <th onclick="cpSortTable('tLogistica',0)">Micro Região ↕</th>
+                <th onclick="cpSortTable('tLogistica',1)">Em Carga (R$) ↕</th>
+                <th onclick="cpSortTable('tLogistica',2)">Disponível (R$) ↕</th>
+                <th onclick="cpSortTable('tLogistica',3)">Peso Disp. (kg) ↕</th>
+                <th onclick="cpSortTable('tLogistica',4)">Retira (R$) ↕</th>
+                <th onclick="cpSortTable('tLogistica',5)">Entrega (R$) ↕</th>
+                <th onclick="cpSortTable('tLogistica',6)">Pedidos ↕</th>
+              </tr></thead><tbody id="tLogisticaBody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- REPRESENTANTES TAB -->
+        <div class="cp-tab-content" id="cptab-representantes">
+          <div class="cp-table-card full">
+            <div class="cp-table-header">
+              <span class="cp-table-title">Por Representante</span>
+              <input type="text" class="cp-table-search" placeholder="Buscar..." oninput="cpFilterTable('tRep',this.value)">
+            </div>
+            <div class="cp-table-wrap">
+              <table id="tRep"><thead><tr>
+                <th onclick="cpSortTable('tRep',0)">Representante ↕</th>
+                <th onclick="cpSortTable('tRep',1)">Em Carga (R$) ↕</th>
+                <th onclick="cpSortTable('tRep',2)">Disponível (R$) ↕</th>
+                <th onclick="cpSortTable('tRep',3)">Bloqueado (R$) ↕</th>
+                <th onclick="cpSortTable('tRep',4)">Total (R$) ↕</th>
+              </tr></thead><tbody id="tRepBody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- BLOQUEIOS TAB -->
+        <div class="cp-tab-content" id="cptab-bloqueios">
+          <div class="cp-table-card full">
+            <div class="cp-table-header">
+              <span class="cp-table-title">Pedidos Bloqueados</span>
+              <input type="text" class="cp-table-search" placeholder="Buscar..." oninput="cpFilterTable('tBloqueio',this.value)">
+            </div>
+            <div class="cp-table-wrap">
+              <table id="tBloqueio"><thead><tr>
+                <th onclick="cpSortTable('tBloqueio',0)">Cliente ↕</th>
+                <th onclick="cpSortTable('tBloqueio',1)">Representante ↕</th>
+                <th onclick="cpSortTable('tBloqueio',2)">Valor (R$) ↕</th>
+                <th onclick="cpSortTable('tBloqueio',3)">Dias em Aberto ↕</th>
+              </tr></thead><tbody id="tBloqueioBody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- DETALHAMENTO TAB -->
+        <div class="cp-tab-content" id="cptab-detalhes">
+          <div class="cp-table-card full">
+            <div class="cp-table-header">
+              <span class="cp-table-title">Detalhamento de Pedidos</span>
+              <input type="text" class="cp-table-search" placeholder="Buscar pedido, cliente..." oninput="cpSearchDetalhes(this.value)">
+            </div>
+            <div class="cp-table-wrap">
+              <table id="tDetalhes"><thead><tr>
+                <th onclick="cpSortTable('tDetalhes',0)">Pedido ↕</th>
+                <th onclick="cpSortTable('tDetalhes',1)">Data Venda ↕</th>
+                <th onclick="cpSortTable('tDetalhes',2)">Cliente ↕</th>
+                <th onclick="cpSortTable('tDetalhes',3)">Representante ↕</th>
+                <th onclick="cpSortTable('tDetalhes',4)">Cidade ↕</th>
+                <th onclick="cpSortTable('tDetalhes',5)">Peso (kg) ↕</th>
+                <th onclick="cpSortTable('tDetalhes',6)">Valor (R$) ↕</th>
+                <th>Frete</th><th>Status</th>
+                <th onclick="cpSortTable('tDetalhes',9)">Dias ↕</th>
+              </tr></thead><tbody id="tDetalhesBody"></tbody></table>
+            </div>
+            <div class="cp-pagination" id="cpDetPagination">
+              <span id="cpDetInfo"></span>
+              <div class="cp-page-btns" id="cpDetPageBtns"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTÓRICO TAB -->
+        <div class="cp-tab-content" id="cptab-historico">
+          <div class="cp-chart-card" style="margin-bottom:16px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div class="cp-chart-title" style="margin:0">Evolução da Carteira</div>
+              <div style="display:flex;gap:8px">
+                <button class="cp-snapshot-btn" onclick="cpSaveSnapshot()">💾 Salvar Snapshot</button>
+                <button class="cp-clear-btn" onclick="cpClearHistory()">Limpar</button>
+              </div>
+            </div>
+            <div class="cp-chart-container"><canvas id="cpChartHistorico" style="max-height:280px"></canvas></div>
+          </div>
+          <div class="cp-table-card">
+            <div class="cp-table-header"><span class="cp-table-title">Snapshots Diários</span></div>
+            <div class="cp-table-wrap">
+              <table><thead><tr>
+                <th>Data</th><th>Carteira Total (R$)</th><th>Em Carga (R$)</th>
+                <th>Disponível (R$)</th><th>Bloqueado (R$)</th><th>Peso (kg)</th><th>Pedidos</th>
+              </tr></thead><tbody id="cpHistBody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASSISTÊNCIA TAB -->
+        <div class="cp-tab-content" id="cptab-assistencia">
+          <div class="cp-kpi-grid" id="cpKpiTipoGrid"></div>
+          <div class="cp-charts-grid">
+            <div class="cp-chart-card">
+              <div class="cp-chart-title">Assistência: c/ Pedido vs Só Assist.</div>
+              <div class="cp-chart-container"><canvas id="cpChartTipoPizza"></canvas></div>
+            </div>
+            <div class="cp-chart-card">
+              <div class="cp-chart-title">Por Representante</div>
+              <div class="cp-chart-container"><canvas id="cpChartTipoRep"></canvas></div>
+            </div>
+            <div class="cp-chart-card full">
+              <div class="cp-chart-title">Idade da Carteira de Assistência</div>
+              <div class="cp-chart-container"><canvas id="cpChartTipoIdade" style="max-height:240px"></canvas></div>
+            </div>
+          </div>
+          <div class="cp-table-card full">
+            <div class="cp-table-header">
+              <span class="cp-table-title">Carteira de Assistência</span>
+              <input type="text" class="cp-table-search" placeholder="Buscar..." oninput="cpFilterTable('tTipo',this.value)">
+            </div>
+            <div class="cp-table-wrap">
+              <table id="tTipo"><thead><tr>
+                <th>Pedido</th><th>Data</th><th>Cliente</th><th>Representante</th>
+                <th>Micro Região</th><th>Peso (kg)</th><th>Valor (R$)</th>
+                <th>Status</th><th>Dias</th><th>Tem Pedido (P)?</th>
+              </tr></thead><tbody id="tTipoBody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /cp-content -->
+    </div><!-- /carteira-panel -->
+  </div><!-- /view-content -->
+</div><!-- /view-logistica -->
+
+<!-- ═══════════════════════════════════════════════════
+     TRANSPORTE VIEW
+═══════════════════════════════════════════════════ -->
+<div id="view-transporte" style="display:none">
+  <div class="view-top-line view-top-line--green"></div>
+
+  <!-- STICKY HEADER -->
+  <div style="background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100">
+    <div class="view-header-inner" style="padding-top:0;padding-bottom:0">
+      <div class="view-header">
+        <div style="display:flex;align-items:center;gap:18px">
+          <button class="back-btn" onclick="navigate('home')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+            Voltar
+          </button>
+          <div>
+            <div class="view-module-label" style="color:var(--green)">Módulo 02</div>
+            <div class="view-title">Transporte</div>
+          </div>
+        </div>
+        <!-- Botão contextual: muda conforme aba ativa -->
+        <button id="transpImportBtn" class="transp-import-btn" onclick="transpLoadData()" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Simular Import ERP
+        </button>
+      </div>
+    </div>
+    <!-- ABAS INTERNAS DO TRANSPORTE -->
+    <div class="transp-tabs-bar">
+      <div class="transp-tab active" data-transp-tab="frota" onclick="switchTranspTab('frota')">
+        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Frota & Rotas
+      </div>
+      <div class="transp-tab" data-transp-tab="faturamento" onclick="switchTranspTab('faturamento')">
+        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+        Faturamento
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: FROTA & ROTAS -->
+  <div class="transp-tab-panel active" id="transp-panel-frota">
+    <div class="transp-inner" id="transpContent">
+      <div style="text-align:center;padding:80px 0">
+        <div style="width:80px;height:80px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <div style="font-size:18px;font-weight:500;margin-bottom:8px">Nenhum dado carregado</div>
+        <p style="color:var(--text2);font-size:13px">Clique em "Simular Import ERP" para popular o painel de frota</p>
+        <button class="transp-import-btn" onclick="transpLoadData()" style="margin:20px auto 0;display:inline-flex">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Simular Import ERP
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: FATURAMENTO -->
+  <div class="transp-tab-panel" id="transp-panel-faturamento">
+    <div id="fat-panel">
+
+      <!-- MODOS DE IMPORTAÇÃO -->
+      <div style="display:flex;gap:0;margin-bottom:18px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+        <button id="fatModeUrlBtn" onclick="fatSetMode('url')" style="flex:1;padding:10px;background:rgba(0,255,136,0.1);border:none;color:var(--green);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border-right:1px solid var(--border)">
+          🔗 Carregar via URL (Google Sheets)
+        </button>
+        <button id="fatModeFileBtn" onclick="fatSetMode('file')" style="flex:1;padding:10px;background:transparent;border:none;color:var(--text2);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;cursor:pointer">
+          📁 Importar arquivo CSV
+        </button>
+      </div>
+
+      <!-- MODO URL -->
+      <div id="fatModeUrl">
+        <div class="fat-help-box">
+          <strong>🔗 Carregar do Google Sheets:</strong> a planilha precisa estar publicada.
+          <ol style="margin-top:6px">
+            <li>Na planilha → <strong>Arquivo → Compartilhar → Publicar na Web</strong></li>
+            <li>Selecione a aba <strong>"Faturamento"</strong> e formato <strong>CSV</strong> → Publicar</li>
+            <li>Cole o link gerado abaixo e clique em <strong>Carregar</strong></li>
+          </ol>
+          <div style="margin-top:8px;padding:8px 10px;background:rgba(245,197,24,0.06);border:1px solid rgba(245,197,24,0.15);border-radius:6px;font-size:11px;color:var(--yellow)">
+            ⚠ Se o painel for aberto como arquivo local (<code>file://</code>), o browser pode bloquear a requisição por segurança. Nesse caso use a opção <strong>Importar arquivo CSV</strong>.
+          </div>
+        </div>
+        <div class="fat-config-bar">
+          <label>URL CSV:</label>
+          <input type="text" class="fat-url-input" id="fatUrlInput"
+            placeholder="https://docs.google.com/spreadsheets/d/.../pub?gid=...&output=csv"
+            value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSM0E2ffi7l7T3up6OaMBEVGpIZacPH_105BRdV6zXDuFkkhCKYjjAWPX8GwF_QcMpUmJh3JZzI269j/pub?gid=1553494155&single=true&output=csv">
+          <button class="fat-load-btn" id="fatLoadBtn" onclick="fatLoadData()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+            Carregar
+          </button>
+          <span class="fat-status-text" id="fatStatusText" style="color:var(--text3)">Aguardando...</span>
+        </div>
+      </div>
+
+      <!-- MODO ARQUIVO -->
+      <div id="fatModeFile" style="display:none">
+        <div class="fat-help-box">
+          <strong>📁 Importar arquivo CSV:</strong> exporte a aba "Faturamento" manualmente e importe aqui.
+          <ol style="margin-top:6px">
+            <li>No Google Sheets → <strong>Arquivo → Fazer download → CSV</strong></li>
+            <li>Salve o arquivo no seu computador</li>
+            <li>Clique em <strong>Selecionar arquivo CSV</strong> abaixo</li>
+          </ol>
+        </div>
+        <div class="fat-config-bar">
+          <label>Arquivo CSV:</label>
+          <input type="file" id="fatFileInput" accept=".csv,.txt" style="display:none" onchange="fatLoadFile(this)">
+          <button class="fat-load-btn" onclick="document.getElementById('fatFileInput').click()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Selecionar arquivo CSV
+          </button>
+          <span class="fat-status-text" id="fatStatusTextFile" style="color:var(--text3)">Nenhum arquivo selecionado</span>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="fat-filters" id="fatFilters" style="display:none">
+        <div class="fat-filter-group">
+          <label>Tipo de Frete</label>
+          <select class="fat-select" id="fatFiltroTipo">
+            <option value="">Todos</option>
+            <option value="SAIDA">Saída</option>
+            <option value="RETORNO">Retorno</option>
+          </select>
+        </div>
+        <div class="fat-filter-group">
+          <label>Data Início</label>
+          <input type="date" class="fat-date-input" id="fatFiltroDataIni">
+        </div>
+        <div class="fat-filter-group">
+          <label>Data Fim</label>
+          <input type="date" class="fat-date-input" id="fatFiltroDataFim">
+        </div>
+        <div class="fat-filter-group">
+          <label>Busca</label>
+          <input type="text" class="fat-date-input" id="fatFiltroBusca" placeholder="CTE, cliente..." style="width:180px">
+        </div>
+        <button class="fat-apply-btn" onclick="fatApplyFilters()">Aplicar</button>
+        <button class="fat-apply-btn" style="background:transparent;border-color:var(--border);color:var(--text2)" onclick="fatClearFilters()">Limpar</button>
+      </div>
+
+      <!-- CONTEÚDO (KPIs + charts + tabela) -->
+      <div id="fatContent">
+        <div class="fat-empty">
+          <div class="fat-empty-icon">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <h3>Faturamento não carregado</h3>
+          <p>Configure a URL CSV da sua planilha Google Sheets acima e clique em <strong style="color:var(--green)">Carregar Dados</strong>.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /view-transporte -->
+
+<script>
+// ══════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════
+function navigate(view) {
+  ['home','logistica','transporte'].forEach(v => {
+    document.getElementById('view-'+v).style.display = v === view ? 'block' : 'none';
+  });
+  window.scrollTo(0,0);
+  if (view === 'logistica') cpRenderHistory();
+}
+
+// ══════════════════════════════════════════════
+// HOME CLOCK
+// ══════════════════════════════════════════════
+function updateClock() {
+  const n = new Date();
+  document.getElementById('homeTime').textContent = n.toLocaleTimeString('pt-BR');
+  document.getElementById('homeDate').textContent = n.toLocaleDateString('pt-BR', {weekday:'long',day:'numeric',month:'long'});
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ══════════════════════════════════════════════
+// SUB-MODULE SELECTOR
+// ══════════════════════════════════════════════
+function showSubmod(name) {
+  document.querySelectorAll('.submod-card').forEach(c => c.classList.remove('active'));
+  const el = document.getElementById('submod-'+name);
+  if (el) el.classList.add('active');
+  document.getElementById('carteira-panel').style.display = 'block';
+}
+document.getElementById('submod-carteira').classList.add('active');
+
+// ══════════════════════════════════════════════
+// CHART.JS DEFAULTS (dark theme)
+// ══════════════════════════════════════════════
+Chart.defaults.color = '#7a8599';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+Chart.defaults.font.family = 'Barlow, sans-serif';
+
+// ══════════════════════════════════════════════
+// CARTEIRA STATE
+// ══════════════════════════════════════════════
+let cpRawData = [];
+let cpFilteredData = [];
+let cpDetPage = 1;
+const CP_PAGE_SIZE = 50;
+let cpDetSearchVal = '';
+let cpMicroMode = 'valor';
+let cpCharts = {};
+let cpSortStates = {};
+let cpDetAllFiltered = [];
+
+// ── CARTEIRA TABS ─────────────────────────────
+document.querySelectorAll('.cp-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.cp-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const target = document.getElementById('cptab-' + tab.dataset.tab);
+    if (target) target.classList.add('active');
+    if (tab.dataset.tab === 'historico') cpRenderHistory();
+    if (tab.dataset.tab === 'assistencia') cpRenderTipoTab();
+  });
+});
+
+// ── FILE LOAD ─────────────────────────────────
+function cpLoadFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('cpUploadInfo').innerHTML = `<strong>Carregando ${file.name}...</strong>`;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try { cpParseFile(ev.target.result, file.name); }
+    catch(err) { alert('Erro ao ler arquivo: ' + err.message); }
+    finally { e.target.value = ''; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function cpParseFile(buffer, name) {
+  const wb = XLSX.read(buffer, {type:'array'});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  let rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', blankrows:true, raw:false});
+  let headerIdx = 0;
+  for (let i = 0; i < Math.min(15, rows.length); i++) {
+    const cells = rows[i].map(c => String(c).trim().toUpperCase());
+    const hits = ['PEDIDO','CLIENTE','CARGA','REPRESENTANTE','BLOQUEIO','REGIAO'].filter(k => cells.includes(k));
+    if (hits.length >= 2) { headerIdx = i; break; }
+  }
+  const headers = rows[headerIdx].map(h => String(h).trim().toUpperCase());
+  const dataRows = rows.slice(headerIdx+1).filter(r => r.some(c => c!==''&&c!==null&&c!==undefined));
+
+  const col = (exactKeys, partialKeys) => {
+    for (const k of exactKeys) { const idx = headers.findIndex(h => h===k); if (idx>=0) return idx; }
+    if (partialKeys) { for (const k of partialKeys) { const idx = headers.findIndex(h => h.includes(k)); if (idx>=0) return idx; } }
+    return -1;
+  };
+
+  const iData    = col(['DATA VENDA'], ['DATA VENDA','DT VENDA']);
+  const iPedido  = col(['PEDIDO'], ['PEDIDO']);
+  const iCliente = col(['CLIENTE'], ['CLIENTE']);
+  const iRep     = col(['REPRESENTANTE'], ['REPRESENTANTE','REPRESENT']);
+  const iRegiao  = col(['REGIAO','REGIÃO'], ['REGIAO','REGIÃO']);
+  const iMicro   = col(['MICRO REGIAO','MICRO REGIÃO'], ['MICRO']);
+  const iValCart = col(['VLR CARTEIRA','VALOR CARTEIRA'], ['VLR CARTEIRA','VALOR CARTEIRA']);
+  const iValCarg = col(['VLR CARGA','VALOR CARGA'], ['VLR CARGA','VALOR CARGA']);
+  const iValDisp = col(['VLR DISPONIVEL','VLR DISPONÍVEL'], ['VLR DISPONIVEL','VLR DISP']);
+  const iPesoBrt = col(['PESO BRT CARTEIRA','PESO CARTEIRA'], ['PESO BRT CARTEIRA','PESO CARTEIRA']);
+  const iPesoDisp= col(['PESO BRT DISP','PESO BRT DISPONIVEL'], ['PESO BRT DISP','PESO DISP']);
+  const iPesoCarg= col(['PESO BRT CARGA','PESO CARGA'], ['PESO BRT CARGA','PESO CARGA']);
+  const iCarga   = col(['CARGA'], ['CARGA']);
+  const iBloqueio= col(['BLOQUEIO'], ['BLOQUEIO']);
+  const iFrete   = col(['FRETE'], ['FRETE']);
+
+  const today = new Date(); today.setHours(0,0,0,0);
+
+  const parseNum = v => {
+    if (v===null||v===undefined||v==='') return 0;
+    let s = String(v).trim().replace(/[R$\s]/g,'');
+    if (s.includes(',')) s = s.replace(/\./g,'').replace(',','.');
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  };
+
+  const parseDateVal = v => {
+    if (!v) return null;
+    if (v instanceof Date) return v;
+    if (typeof v === 'number') {
+      const d = new Date(Date.UTC(1899,11,30)+v*86400000);
+      return isNaN(d) ? null : d;
+    }
+    const s = String(v).trim();
+    if (!s) return null;
+    const m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+    if (m) {
+      const d = new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1]));
+      return isNaN(d) ? null : d;
+    }
+    const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m2) { const d = new Date(parseInt(m2[1]),parseInt(m2[2])-1,parseInt(m2[3])); return isNaN(d)?null:d; }
+    const ts = Date.parse(s);
+    if (!isNaN(ts)) { const d = new Date(ts); if (d.getFullYear()>1990&&d.getFullYear()<2100) return d; }
+    return null;
+  };
+
+  cpRawData = dataRows.map(r => {
+    const cargaNum = iCarga>=0 ? parseNum(r[iCarga]) : 0;
+    const bloqueio = iBloqueio>=0 ? String(r[iBloqueio]).trim().toUpperCase() : 'LIB';
+    const datavenda = parseDateVal(iData>=0 ? r[iData] : null);
+    let dias = 0;
+    if (datavenda) { const d = new Date(datavenda); d.setHours(0,0,0,0); dias = Math.max(0, Math.floor((today-d)/86400000)); }
+    let statusCarga = cargaNum > 0 ? 'Em Carga' : 'Disponível';
+    let semaforo = 'green';
+    if (dias>=7) semaforo='red'; else if (dias>=5) semaforo='orange'; else if (dias>=2) semaforo='yellow';
+    let faixaIdade;
+    if (dias===0) faixaIdade='Hoje';
+    else if (dias<=15) faixaIdade='1-15 dias';
+    else if (dias<=30) faixaIdade='16-30 dias';
+    else if (dias<=45) faixaIdade='31-45 dias';
+    else if (dias<=60) faixaIdade='46-60 dias';
+    else if (dias<=75) faixaIdade='61-75 dias';
+    else if (dias<=90) faixaIdade='76-90 dias';
+    else faixaIdade='+90 dias';
+    const valCarteira = iValCart>=0 ? parseNum(r[iValCart]) : 0;
+    const valCarga    = iValCarg>=0 ? parseNum(r[iValCarg]) : 0;
+    const valDisp     = iValDisp>=0 ? parseNum(r[iValDisp]) : 0;
+    const pesoBrt     = iPesoBrt>=0 ? parseNum(r[iPesoBrt]) : 0;
+    const pesoDisp    = iPesoDisp>=0 ? parseNum(r[iPesoDisp]) : 0;
+    const pesoCarga   = iPesoCarg>=0 ? parseNum(r[iPesoCarg]) : 0;
+    return {
+      tipo: (()=>{ const iTipo=headers.indexOf('TIPO'); return iTipo>=0?String(r[iTipo]).trim().toUpperCase():'P'; })(),
+      pedido: iPedido>=0 ? String(r[iPedido]) : '',
+      dataVenda: datavenda, dataVendaStr: datavenda ? datavenda.toLocaleDateString('pt-BR') : '',
+      cliente: iCliente>=0 ? String(r[iCliente]).trim() : '',
+      representante: iRep>=0 ? String(r[iRep]).trim() : '',
+      regiao: iRegiao>=0 ? String(r[iRegiao]).trim() : '',
+      cidade: (()=>{ const iC=headers.indexOf('CIDADE'); return iC>=0?String(r[iC]).trim():''; })(),
+      micro: iMicro>=0 ? String(r[iMicro]).trim() : '',
+      valCarteira, valCarga, valDisp, pesoBrt, pesoDisp, pesoCarga,
+      carga: cargaNum, bloqueio, statusCarga,
+      tipoFrete: (iFrete>=0&&String(r[iFrete]).trim().toUpperCase()==='RETIRA')?'Retira':'Entrega',
+      dias, semaforo, faixaIdade,
+    };
+  }).filter(r => r.pedido!==''&&r.valCarteira>0);
+
+  document.getElementById('cpUploadInfo').innerHTML = `<strong>${name}</strong> — ${cpRawData.length} pedidos carregados`;
+  document.getElementById('cpLastUpdate').textContent = 'Atualizado: '+new Date().toLocaleString('pt-BR');
+  cpPopulateFilters();
+  cpApplyFilters();
+  document.getElementById('cpChartsGrid').style.display = 'grid';
+}
+
+// ── FILTERS ───────────────────────────────────
+function cpPopulateFilters() {
+  const setOpts = (id, vals) => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Todos</option>';
+    [...new Set(vals)].filter(Boolean).sort().forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+    sel.value = cur;
+  };
+  setOpts('fRep', cpRawData.map(r=>r.representante));
+  setOpts('fMicro', cpRawData.map(r=>r.micro));
+  setOpts('fCliente', cpRawData.map(r=>r.cliente));
+  ['fDataIni','fDataFim','fRep','fMicro','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => {
+    document.getElementById(id).onchange = cpApplyFilters;
+  });
+}
+
+function cpResetFilters() {
+  ['fRep','fMicro','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => document.getElementById(id).value='');
+  ['fDataIni','fDataFim'].forEach(id => document.getElementById(id).value='');
+  cpApplyFilters();
+}
+
+function cpApplyFilters() {
+  const fDataIni = document.getElementById('fDataIni').value ? new Date(document.getElementById('fDataIni').value) : null;
+  const fDataFim = document.getElementById('fDataFim').value ? new Date(document.getElementById('fDataFim').value) : null;
+  if (fDataFim) fDataFim.setHours(23,59,59);
+  const fRep = document.getElementById('fRep').value;
+  const fMicro = document.getElementById('fMicro').value;
+  const fCliente = document.getElementById('fCliente').value;
+  const fStatus = document.getElementById('fStatus').value;
+  const fBlq = document.getElementById('fBloqueio').value;
+  const fFrete = document.getElementById('fFrete').value;
+  cpFilteredData = cpRawData.filter(r => {
+    if (fDataIni&&r.dataVenda&&r.dataVenda<fDataIni) return false;
+    if (fDataFim&&r.dataVenda&&r.dataVenda>fDataFim) return false;
+    if (fRep&&r.representante!==fRep) return false;
+    if (fMicro&&r.micro!==fMicro) return false;
+    if (fCliente&&r.cliente!==fCliente) return false;
+    if (fStatus==='em_carga'&&r.statusCarga!=='Em Carga') return false;
+    if (fStatus==='disponivel'&&r.statusCarga!=='Disponível') return false;
+    if (fBlq&&r.bloqueio!==fBlq) return false;
+    if (fFrete&&r.tipoFrete!==fFrete) return false;
+    return true;
+  });
+  cpRenderAll();
+}
+
+function cpRenderAll() {
+  cpRenderKPIs(); cpRenderCharts();
+  cpRenderTableLogistica(); cpRenderTableRep();
+  cpRenderTableBloqueios(); cpRenderTableDetalhes();
+}
+
+// ── KPIs ──────────────────────────────────────
+function cpRenderKPIs() {
+  const d = cpFilteredData;
+  const total    = d.reduce((s,r)=>s+r.valCarteira,0);
+  const emCarga  = d.reduce((s,r)=>s+r.valCarga,0);
+  const disp     = d.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0);
+  const blq      = d.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0);
+  const peso     = d.reduce((s,r)=>s+r.pesoBrt,0);
+  const mais30   = d.filter(r=>r.dias>30).reduce((s,r)=>s+r.valCarteira,0);
+  const mais60   = d.filter(r=>r.dias>60).reduce((s,r)=>s+r.valCarteira,0);
+  const kpis = [
+    {label:'Carteira Total', value:fmt(total), sub:`${d.length} pedidos`, color:'#00d4ff'},
+    {label:'Em Carga', value:fmt(emCarga), sub:`${d.filter(r=>r.statusCarga==='Em Carga').length} pedidos`, color:'#9b6bff'},
+    {label:'Disponível', value:fmt(disp), sub:`${d.filter(r=>r.statusCarga==='Disponível'&&r.bloqueio!=='BLQ').length} pedidos`, color:'#00ff88'},
+    {label:'Bloqueado', value:fmt(blq), sub:`${d.filter(r=>r.bloqueio==='BLQ').length} pedidos`, color:'#ff3d5a'},
+    {label:'Peso Total', value:fmtPeso(peso)+' kg', sub:'bruto', color:'#00e5cc'},
+    {label:'Carteira > 30 dias', value:fmt(mais30), sub:`${cpPct(mais30,total)}% da carteira`, color:'#f5c518'},
+    {label:'Carteira > 60 dias', value:fmt(mais60), sub:`${cpPct(mais60,total)}% da carteira`, color:'#ff7b2e'},
+  ];
+  document.getElementById('cpKpiGrid').innerHTML = kpis.map(k=>`
+    <div class="cp-kpi" style="--k-color:${k.color}">
+      <div class="cp-kpi-label">${k.label}</div>
+      <div class="cp-kpi-value">${k.value}</div>
+      <div class="cp-kpi-sub">${k.sub}</div>
+    </div>
+  `).join('');
+  document.getElementById('cpChartsGrid').style.display = 'grid';
+}
+
+// ── CHARTS ────────────────────────────────────
+const cpPctPlugin = {
+  id:'pctLabel',
+  afterDatasetsDraw(chart) {
+    const {ctx,data} = chart;
+    const total = data.datasets[0].data.reduce((a,b)=>a+b,0);
+    if (!total) return;
+    chart.getDatasetMeta(0).data.forEach((arc,i) => {
+      const val = data.datasets[0].data[i];
+      const pct = Math.round(val/total*100);
+      if (pct<3) return;
+      const {x,y} = arc.tooltipPosition();
+      ctx.save(); ctx.font='bold 11px Barlow, sans-serif';
+      ctx.fillStyle='#fff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(pct+'%',x,y); ctx.restore();
+    });
+  }
+};
+
+function cpDestroyChart(id) {
+  if (cpCharts[id]) { cpCharts[id].destroy(); delete cpCharts[id]; }
+}
+
+function cpRenderCharts() {
+  cpRenderMicroChart(); cpRenderPizzaChart(); cpRenderRepChart(); cpRenderIdadeChart();
+}
+
+function cpSetMicroChart(mode, btn) {
+  cpMicroMode = mode;
+  document.querySelectorAll('.cp-toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  cpRenderMicroChart();
+}
+
+function cpRenderMicroChart() {
+  cpDestroyChart('cpChartMicro');
+  const grouped = cpGroupBy(cpFilteredData, 'micro');
+  const labels = Object.keys(grouped).sort((a,b)=>{
+    const sA=grouped[a].reduce((s,r)=>s+(cpMicroMode==='valor'?r.valCarteira:r.pesoBrt),0);
+    const sB=grouped[b].reduce((s,r)=>s+(cpMicroMode==='valor'?r.valCarteira:r.pesoBrt),0);
+    return sB-sA;
+  }).slice(0,12);
+  const vals = labels.map(l=>grouped[l].reduce((s,r)=>s+(cpMicroMode==='valor'?r.valCarteira:r.pesoBrt),0));
+  cpCharts['cpChartMicro'] = new Chart(document.getElementById('cpChartMicro'),{
+    type:'bar',
+    data:{ labels:labels.map(l=>l.length>18?l.substring(0,18)+'…':l),
+      datasets:[{label:cpMicroMode==='valor'?'Valor (R$)':'Peso (kg)', data:vals,
+        backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:1, borderRadius:4}] },
+    options:{ responsive:true, indexAxis:'y',
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>cpMicroMode==='valor'?' '+fmt(c.raw):' '+fmtPeso(c.raw)+' kg'}} },
+      scales:{ x:{ticks:{callback:v=>cpMicroMode==='valor'?fmtShort(v):fmtPesoShort(v)}} } }
+  });
+}
+
+function cpRenderPizzaChart() {
+  cpDestroyChart('cpChartPizza');
+  const emCarga = cpFilteredData.reduce((s,r)=>s+r.valCarga,0);
+  const disp = cpFilteredData.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0);
+  cpCharts['cpChartPizza'] = new Chart(document.getElementById('cpChartPizza'),{
+    type:'doughnut',
+    data:{ labels:['Em Carga','Disponível'],
+      datasets:[{data:[emCarga,disp],
+        backgroundColor:['rgba(155,107,255,0.7)','rgba(0,255,136,0.7)'],
+        borderColor:['#9b6bff','#00ff88'], borderWidth:2}] },
+    options:{ responsive:true, cutout:'65%',
+      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}} } },
+    plugins:[cpPctPlugin]
+  });
+}
+
+function cpRenderRepChart() {
+  cpDestroyChart('cpChartRep');
+  const grouped = cpGroupBy(cpFilteredData,'representante');
+  const labels = Object.keys(grouped).sort((a,b)=>
+    grouped[b].reduce((s,r)=>s+r.valCarteira,0)-grouped[a].reduce((s,r)=>s+r.valCarteira,0)
+  ).slice(0,10);
+  cpCharts['cpChartRep'] = new Chart(document.getElementById('cpChartRep'),{
+    type:'bar',
+    data:{ labels:labels.map(l=>l.split(' ').slice(0,2).join(' ')),
+      datasets:[
+        {label:'Em Carga', data:labels.map(l=>grouped[l].reduce((s,r)=>s+r.valCarga,0)),
+          backgroundColor:'rgba(155,107,255,0.65)', borderColor:'#9b6bff', borderWidth:1, borderRadius:4},
+        {label:'Disponível', data:labels.map(l=>grouped[l].reduce((s,r)=>s+r.valDisp,0)),
+          backgroundColor:'rgba(0,255,136,0.65)', borderColor:'#00ff88', borderWidth:1, borderRadius:4}
+      ] },
+    options:{ responsive:true, indexAxis:'y',
+      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}} },
+      scales:{ x:{ticks:{callback:v=>fmtShort(v)}} } }
+  });
+}
+
+function cpRenderIdadeChart() {
+  cpDestroyChart('cpChartIdade');
+  const faixas=['Hoje','1-15 dias','16-30 dias','31-45 dias','46-60 dias','61-75 dias','76-90 dias','+90 dias'];
+  const colors=['rgba(0,255,136,0.8)','rgba(0,255,136,0.6)','rgba(0,228,204,0.7)','rgba(245,197,24,0.8)','rgba(255,123,46,0.7)','rgba(255,123,46,0.9)','rgba(255,61,90,0.7)','rgba(255,61,90,0.95)'];
+  const borders=['#00ff88','#00ff88','#00e5cc','#f5c518','#ff7b2e','#ff7b2e','#ff3d5a','#ff3d5a'];
+  const vals = faixas.map(f=>cpFilteredData.filter(r=>r.faixaIdade===f).reduce((s,r)=>s+r.valCarteira,0));
+  cpCharts['cpChartIdade'] = new Chart(document.getElementById('cpChartIdade'),{
+    type:'bar',
+    data:{ labels:faixas, datasets:[{label:'Valor (R$)', data:vals,
+      backgroundColor:colors, borderColor:borders, borderWidth:1, borderRadius:5}] },
+    options:{ responsive:true,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}} },
+      scales:{ y:{ticks:{callback:v=>fmtShort(v)}} } }
+  });
+}
+
+// ── TABLES ────────────────────────────────────
+function cpRenderTableLogistica() {
+  const byMicro = cpGroupBy(cpFilteredData,'micro');
+  const rows = Object.entries(byMicro).map(([micro,items])=>({
+    micro,
+    emCarga: items.reduce((s,r)=>s+r.valCarga,0),
+    disponivel: items.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0),
+    pesoDisp: items.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.pesoDisp,0),
+    retira: items.filter(r=>r.tipoFrete==='Retira').reduce((s,r)=>s+r.valCarteira,0),
+    entrega: items.filter(r=>r.tipoFrete==='Entrega').reduce((s,r)=>s+r.valCarteira,0),
+    pedidos: items.length,
+  })).sort((a,b)=>b.emCarga+b.disponivel-(a.emCarga+a.disponivel));
+  document.getElementById('tLogisticaBody').innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.micro}</td>
+      <td class="num">${fmt(r.emCarga)}</td>
+      <td class="num" style="color:var(--green)">${fmt(r.disponivel)}</td>
+      <td class="num">${fmtPeso(r.pesoDisp)}</td>
+      <td class="num" style="color:var(--teal)">${fmt(r.retira)}</td>
+      <td class="num" style="color:var(--neon)">${fmt(r.entrega)}</td>
+      <td class="num">${r.pedidos}</td>
+    </tr>`).join('');
+}
+
+function cpRenderTableRep() {
+  const grouped = cpGroupBy(cpFilteredData,'representante');
+  const rows = Object.entries(grouped).map(([rep,items])=>({
+    rep,
+    emCarga: items.reduce((s,r)=>s+r.valCarga,0),
+    disponivel: items.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0),
+    bloqueado: items.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0),
+    total: items.reduce((s,r)=>s+r.valCarteira,0)
+  })).sort((a,b)=>b.total-a.total);
+  document.getElementById('tRepBody').innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.rep}</td>
+      <td class="num">${fmt(r.emCarga)}</td>
+      <td class="num" style="color:var(--green)">${fmt(r.disponivel)}</td>
+      <td class="num" style="color:${r.bloqueado>0?'var(--red)':'inherit'}">${fmt(r.bloqueado)}</td>
+      <td class="num"><strong>${fmt(r.total)}</strong></td>
+    </tr>`).join('');
+}
+
+function cpRenderTableBloqueios() {
+  const blq = cpFilteredData.filter(r=>r.bloqueio==='BLQ').sort((a,b)=>b.dias-a.dias);
+  document.getElementById('tBloqueioBody').innerHTML = blq.length===0
+    ? '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:24px">Nenhum pedido bloqueado</td></tr>'
+    : blq.map(r=>`
+    <tr>
+      <td>${r.cliente}</td>
+      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
+      <td class="num">${fmt(r.valCarteira)}</td>
+      <td class="num">
+        <span class="badge badge-${r.semaforo==='red'?'red':r.semaforo==='orange'?'orange':'yellow'}">
+          <span class="sdot sdot-${r.semaforo}"></span>${r.dias}d
+        </span>
+      </td>
+    </tr>`).join('');
+}
+
+function cpRenderTableDetalhes() {
+  cpDetAllFiltered = cpFilteredData.filter(r => {
+    if (!cpDetSearchVal) return true;
+    const s = cpDetSearchVal.toLowerCase();
+    return r.pedido.toLowerCase().includes(s)||r.cliente.toLowerCase().includes(s)||r.representante.toLowerCase().includes(s);
+  });
+  cpDetPage = 1;
+  cpRenderDetPage();
+}
+
+function cpSearchDetalhes(val) { cpDetSearchVal = val; cpRenderTableDetalhes(); }
+
+function cpRenderDetPage() {
+  const start = (cpDetPage-1)*CP_PAGE_SIZE;
+  const page = cpDetAllFiltered.slice(start, start+CP_PAGE_SIZE);
+  document.getElementById('tDetalhesBody').innerHTML = page.map(r=>`
+    <tr>
+      <td><span class="badge badge-blue">${r.pedido}</span></td>
+      <td>${r.dataVendaStr}</td>
+      <td>${r.cliente}</td>
+      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
+      <td>${r.cidade}</td>
+      <td class="num">${fmtPeso(r.pesoBrt)}</td>
+      <td class="num">${fmt(r.valCarteira)}</td>
+      <td><span class="badge ${r.tipoFrete==='Retira'?'badge-yellow':'badge-blue'}">${r.tipoFrete}</span></td>
+      <td>
+        ${r.statusCarga==='Em Carga'?'<span class="badge badge-purple">Em Carga</span>':'<span class="badge badge-green">Disponível</span>'}
+        ${r.bloqueio==='BLQ'?'<span class="badge badge-red">BLQ</span>':''}
+      </td>
+      <td class="num">
+        <span class="badge badge-${r.semaforo==='green'?'green':r.semaforo==='yellow'?'yellow':r.semaforo==='orange'?'orange':'red'}">
+          <span class="sdot sdot-${r.semaforo}"></span>${r.dias}d
+        </span>
+      </td>
+    </tr>`).join('');
+  const total = cpDetAllFiltered.length;
+  const pages = Math.ceil(total/CP_PAGE_SIZE);
+  document.getElementById('cpDetInfo').textContent = total>0?`${start+1}–${Math.min(start+CP_PAGE_SIZE,total)} de ${total}`:'0 registros';
+  let btns = `<button class="cp-page-btn" onclick="cpDetGo(${cpDetPage-1})" ${cpDetPage===1?'disabled':''}>‹</button>`;
+  for (let i=Math.max(1,cpDetPage-3); i<=Math.min(pages,cpDetPage+3); i++)
+    btns += `<button class="cp-page-btn ${i===cpDetPage?'active':''}" onclick="cpDetGo(${i})">${i}</button>`;
+  btns += `<button class="cp-page-btn" onclick="cpDetGo(${cpDetPage+1})" ${cpDetPage>=pages?'disabled':''}>›</button>`;
+  document.getElementById('cpDetPageBtns').innerHTML = btns;
+}
+function cpDetGo(p) { if(p<1||p>Math.ceil(cpDetAllFiltered.length/CP_PAGE_SIZE)) return; cpDetPage=p; cpRenderDetPage(); }
+
+// ── ASSISTÊNCIA ───────────────────────────────
+function cpRenderTipoTab() {
+  const assist  = cpFilteredData.filter(r=>r.tipo==='A');
+  const pedidos = cpFilteredData.filter(r=>r.tipo==='P');
+  const clientesComPedido = new Set(pedidos.map(r=>r.cliente));
+  const sumVal   = arr => arr.reduce((s,r)=>s+r.valCarteira,0);
+  const sumCarga = arr => arr.reduce((s,r)=>s+r.valCarga,0);
+  const sumDisp  = arr => arr.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0);
+  const sumBlq   = arr => arr.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0);
+  const sumPeso  = arr => arr.reduce((s,r)=>s+r.pesoBrt,0);
+  const comP = assist.filter(r=>clientesComPedido.has(r.cliente));
+  const semP = assist.filter(r=>!clientesComPedido.has(r.cliente));
+  const tipoKpis = [
+    {label:'Carteira Assistência', value:fmt(sumVal(assist)), sub:`${assist.length} registros`, color:'#ff7b2e'},
+    {label:'Em Carga', value:fmt(sumCarga(assist)), sub:`${assist.filter(r=>r.statusCarga==='Em Carga').length} registros`, color:'#9b6bff'},
+    {label:'Disponível', value:fmt(sumDisp(assist)), sub:`${assist.filter(r=>r.statusCarga==='Disponível'&&r.bloqueio!=='BLQ').length} registros`, color:'#00ff88'},
+    {label:'Bloqueado', value:fmt(sumBlq(assist)), sub:`${assist.filter(r=>r.bloqueio==='BLQ').length} registros`, color:'#ff3d5a'},
+    {label:'Peso Total', value:fmtPeso(sumPeso(assist)), sub:'kg bruto', color:'#00e5cc'},
+    {label:'Com Pedido (P)', value:fmt(sumVal(comP)), sub:`${comP.length} têm pedido`, color:'#00d4ff'},
+  ];
+  document.getElementById('cpKpiTipoGrid').innerHTML = tipoKpis.map(k=>`
+    <div class="cp-kpi" style="--k-color:${k.color}">
+      <div class="cp-kpi-label">${k.label}</div>
+      <div class="cp-kpi-value">${k.value}</div>
+      <div class="cp-kpi-sub">${k.sub}</div>
+    </div>`).join('');
+
+  cpDestroyChart('cpChartTipoPizza');
+  cpCharts['cpChartTipoPizza'] = new Chart(document.getElementById('cpChartTipoPizza'),{
+    type:'doughnut',
+    data:{ labels:['Tem Pedido (P)','Só Assistência'],
+      datasets:[{data:[sumVal(comP),sumVal(semP)],
+        backgroundColor:['rgba(0,212,255,0.7)','rgba(255,123,46,0.7)'],
+        borderColor:['#00d4ff','#ff7b2e'], borderWidth:2}] },
+    options:{ responsive:true, cutout:'60%',
+      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}} } },
+    plugins:[cpPctPlugin]
+  });
+
+  cpDestroyChart('cpChartTipoRep');
+  const repLabels = [...new Set(assist.map(r=>r.representante))].sort((a,b)=>
+    assist.filter(r=>r.representante===b).reduce((s,r)=>s+r.valCarteira,0)-
+    assist.filter(r=>r.representante===a).reduce((s,r)=>s+r.valCarteira,0)
+  ).slice(0,10);
+  cpCharts['cpChartTipoRep'] = new Chart(document.getElementById('cpChartTipoRep'),{
+    type:'bar',
+    data:{ labels:repLabels.map(l=>l.split(' ').slice(0,2).join(' ')),
+      datasets:[
+        {label:'Em Carga', data:repLabels.map(l=>assist.filter(r=>r.representante===l).reduce((s,r)=>s+r.valCarga,0)),
+          backgroundColor:'rgba(155,107,255,0.65)', borderColor:'#9b6bff', borderWidth:1, borderRadius:4},
+        {label:'Disponível', data:repLabels.map(l=>assist.filter(r=>r.representante===l&&r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0)),
+          backgroundColor:'rgba(0,255,136,0.65)', borderColor:'#00ff88', borderWidth:1, borderRadius:4}
+      ] },
+    options:{ responsive:true, indexAxis:'y',
+      plugins:{ legend:{position:'bottom'}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}} },
+      scales:{ x:{ticks:{callback:v=>fmtShort(v)}} } }
+  });
+
+  cpDestroyChart('cpChartTipoIdade');
+  const faixas=['Hoje','1-15 dias','16-30 dias','31-45 dias','46-60 dias','61-75 dias','76-90 dias','+90 dias'];
+  cpCharts['cpChartTipoIdade'] = new Chart(document.getElementById('cpChartTipoIdade'),{
+    type:'bar',
+    data:{ labels:faixas, datasets:[{label:'Assistência (R$)',
+      data:faixas.map(f=>assist.filter(r=>r.faixaIdade===f).reduce((s,r)=>s+r.valCarteira,0)),
+      backgroundColor:'rgba(255,123,46,0.7)', borderColor:'#ff7b2e', borderWidth:1, borderRadius:4}] },
+    options:{ responsive:true,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}} },
+      scales:{ y:{ticks:{callback:v=>fmtShort(v)}} } }
+  });
+
+  const tRows = assist.map(r=>({...r, temPedido:clientesComPedido.has(r.cliente)})).sort((a,b)=>b.valCarteira-a.valCarteira);
+  document.getElementById('tTipoBody').innerHTML = tRows.length===0
+    ? '<tr><td colspan="10" style="text-align:center;color:var(--text2);padding:24px">Nenhuma assistência encontrada</td></tr>'
+    : tRows.map(r=>`
+    <tr>
+      <td><span class="badge badge-blue">${r.pedido}</span></td>
+      <td>${r.dataVendaStr}</td>
+      <td>${r.cliente}</td>
+      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
+      <td>${r.micro}</td>
+      <td class="num">${fmtPeso(r.pesoBrt)}</td>
+      <td class="num">${fmt(r.valCarteira)}</td>
+      <td>${r.statusCarga==='Em Carga'?'<span class="badge badge-purple">Em Carga</span>':'<span class="badge badge-green">Disponível</span>'}
+          ${r.bloqueio==='BLQ'?'<span class="badge badge-red">BLQ</span>':''}</td>
+      <td><span class="badge badge-${r.semaforo==='green'?'green':r.semaforo==='yellow'?'yellow':r.semaforo==='orange'?'orange':'red'}">
+        <span class="sdot sdot-${r.semaforo}"></span>${r.dias}d</span></td>
+      <td>${r.temPedido?'<span class="badge badge-green">✓ Sim</span>':'<span class="badge" style="background:rgba(100,100,100,0.15);color:var(--text3)">— Não</span>'}</td>
+    </tr>`).join('');
+}
+
+// ── HISTORY ───────────────────────────────────
+function cpGetHistory() { try { return JSON.parse(localStorage.getItem('carteira_historico')||'[]'); } catch { return []; } }
+function cpSaveHistory(h) { localStorage.setItem('carteira_historico', JSON.stringify(h)); }
+
+function cpSaveSnapshot() {
+  if (cpFilteredData.length===0) { alert('Carregue os dados antes de salvar um snapshot.'); return; }
+  const today = new Date().toLocaleDateString('pt-BR');
+  const hist = cpGetHistory();
+  const snap = {
+    data: today, ts: Date.now(),
+    total: cpFilteredData.reduce((s,r)=>s+r.valCarteira,0),
+    emCarga: cpFilteredData.reduce((s,r)=>s+r.valCarga,0),
+    disponivel: cpFilteredData.reduce((s,r)=>s+r.valDisp,0),
+    bloqueado: cpFilteredData.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0),
+    peso: cpFilteredData.reduce((s,r)=>s+r.pesoBrt,0),
+    pedidos: cpFilteredData.length
+  };
+  const filtered2 = hist.filter(h=>h.data!==today);
+  filtered2.push(snap); filtered2.sort((a,b)=>a.ts-b.ts);
+  cpSaveHistory(filtered2); cpRenderHistory();
+  alert('Snapshot salvo para '+today);
+}
+
+function cpClearHistory() {
+  if (confirm('Limpar todo o histórico?')) { localStorage.removeItem('carteira_historico'); cpRenderHistory(); }
+}
+
+function cpRenderHistory() {
+  const hist = cpGetHistory();
+  cpDestroyChart('cpChartHistorico');
+  if (hist.length===0) {
+    document.getElementById('cpHistBody').innerHTML =
+      '<tr><td colspan="7" style="text-align:center;color:var(--text2);padding:24px">Nenhum snapshot salvo. Carregue dados e clique em "Salvar Snapshot".</td></tr>';
+    return;
+  }
+  cpCharts['cpChartHistorico'] = new Chart(document.getElementById('cpChartHistorico'),{
+    type:'line',
+    data:{
+      labels: hist.map(h=>h.data),
+      datasets:[
+        {label:'Carteira Total', data:hist.map(h=>h.total), borderColor:'#00d4ff', backgroundColor:'rgba(0,212,255,0.08)', tension:0.4, fill:true},
+        {label:'Em Carga', data:hist.map(h=>h.emCarga), borderColor:'#9b6bff', backgroundColor:'transparent', tension:0.4},
+        {label:'Disponível', data:hist.map(h=>h.disponivel), borderColor:'#00ff88', backgroundColor:'transparent', tension:0.4},
+        {label:'Bloqueado', data:hist.map(h=>h.bloqueado), borderColor:'#ff3d5a', backgroundColor:'transparent', tension:0.4},
+      ]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'bottom'}, tooltip:{callbacks:{label:c=>' '+fmt(c.raw)}}},
+      scales:{ y:{ticks:{callback:v=>fmtShort(v)}} }
+    }
+  });
+  document.getElementById('cpHistBody').innerHTML = [...hist].reverse().map(h=>`
+    <tr>
+      <td>${h.data}</td>
+      <td class="num">${fmt(h.total)}</td>
+      <td class="num">${fmt(h.emCarga)}</td>
+      <td class="num">${fmt(h.disponivel)}</td>
+      <td class="num" style="color:var(--red)">${fmt(h.bloqueado)}</td>
+      <td class="num">${fmtPeso(h.peso)}</td>
+      <td class="num">${h.pedidos}</td>
+    </tr>`).join('');
+}
+
+// ── TABLE UTILS ───────────────────────────────
+function cpFilterTable(tableId, val) {
+  const tbody = document.getElementById(tableId).querySelector('tbody');
+  const v = val.toLowerCase();
+  tbody.querySelectorAll('tr').forEach(r => { r.style.display = r.textContent.toLowerCase().includes(v)?'':'none'; });
+}
+
+function cpSortTable(tableId, colIdx) {
+  const table = document.getElementById(tableId);
+  const tbody = table.querySelector('tbody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const key = tableId+'_'+colIdx;
+  cpSortStates[key] = !cpSortStates[key];
+  const asc = cpSortStates[key];
+  rows.sort((a,b) => {
+    const aVal = a.cells[colIdx]?.textContent.trim()||'';
+    const bVal = b.cells[colIdx]?.textContent.trim()||'';
+    const aNum = parseFloat(aVal.replace(/[^0-9.,\-]/g,'').replace(',','.'));
+    const bNum = parseFloat(bVal.replace(/[^0-9.,\-]/g,'').replace(',','.'));
+    if (!isNaN(aNum)&&!isNaN(bNum)) return asc?aNum-bNum:bNum-aNum;
+    return asc?aVal.localeCompare(bVal,'pt-BR'):bVal.localeCompare(aVal,'pt-BR');
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
+// ── FORMAT UTILS ──────────────────────────────
+function fmt(n) { if(!n&&n!==0) return 'R$ 0'; return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
+function fmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
+function fmtPeso(n) { return Math.round(n).toLocaleString('pt-BR'); }
+function fmtPesoShort(n) { if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return Math.round(n); }
+function cpPct(a,b) { return b===0?0:Math.round((a/b)*100); }
+function cpGroupBy(arr,key) {
+  return arr.reduce((acc,item) => {
+    const k=item[key]||'—';
+    if (!acc[k]) acc[k]=[];
+    acc[k].push(item); return acc;
+  },{});
+}
+
+// ══════════════════════════════════════════════
+// TRANSPORTE — ABAS INTERNAS
+// ══════════════════════════════════════════════
+function switchTranspTab(tab) {
+  document.querySelectorAll('.transp-tab').forEach(t => t.classList.toggle('active', t.dataset.transpTab === tab));
+  document.querySelectorAll('.transp-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('transp-panel-' + tab).classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// TRANSPORTE SIMULATED DATA (Frota)
+// ══════════════════════════════════════════════
+function transpLoadData() {
+  const btn = event.currentTarget;
+  btn.textContent = 'Importando...';
+  setTimeout(() => {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> ↻ Re-importar`;
+    renderTranspContent();
+  }, 1600);
+}
+
+function renderTranspContent() {
+  const d = {
+    total:86, emRota:54, disponivel:22, manutencao:10,
+    kmRodados:284750, consumo:3.2,
+    veiculos:[
+      {id:'TRK-001', motorista:'Carlos Silva',   rota:'SP → RJ',  status:'em_rota',  prog:68, carga:'Eletrônicos'},
+      {id:'TRK-002', motorista:'Ana Souza',       rota:'SP → BH',  status:'em_rota',  prog:34, carga:'Alimentos'},
+      {id:'TRK-003', motorista:'Pedro Lima',      rota:'RJ → BSB', status:'atrasado', prog:51, carga:'Farmacêutico'},
+      {id:'TRK-004', motorista:'Maria Costa',     rota:'POA → CWB',status:'em_rota',  prog:89, carga:'Têxtil'},
+      {id:'TRK-005', motorista:'João Neto',       rota:'REC → FOR',status:'em_rota',  prog:22, carga:'Materiais'},
+    ]
+  };
+  const sc = {em_rota:{l:'Em Rota',c:'#00ff88'}, atrasado:{l:'Atrasado',c:'#ff3d5a'}, disponivel:{l:'Disponível',c:'#00d4ff'}, manutencao:{l:'Manutenção',c:'#f5c518'}};
+
+  document.getElementById('transpContent').innerHTML = `
+    <div class="kpi-row">
+      ${[['Frota Total',d.total,'#00ff88'],['Em Rota',d.emRota,'#00d4ff'],['Disponível',d.disponivel,'#00ff88'],['Manutenção',d.manutencao,'#f5c518']].map(([l,v,c])=>`
+      <div class="t-kpi" style="border-top-color:${c}">
+        <div class="t-kpi-val" style="color:${c}">${v}</div>
+        <div class="t-kpi-lbl">${l}</div>
+      </div>`).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="glass-card">
+        <div class="glass-card-accent-top" style="background:linear-gradient(90deg,transparent,#00ff88,transparent)"></div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:18px">Utilização da Frota</div>
+        ${[['Em Rota',d.emRota/d.total*100,'#00d4ff'],['Disponível',d.disponivel/d.total*100,'#00ff88'],['Manutenção',d.manutencao/d.total*100,'#f5c518']].map(([l,v,c])=>`
+        <div style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:13px;color:var(--text2)">${l}</span>
+            <span style="font-size:12px;font-family:'Space Mono',monospace;color:${c}">${Math.round(v)}%</span>
+          </div>
+          <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${v}%;background:${c};box-shadow:0 0 6px ${c}55"></div></div>
+        </div>`).join('')}
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:28px">
+          <div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:var(--green)">${d.kmRodados.toLocaleString('pt-BR')}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">KM rodados no mês</div>
+          </div>
+          <div>
+            <div style="font-family:'Space Mono',monospace;font-size:18px;color:var(--neon)">${d.consumo} km/L</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">Consumo médio</div>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card">
+        <div class="glass-card-accent-top" style="background:linear-gradient(90deg,transparent,#00ff88,transparent)"></div>
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text2);margin-bottom:14px">Tracking em Tempo Real</div>
+        ${d.veiculos.map(v=>`
+        <div class="vehicle-row">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+            <div style="display:flex;gap:10px;align-items:center">
+              <span style="font-family:'Space Mono',monospace;font-size:11px;color:var(--green)">${v.id}</span>
+              <span style="font-size:12px;color:var(--text2)">${v.motorista}</span>
+            </div>
+            <span style="font-size:10px;padding:2px 8px;border-radius:12px;background:${sc[v.status].c}18;color:${sc[v.status].c};border:1px solid ${sc[v.status].c}30">${sc[v.status].l}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:11px;color:var(--text3)">${v.rota}</span>
+            <span style="font-size:11px;color:var(--text3)">${v.carga}</span>
+          </div>
+          <div class="prog-bar-track"><div class="prog-bar-fill" style="width:${v.prog}%;background:${sc[v.status].c}"></div></div>
+          <div style="font-size:10px;color:var(--text3);text-align:right;margin-top:4px">${v.prog}% concluído</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════
+// FATURAMENTO — GOOGLE SHEETS CSV
+// ══════════════════════════════════════════════
+let fatRawData   = [];
+let fatFiltered  = [];
+let fatCharts    = {};
+
+// Colunas esperadas (case-insensitive, busca parcial)
+const FAT_COLS = {
+  vlrCte:    ['VLR TOTAL CTE','VALOR CTE','VLR CTE','VALOR TOTAL CTE'],
+  tipoFrete: ['TIPO DE FRETE','TIPO FRETE','TIPO_FRETE'],
+  pesoBrt:   ['PESO BRT','PESO BRUTO','PESOB','PESO_BRT'],
+  data:      ['DATA','DT EMISSAO','DT EMISSÃO','DATA EMISSAO','DATA_EMISSAO','EMISSAO'],
+  cte:       ['CTE','NR CTE','NUMERO CTE','NR_CTE','CT-E'],
+  remetente: ['REMETENTE','CLIENTE','EMBARCADOR'],
+  destinatario:['DESTINATARIO','DESTINATÁRIO','DEST'],
+};
+
+function fatFindCol(headers, candidates) {
+  const hs = headers.map(h => String(h).toUpperCase().trim());
+  for (const c of candidates) {
+    const idx = hs.findIndex(h => h === c || h.includes(c));
+    if (idx >= 0) return idx;
+  }
+  return -1;
+}
+
+function fatParseNumber(v) {
+  if (v === null || v === undefined || v === '') return 0;
+  return parseFloat(String(v).replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,'')) || 0;
+}
+
+function fatNormTipo(v) {
+  const s = String(v).toUpperCase().trim();
+  if (s.includes('SAIDA') || s.includes('SAÍDA') || s === 'S') return 'SAIDA';
+  if (s.includes('RETORNO') || s === 'R') return 'RETORNO';
+  return s || '—';
+}
+
+async function fatLoadData() {
+  const url = document.getElementById('fatUrlInput').value.trim();
+  if (!url) { fatSetStatus('⚠ Cole a URL CSV da planilha publicada.', 'var(--yellow)'); return; }
+
+  const btn = document.getElementById('fatLoadBtn');
+  btn.disabled = true;
+  fatSetStatus('Carregando...', 'var(--neon)');
+  document.getElementById('fatContent').innerHTML = `
+    <div class="fat-empty"><div class="fat-spinner"></div><h3>Buscando dados...</h3><p>Conectando ao Google Sheets</p></div>`;
+
+  try {
+    // Fetch direto — planilhas publicadas como CSV pelo Google suportam CORS nativamente
+    const res = await fetch(url, { mode: 'cors' });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — verifique se a planilha está publicada');
+    const csvText = await res.text();
+    if (!csvText || csvText.trim().length < 5) throw new Error('Resposta vazia ou inválida');
+    if (csvText.trim().startsWith('<!DOCTYPE') || csvText.trim().startsWith('<html')) {
+      throw new Error('Google retornou HTML em vez de CSV — confirme que a aba está publicada como CSV');
+    }
+    fatParseCSV(csvText);
+  } catch(e) {
+    fatSetStatus('❌ Erro: ' + e.message, 'var(--red)');
+    document.getElementById('fatContent').innerHTML = `
+      <div class="fat-empty">
+        <div class="fat-empty-icon" style="border-color:rgba(255,61,90,0.2)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff3d5a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
+        <h3>Não foi possível carregar</h3>
+        <p>Verifique se a planilha está publicada como CSV (Arquivo → Publicar na Web → CSV) e se a URL está correta.<br><br><em style="color:var(--red);font-size:11px">${e.message}</em></p>
+      </div>`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function fatParseCSV(text) {
+  // Parse CSV simples com suporte a aspas
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { fatSetStatus('⚠ CSV vazio ou inválido', 'var(--yellow)'); return; }
+
+  function parseLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    result.push(cur.trim()); return result;
+  }
+
+  const headers = parseLine(lines[0]);
+  const colVlr  = fatFindCol(headers, FAT_COLS.vlrCte);
+  const colTipo = fatFindCol(headers, FAT_COLS.tipoFrete);
+  const colPeso = fatFindCol(headers, FAT_COLS.pesoBrt);
+  const colData = fatFindCol(headers, FAT_COLS.data);
+  const colCte  = fatFindCol(headers, FAT_COLS.cte);
+  const colRem  = fatFindCol(headers, FAT_COLS.remetente);
+  const colDest = fatFindCol(headers, FAT_COLS.destinatario);
+
+  // Mostra aviso de quais colunas foram ou não encontradas
+  const colStatus = [
+    { nome: 'VLR TOTAL CTE', found: colVlr  >= 0, required: true  },
+    { nome: 'TIPO DE FRETE',  found: colTipo >= 0, required: true  },
+    { nome: 'PESO BRT',       found: colPeso >= 0, required: true  },
+    { nome: 'DATA',           found: colData >= 0, required: false },
+    { nome: 'CT-e',           found: colCte  >= 0, required: false },
+    { nome: 'REMETENTE',      found: colRem  >= 0, required: false },
+    { nome: 'DESTINATÁRIO',   found: colDest >= 0, required: false },
+  ];
+  const missingRequired = colStatus.filter(c => c.required && !c.found);
+  if (missingRequired.length === 3) {
+    // Nenhuma coluna principal encontrada — mostra os headers reais
+    fatSetStatus('⚠ Colunas não encontradas', 'var(--yellow)');
+    const headersFormatted = headers.filter(h=>h).map(h=>`<code style="background:rgba(0,212,255,0.1);color:var(--neon);padding:1px 5px;border-radius:3px;font-size:11px">${h}</code>`).join(' ');
+    document.getElementById('fatContent').innerHTML = `
+      <div class="fat-empty">
+        <h3>Colunas não identificadas</h3>
+        <p style="margin-bottom:14px">Cabeçalhos detectados na sua planilha:</p>
+        <div style="max-width:600px;margin:0 auto 16px;line-height:2;text-align:center">${headersFormatted}</div>
+        <p style="font-size:12px;color:var(--text2)">O painel busca colunas chamadas <strong style="color:var(--green)">VLR TOTAL CTE</strong>, <strong style="color:var(--green)">TIPO DE FRETE</strong> e <strong style="color:var(--green)">PESO BRT</strong>.<br>
+        Se os nomes forem diferentes, compartilhe e ajustamos o mapeamento.</p>
+      </div>`;
+    return;
+  }
+
+  fatRawData = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseLine(lines[i]);
+    if (cols.every(c => !c)) continue;
+    fatRawData.push({
+      cte:   colCte  >= 0 ? cols[colCte]  : (i).toString(),
+      data:  colData >= 0 ? cols[colData] : '',
+      remetente: colRem  >= 0 ? cols[colRem]  : '—',
+      dest:  colDest >= 0 ? cols[colDest] : '—',
+      vlr:   fatParseNumber(colVlr  >= 0 ? cols[colVlr]  : 0),
+      tipo:  fatNormTipo(colTipo >= 0 ? cols[colTipo] : ''),
+      peso:  fatParseNumber(colPeso >= 0 ? cols[colPeso] : 0),
+    });
+  }
+
+  fatFiltered = [...fatRawData];
+  fatSetStatus(`✓ ${fatRawData.length} registros carregados`, 'var(--green)');
+  document.getElementById('fatFilters').style.display = 'flex';
+  fatRenderAll();
+}
+
+function fatApplyFilters() {
+  const tipo  = document.getElementById('fatFiltroTipo').value;
+  const dtIni = document.getElementById('fatFiltroDataIni').value;
+  const dtFim = document.getElementById('fatFiltroDataFim').value;
+  const busca = document.getElementById('fatFiltroBusca').value.toLowerCase();
+
+  fatFiltered = fatRawData.filter(r => {
+    if (tipo && r.tipo !== tipo) return false;
+    if (busca && !r.cte.toLowerCase().includes(busca) && !r.remetente.toLowerCase().includes(busca) && !r.dest.toLowerCase().includes(busca)) return false;
+    // data filtering (basic)
+    if (dtIni || dtFim) {
+      const d = fatParseDate(r.data);
+      if (d) {
+        if (dtIni && d < new Date(dtIni)) return false;
+        if (dtFim && d > new Date(dtFim + 'T23:59:59')) return false;
+      }
+    }
+    return true;
+  });
+  fatRenderAll();
+}
+
+function fatClearFilters() {
+  document.getElementById('fatFiltroTipo').value = '';
+  document.getElementById('fatFiltroDataIni').value = '';
+  document.getElementById('fatFiltroDataFim').value = '';
+  document.getElementById('fatFiltroBusca').value = '';
+  fatFiltered = [...fatRawData];
+  fatRenderAll();
+}
+
+function fatParseDate(s) {
+  if (!s) return null;
+  // tenta dd/mm/yyyy
+  const m = String(s).match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m) return new Date(`${m[3]}-${m[2]}-${m[1]}`);
+  // tenta yyyy-mm-dd
+  if (/\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+  return null;
+}
+
+function fatRenderAll() {
+  // ── KPIs ──────────────────────────────────────
+  const totalVlr   = fatFiltered.reduce((s,r) => s + r.vlr,  0);
+  const totalPeso  = fatFiltered.reduce((s,r) => s + r.peso, 0);
+  const totalCtes  = fatFiltered.length;
+  const saida      = fatFiltered.filter(r => r.tipo === 'SAIDA');
+  const retorno    = fatFiltered.filter(r => r.tipo === 'RETORNO');
+  const vlrSaida   = saida.reduce((s,r) => s + r.vlr, 0);
+  const vlrRetorno = retorno.reduce((s,r) => s + r.vlr, 0);
+  const ticketMed  = totalCtes > 0 ? totalVlr / totalCtes : 0;
+
+  // ── por dia (últimos 15 dias com dados) ──────
+  const porDia = {};
+  fatFiltered.forEach(r => {
+    const d = r.data || 'S/D';
+    if (!porDia[d]) porDia[d] = {vlr:0,peso:0,saida:0,retorno:0};
+    porDia[d].vlr   += r.vlr;
+    porDia[d].peso  += r.peso;
+    if (r.tipo==='SAIDA')   porDia[d].saida  += r.vlr;
+    if (r.tipo==='RETORNO') porDia[d].retorno+= r.vlr;
+  });
+  const diasSort = Object.keys(porDia).sort((a,b) => {
+    const da = fatParseDate(a), db = fatParseDate(b);
+    if (da && db) return da - db;
+    return a.localeCompare(b);
+  }).slice(-20);
+
+  // ── destroy old charts ─────────────────────
+  Object.values(fatCharts).forEach(c => { try { c.destroy(); } catch{} });
+  fatCharts = {};
+
+  const content = document.getElementById('fatContent');
+  content.innerHTML = `
+    <!-- KPIs -->
+    <div class="fat-kpi-row">
+      <div class="fat-kpi" style="--fat-kpi-color:var(--green)">
+        <div class="fat-kpi-label">Faturamento Total</div>
+        <div class="fat-kpi-value">${fatFmt(totalVlr)}</div>
+        <div class="fat-kpi-sub">${totalCtes} CT-es</div>
+        <div class="fat-kpi-icon">💰</div>
+      </div>
+      <div class="fat-kpi" style="--fat-kpi-color:var(--neon)">
+        <div class="fat-kpi-label">Frete Saída</div>
+        <div class="fat-kpi-value" style="color:var(--neon)">${fatFmt(vlrSaida)}</div>
+        <div class="fat-kpi-sub">${saida.length} CT-es · ${totalVlr>0?Math.round(vlrSaida/totalVlr*100):0}%</div>
+        <div class="fat-kpi-icon">🚛</div>
+      </div>
+      <div class="fat-kpi" style="--fat-kpi-color:var(--purple)">
+        <div class="fat-kpi-label">Frete Retorno</div>
+        <div class="fat-kpi-value" style="color:var(--purple)">${fatFmt(vlrRetorno)}</div>
+        <div class="fat-kpi-sub">${retorno.length} CT-es · ${totalVlr>0?Math.round(vlrRetorno/totalVlr*100):0}%</div>
+        <div class="fat-kpi-icon">↩️</div>
+      </div>
+      <div class="fat-kpi" style="--fat-kpi-color:var(--yellow)">
+        <div class="fat-kpi-label">Peso BRT Total</div>
+        <div class="fat-kpi-value" style="color:var(--yellow)">${Math.round(totalPeso).toLocaleString('pt-BR')} kg</div>
+        <div class="fat-kpi-sub">Ticket médio: ${fatFmt(ticketMed)}</div>
+        <div class="fat-kpi-icon">⚖️</div>
+      </div>
+    </div>
+
+    <!-- CHARTS -->
+    <div class="fat-charts-grid">
+      <div class="fat-chart-card">
+        <div class="fat-chart-title">Faturamento por Tipo de Frete<span id="fatPizzaLegend" style="font-size:10px;color:var(--text3);font-weight:400"></span></div>
+        <div class="fat-chart-container"><canvas id="fatChartPizza"></canvas></div>
+      </div>
+      <div class="fat-chart-card">
+        <div class="fat-chart-title">Peso BRT por Tipo</div>
+        <div class="fat-chart-container"><canvas id="fatChartPeso"></canvas></div>
+      </div>
+      <div class="fat-chart-card full">
+        <div class="fat-chart-title">Evolução Diária do Faturamento</div>
+        <div class="fat-chart-container"><canvas id="fatChartDia" style="max-height:220px"></canvas></div>
+      </div>
+    </div>
+
+    <!-- TABELA -->
+    <div class="fat-table-wrap">
+      <div class="fat-table-header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <span class="fat-table-title">Detalhamento CT-es</span>
+          <span class="fat-table-count" id="fatTblCount">${fatFiltered.length} registros</span>
+        </div>
+        <input type="text" class="fat-table-search" placeholder="Buscar CTE, remetente..." oninput="fatSearchTable(this.value)">
+      </div>
+      <div class="fat-tbl-scroll">
+        <table id="fatTable">
+          <thead><tr>
+            <th onclick="fatSortTable(0)">CT-e ↕</th>
+            <th onclick="fatSortTable(1)">Data ↕</th>
+            <th onclick="fatSortTable(2)">Remetente ↕</th>
+            <th onclick="fatSortTable(3)">Destinatário ↕</th>
+            <th onclick="fatSortTable(4)">Tipo Frete ↕</th>
+            <th onclick="fatSortTable(5)">Vlr CT-e (R$) ↕</th>
+            <th onclick="fatSortTable(6)">Peso BRT (kg) ↕</th>
+          </tr></thead>
+          <tbody id="fatTbody"></tbody>
+        </table>
+      </div>
+    </div>`;
+
+  // render table rows
+  fatRenderTableRows(fatFiltered);
+
+  // ── PIZZA ──
+  const tiposGrp = {};
+  fatFiltered.forEach(r => { tiposGrp[r.tipo] = (tiposGrp[r.tipo]||0) + r.vlr; });
+  const tipoLabels = Object.keys(tiposGrp);
+  const tipoCores  = tipoLabels.map(t => t==='SAIDA'?'#00d4ff':t==='RETORNO'?'#9b6bff':'#f5c518');
+  fatCharts.pizza = new Chart(document.getElementById('fatChartPizza'), {
+    type: 'doughnut',
+    data: { labels: tipoLabels, datasets: [{ data: tipoLabels.map(t=>tiposGrp[t]), backgroundColor: tipoCores, borderWidth: 0, hoverOffset: 6 }] },
+    options: { responsive: true, cutout: '65%',
+      plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: c => ' ' + fatFmt(c.raw) + ' (' + Math.round(c.raw/totalVlr*100) + '%)' } } } }
+  });
+
+  // ── PESO BAR ──
+  const pesoPorTipo = {};
+  fatFiltered.forEach(r => { pesoPorTipo[r.tipo] = (pesoPorTipo[r.tipo]||0) + r.peso; });
+  fatCharts.peso = new Chart(document.getElementById('fatChartPeso'), {
+    type: 'bar',
+    data: { labels: Object.keys(pesoPorTipo), datasets: [{ label: 'Peso BRT (kg)', data: Object.values(pesoPorTipo), backgroundColor: Object.keys(pesoPorTipo).map(t=>t==='SAIDA'?'rgba(0,212,255,0.6)':t==='RETORNO'?'rgba(155,107,255,0.6)':'rgba(245,197,24,0.6)'), borderRadius: 6 }] },
+    options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + Math.round(c.raw).toLocaleString('pt-BR') + ' kg' } } },
+      scales: { y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v } } } }
+  });
+
+  // ── LINHA DIÁRIA ──
+  fatCharts.dia = new Chart(document.getElementById('fatChartDia'), {
+    type: 'bar',
+    data: {
+      labels: diasSort,
+      datasets: [
+        { label: 'Saída',   data: diasSort.map(d => porDia[d]?.saida  ||0), backgroundColor: 'rgba(0,212,255,0.55)', borderRadius: 4 },
+        { label: 'Retorno', data: diasSort.map(d => porDia[d]?.retorno||0), backgroundColor: 'rgba(155,107,255,0.55)', borderRadius: 4 },
+      ]
+    },
+    options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: c => ' ' + fatFmt(c.raw) } } },
+      scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => fatFmtShort(v) } } } }
+  });
+}
+
+function fatFmt(n) { return 'R$ ' + Math.round(n||0).toLocaleString('pt-BR'); }
+function fatFmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
+
+function fatRenderTableRows(rows) {
+  const tbody = document.getElementById('fatTbody');
+  if (!tbody) return;
+  const tagTipo = t => t==='SAIDA'?`<span class="fat-tag-saida">Saída</span>`:t==='RETORNO'?`<span class="fat-tag-retorno">Retorno</span>`:`<span class="fat-tag-outro">${t}</span>`;
+  tbody.innerHTML = rows.map(r=>`<tr>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte}</td>
+    <td>${r.data||'—'}</td>
+    <td>${r.remetente}</td>
+    <td>${r.dest}</td>
+    <td>${tagTipo(r.tipo)}</td>
+    <td class="num" style="color:var(--green)">${fatFmt(r.vlr)}</td>
+    <td class="num">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
+  </tr>`).join('');
+}
+
+function fatSearchTable(val) {
+  const v = val.toLowerCase();
+  const rows = document.querySelectorAll('#fatTbody tr');
+  rows.forEach(r => { r.style.display = r.textContent.toLowerCase().includes(v) ? '' : 'none'; });
+}
+
+let fatSortDir = {};
+function fatSortTable(col) {
+  fatSortDir[col] = !fatSortDir[col];
+  const asc = fatSortDir[col];
+  fatFiltered.sort((a,b) => {
+    const vals = [
+      [a.cte,b.cte], [a.data,b.data], [a.remetente,b.remetente], [a.dest,b.dest],
+      [a.tipo,b.tipo], [a.vlr,b.vlr], [a.peso,b.peso]
+    ][col];
+    if (typeof vals[0] === 'number') return asc ? vals[0]-vals[1] : vals[1]-vals[0];
+    return asc ? String(vals[0]).localeCompare(String(vals[1]),'pt-BR') : String(vals[1]).localeCompare(String(vals[0]),'pt-BR');
+  });
+  fatRenderTableRows(fatFiltered);
+}
+
+function fatSetStatus(msg, color) {
+  const el = document.getElementById('fatStatusText');
+  if (el) { el.textContent = msg; el.style.color = color; }
+  const el2 = document.getElementById('fatStatusTextFile');
+  if (el2) { el2.textContent = msg; el2.style.color = color; }
+}
+
+function fatSetMode(mode) {
+  const isUrl = mode === 'url';
+  document.getElementById('fatModeUrl').style.display  = isUrl ? 'block' : 'none';
+  document.getElementById('fatModeFile').style.display = isUrl ? 'none'  : 'block';
+  document.getElementById('fatModeUrlBtn').style.background  = isUrl ? 'rgba(0,255,136,0.1)' : 'transparent';
+  document.getElementById('fatModeUrlBtn').style.color       = isUrl ? 'var(--green)' : 'var(--text2)';
+  document.getElementById('fatModeFileBtn').style.background = isUrl ? 'transparent' : 'rgba(0,255,136,0.1)';
+  document.getElementById('fatModeFileBtn').style.color      = isUrl ? 'var(--text2)' : 'var(--green)';
+}
+
+function fatLoadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const el = document.getElementById('fatStatusTextFile');
+  if (el) { el.textContent = 'Lendo ' + file.name + '...'; el.style.color = 'var(--neon)'; }
+  document.getElementById('fatContent').innerHTML = '<div class="fat-empty"><div class="fat-spinner"></div><h3>Processando arquivo...</h3></div>';
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      fatParseCSV(e.target.result);
+      if (el) { el.textContent = '\u2713 ' + file.name; el.style.color = 'var(--green)'; }
+    } catch(err) {
+      if (el) { el.textContent = '\u274c Erro ao ler arquivo'; el.style.color = 'var(--red)'; }
+      document.getElementById('fatContent').innerHTML = '<div class="fat-empty"><h3>Erro ao processar</h3><p>' + err.message + '</p></div>';
+    }
+  };
+  reader.onerror = () => { if (el) { el.textContent = '\u274c Falha na leitura'; el.style.color = 'var(--red)'; } };
+  reader.readAsText(file, 'UTF-8');
+  input.value = '';
+}
+
+// ── INIT ──────────────────────────────────────
+cpRenderHistory();
+</script>
+</body>
+</html>
