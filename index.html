@@ -896,26 +896,32 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </header>
 
-    <div class="status-bar">
+    <div class="status-bar" id="homeStatusBar">
       <div class="status-item">
-        <div class="status-dot" style="background:#00ff88;box-shadow:0 0 6px #00ff88"></div>
-        <span class="status-label">Servidor Principal</span>
-        <span class="status-val" style="color:#00ff88">Online</span>
+        <div class="status-dot pulse-dot"></div>
+        <span class="status-label">Painel</span>
+        <span class="status-val" style="color:var(--green)">Online</span>
       </div>
-      <div class="status-item">
-        <div class="status-dot" style="background:#00ff88;box-shadow:0 0 6px #00ff88"></div>
-        <span class="status-label">Integração ERP</span>
-        <span class="status-val" style="color:#00ff88">Online</span>
+      <div class="status-item" id="homeStatFat">
+        <div class="status-dot" id="homeStatFatDot" style="background:var(--text3)"></div>
+        <span class="status-label">Faturamento</span>
+        <span class="status-val" id="homeStatFatVal" style="color:var(--text3)">Aguardando</span>
       </div>
-      <div class="status-item">
-        <div class="status-dot" style="background:#00ff88;box-shadow:0 0 6px #00ff88"></div>
-        <span class="status-label">API Rastreamento</span>
-        <span class="status-val" style="color:#00ff88">Online</span>
+      <div class="status-item" id="homeStatFatNext" style="display:none">
+        <div class="status-dot" style="background:var(--neon)"></div>
+        <span class="status-label">Próx. atualização</span>
+        <span class="status-val" id="homeStatFatNextVal" style="color:var(--neon)">—</span>
       </div>
-      <div class="status-item">
-        <div class="status-dot" style="background:#f5c518"></div>
-        <span class="status-label">Sync Excel/ERP</span>
-        <span class="status-val" style="color:#f5c518">Standby</span>
+      <div class="status-item" style="margin-left:auto">
+        <span class="status-label" style="font-size:10px;color:var(--text3)">Auto-refresh:</span>
+        <select id="homeRefreshInterval" onchange="fatSetRefreshInterval(this.value)"
+          style="background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;padding:2px 6px;font-family:Barlow,sans-serif;cursor:pointer">
+          <option value="0">Desativado</option>
+          <option value="5">5 min</option>
+          <option value="10" selected>10 min</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+        </select>
       </div>
     </div>
 
@@ -1499,6 +1505,20 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
         <button class="fat-apply-btn" onclick="fatApplyFilters()">Aplicar</button>
         <button class="fat-apply-btn" style="background:transparent;border-color:var(--border);color:var(--text2)" onclick="fatClearFilters()">Limpar</button>
+      </div>
+
+      <!-- BARRA DE STATUS INLINE -->
+      <div id="fatInlineStatus" style="display:none;align-items:center;justify-content:space-between;margin-bottom:16px;padding:8px 14px;background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.12);border-radius:8px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2)">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green)" id="fatInlineDot"></div>
+          Última atualização: <span id="fatInlineTime" style="color:var(--green);font-family:Space Mono,monospace">—</span>
+          &nbsp;·&nbsp; <span id="fatInlineCount" style="color:var(--text2)">0 registros</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--text3)">Próxima atualização:</span>
+          <span id="fatInlineNext" style="font-size:11px;font-family:Space Mono,monospace;color:var(--neon)">—</span>
+          <button onclick="fatLoadData(false)" style="padding:4px 12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);border-radius:6px;color:var(--green);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
+        </div>
       </div>
 
       <!-- CONTEÚDO (KPIs + charts + tabela) -->
@@ -2210,6 +2230,11 @@ function switchTranspTab(tab) {
   document.querySelectorAll('.transp-tab').forEach(t => t.classList.toggle('active', t.dataset.transpTab === tab));
   document.querySelectorAll('.transp-tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('transp-panel-' + tab).classList.add('active');
+  // Auto-carrega faturamento na primeira vez que entra na aba
+  if (tab === 'faturamento' && fatRawData.length === 0) {
+    const url = document.getElementById('fatUrlInput').value.trim();
+    if (url) fatLoadData(false);
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -2331,36 +2356,123 @@ function fatNormTipo(v) {
   return s || '—';
 }
 
-async function fatLoadData() {
+// ── AUTO-REFRESH STATE ────────────────────────
+let fatRefreshTimer   = null;
+let fatRefreshSeconds = 600; // default 10 min
+let fatCountdownTimer = null;
+let fatNextRefreshAt  = null;
+let fatLastUpdated    = null;
+
+async function fatLoadData(silent = false) {
   const url = document.getElementById('fatUrlInput').value.trim();
   if (!url) { fatSetStatus('⚠ Cole a URL CSV da planilha publicada.', 'var(--yellow)'); return; }
 
   const btn = document.getElementById('fatLoadBtn');
-  btn.disabled = true;
-  fatSetStatus('Carregando...', 'var(--neon)');
-  document.getElementById('fatContent').innerHTML = `
-    <div class="fat-empty"><div class="fat-spinner"></div><h3>Buscando dados...</h3><p>Conectando ao Google Sheets</p></div>`;
+  if (btn) btn.disabled = true;
+  fatSetStatus('Atualizando...', 'var(--neon)');
+  fatHomeStatus('syncing');
+
+  // Só mostra spinner na primeira carga (sem dados ainda)
+  if (!silent && fatRawData.length === 0) {
+    document.getElementById('fatContent').innerHTML =
+      '<div class="fat-empty"><div class="fat-spinner"></div><h3>Buscando dados...</h3><p>Conectando ao Google Sheets</p></div>';
+  }
 
   try {
-    // Fetch direto — planilhas publicadas como CSV pelo Google suportam CORS nativamente
-    const res = await fetch(url, { mode: 'cors' });
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' — verifique se a planilha está publicada');
+    const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const csvText = await res.text();
-    if (!csvText || csvText.trim().length < 5) throw new Error('Resposta vazia ou inválida');
+    if (!csvText || csvText.trim().length < 5) throw new Error('Resposta vazia');
     if (csvText.trim().startsWith('<!DOCTYPE') || csvText.trim().startsWith('<html')) {
-      throw new Error('Google retornou HTML em vez de CSV — confirme que a aba está publicada como CSV');
+      throw new Error('Google retornou HTML — confirme que a aba está publicada como CSV');
     }
     fatParseCSV(csvText);
+    fatLastUpdated = new Date();
+    fatHomeStatus('ok');
+    // Reagenda próxima atualização
+    if (fatRefreshSeconds > 0) fatScheduleNext();
   } catch(e) {
-    fatSetStatus('❌ Erro: ' + e.message, 'var(--red)');
-    document.getElementById('fatContent').innerHTML = `
-      <div class="fat-empty">
-        <div class="fat-empty-icon" style="border-color:rgba(255,61,90,0.2)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff3d5a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
-        <h3>Não foi possível carregar</h3>
-        <p>Verifique se a planilha está publicada como CSV (Arquivo → Publicar na Web → CSV) e se a URL está correta.<br><br><em style="color:var(--red);font-size:11px">${e.message}</em></p>
-      </div>`;
+    fatSetStatus('❌ ' + e.message, 'var(--red)');
+    fatHomeStatus('error');
+    if (fatRawData.length === 0) {
+      document.getElementById('fatContent').innerHTML =
+        '<div class="fat-empty">' +
+        '<div class="fat-empty-icon" style="border-color:rgba(255,61,90,0.2)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff3d5a" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>' +
+        '<h3>Não foi possível carregar</h3>' +
+        '<p><em style="color:var(--red);font-size:12px">' + e.message + '</em></p>' +
+        '<p style="margin-top:10px;font-size:12px;color:var(--text2)">Confirme que a URL é do tipo /pub?gid=...&output=csv</p></div>';
+    }
   } finally {
-    btn.disabled = false;
+    if (btn) btn.disabled = false;
+  }
+}
+
+function fatSetRefreshInterval(minutes) {
+  fatRefreshSeconds = parseInt(minutes) * 60;
+  clearInterval(fatRefreshTimer);
+  clearInterval(fatCountdownTimer);
+  fatNextRefreshAt = null;
+  const el = document.getElementById('homeStatFatNext');
+  if (el) el.style.display = 'none';
+  if (fatRefreshSeconds > 0 && fatLastUpdated) fatScheduleNext();
+}
+
+function fatScheduleNext() {
+  clearTimeout(fatRefreshTimer);
+  clearInterval(fatCountdownTimer);
+  fatNextRefreshAt = new Date(Date.now() + fatRefreshSeconds * 1000);
+  const el = document.getElementById('homeStatFatNext');
+  if (el) el.style.display = '';
+  fatUpdateCountdown();
+  fatCountdownTimer = setInterval(fatUpdateCountdown, 10000);
+  fatRefreshTimer   = setTimeout(() => fatLoadData(true), fatRefreshSeconds * 1000);
+}
+
+function fatUpdateCountdown() {
+  if (!fatNextRefreshAt) return;
+  const diff = Math.max(0, Math.round((fatNextRefreshAt - Date.now()) / 1000));
+  const m = Math.floor(diff / 60), s = diff % 60;
+  const txt = m > 0 ? m + 'min ' + String(s).padStart(2,'0') + 's' : s + 's';
+  const el = document.getElementById('homeStatFatNextVal');
+  if (el) el.textContent = txt;
+  const el2 = document.getElementById('fatInlineNext');
+  if (el2) el2.textContent = txt;
+}
+
+function fatHomeStatus(state) {
+  const dot = document.getElementById('homeStatFatDot');
+  const val = document.getElementById('homeStatFatVal');
+  const inlineBar = document.getElementById('fatInlineStatus');
+  if (!dot || !val) return;
+  if (state === 'ok') {
+    const t = new Date();
+    const ts = t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+    dot.style.cssText = 'background:var(--green);box-shadow:0 0 6px var(--green)';
+    val.style.color = 'var(--green)';
+    val.textContent = 'Atualizado ' + t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+    // Inline bar
+    if (inlineBar) {
+      inlineBar.style.display = 'flex';
+      const timeEl = document.getElementById('fatInlineTime');
+      const countEl = document.getElementById('fatInlineCount');
+      if (timeEl) timeEl.textContent = ts;
+      if (countEl) countEl.textContent = fatFiltered.length + ' registros exibidos · ' + fatRawData.length + ' total';
+    }
+  } else if (state === 'syncing') {
+    dot.style.cssText = 'background:var(--neon);box-shadow:0 0 6px var(--neon)';
+    val.style.color = 'var(--neon)';
+    val.textContent = 'Sincronizando...';
+  } else if (state === 'error') {
+    dot.style.cssText = 'background:var(--red)';
+    val.style.color = 'var(--red)';
+    val.textContent = 'Erro na última sync';
+    if (inlineBar) {
+      inlineBar.style.display = 'flex';
+      const timeEl = document.getElementById('fatInlineTime');
+      if (timeEl) { timeEl.textContent = 'Falha'; timeEl.style.color = 'var(--red)'; }
+      const inlineDot = document.getElementById('fatInlineDot');
+      if (inlineDot) inlineDot.style.cssText = 'width:7px;height:7px;border-radius:50%;background:var(--red)';
+    }
   }
 }
 
@@ -2698,6 +2810,15 @@ function fatLoadFile(input) {
 
 // ── INIT ──────────────────────────────────────
 cpRenderHistory();
+
+// Inicia auto-refresh do Faturamento assim que a página carrega
+// (primeiro carregamento acontece quando o usuário abre a aba Faturamento)
+(function initFatRefresh() {
+  const sel = document.getElementById('homeRefreshInterval');
+  if (sel) {
+    fatRefreshSeconds = parseInt(sel.value) * 60;
+  }
+})();
 </script>
 </body>
 </html>
