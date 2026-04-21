@@ -1424,62 +1424,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   <div class="transp-tab-panel" id="transp-panel-faturamento">
     <div id="fat-panel">
 
-      <!-- MODOS DE IMPORTAÇÃO -->
-      <div style="display:flex;gap:0;margin-bottom:18px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
-        <button id="fatModeUrlBtn" onclick="fatSetMode('url')" style="flex:1;padding:10px;background:rgba(0,255,136,0.1);border:none;color:var(--green);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;cursor:pointer;border-right:1px solid var(--border)">
-          🔗 Carregar via URL (Google Sheets)
-        </button>
-        <button id="fatModeFileBtn" onclick="fatSetMode('file')" style="flex:1;padding:10px;background:transparent;border:none;color:var(--text2);font-family:'Barlow',sans-serif;font-size:12px;font-weight:600;cursor:pointer">
-          📁 Importar arquivo CSV
-        </button>
-      </div>
-
-      <!-- MODO URL -->
-      <div id="fatModeUrl">
-        <div class="fat-help-box">
-          <strong>🔗 Carregar do Google Sheets:</strong> a planilha precisa estar publicada.
-          <ol style="margin-top:6px">
-            <li>Na planilha → <strong>Arquivo → Compartilhar → Publicar na Web</strong></li>
-            <li>Selecione a aba <strong>"Faturamento"</strong> e formato <strong>CSV</strong> → Publicar</li>
-            <li>Cole o link gerado abaixo e clique em <strong>Carregar</strong></li>
-          </ol>
-          <div style="margin-top:8px;padding:8px 10px;background:rgba(245,197,24,0.06);border:1px solid rgba(245,197,24,0.15);border-radius:6px;font-size:11px;color:var(--yellow)">
-            ⚠ Se o painel for aberto como arquivo local (<code>file://</code>), o browser pode bloquear a requisição por segurança. Nesse caso use a opção <strong>Importar arquivo CSV</strong>.
-          </div>
-        </div>
-        <div class="fat-config-bar">
-          <label>URL CSV:</label>
-          <input type="text" class="fat-url-input" id="fatUrlInput"
-            placeholder="https://docs.google.com/spreadsheets/d/.../pub?gid=...&output=csv"
-            value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSM0E2ffi7l7T3up6OaMBEVGpIZacPH_105BRdV6zXDuFkkhCKYjjAWPX8GwF_QcMpUmJh3JZzI269j/pub?gid=1553494155&single=true&output=csv">
-          <button class="fat-load-btn" id="fatLoadBtn" onclick="fatLoadData()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
-            Carregar
-          </button>
-          <span class="fat-status-text" id="fatStatusText" style="color:var(--text3)">Aguardando...</span>
-        </div>
-      </div>
-
-      <!-- MODO ARQUIVO -->
-      <div id="fatModeFile" style="display:none">
-        <div class="fat-help-box">
-          <strong>📁 Importar arquivo CSV:</strong> exporte a aba "Faturamento" manualmente e importe aqui.
-          <ol style="margin-top:6px">
-            <li>No Google Sheets → <strong>Arquivo → Fazer download → CSV</strong></li>
-            <li>Salve o arquivo no seu computador</li>
-            <li>Clique em <strong>Selecionar arquivo CSV</strong> abaixo</li>
-          </ol>
-        </div>
-        <div class="fat-config-bar">
-          <label>Arquivo CSV:</label>
-          <input type="file" id="fatFileInput" accept=".csv,.txt" style="display:none" onchange="fatLoadFile(this)">
-          <button class="fat-load-btn" onclick="document.getElementById('fatFileInput').click()">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            Selecionar arquivo CSV
-          </button>
-          <span class="fat-status-text" id="fatStatusTextFile" style="color:var(--text3)">Nenhum arquivo selecionado</span>
-        </div>
-      </div>
+      <!-- URL oculta — usada pelo auto-refresh -->
+      <input type="hidden" id="fatUrlInput" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSM0E2ffi7l7T3up6OaMBEVGpIZacPH_105BRdV6zXDuFkkhCKYjjAWPX8GwF_QcMpUmJh3JZzI269j/pub?gid=1553494155&single=true&output=csv">
+      <input type="hidden" id="fatLoadBtn">
+      <span id="fatStatusText" style="display:none"></span>
 
       <!-- FILTROS -->
       <div class="fat-filters" id="fatFilters" style="display:none">
