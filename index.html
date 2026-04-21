@@ -1392,19 +1392,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div>
     <!-- ABAS INTERNAS DO TRANSPORTE -->
     <div class="transp-tabs-bar">
-      <div class="transp-tab active" data-transp-tab="frota" onclick="switchTranspTab('frota')">
-        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Frota & Rotas
-      </div>
-      <div class="transp-tab" data-transp-tab="faturamento" onclick="switchTranspTab('faturamento')">
+      <div class="transp-tab active" data-transp-tab="faturamento" onclick="switchTranspTab('faturamento')">
         <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         Faturamento
+      </div>
+      <div class="transp-tab" data-transp-tab="frota" onclick="switchTranspTab('frota')">
+        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Frota & Rotas
       </div>
     </div>
   </div>
 
   <!-- ABA: FROTA & ROTAS -->
-  <div class="transp-tab-panel active" id="transp-panel-frota">
+  <div class="transp-tab-panel" id="transp-panel-frota">
     <div class="transp-inner" id="transpContent">
       <div style="text-align:center;padding:80px 0">
         <div style="width:80px;height:80px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green)">
@@ -1421,7 +1421,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   </div>
 
   <!-- ABA: FATURAMENTO -->
-  <div class="transp-tab-panel" id="transp-panel-faturamento">
+  <div class="transp-tab-panel active" id="transp-panel-faturamento">
     <div id="fat-panel">
 
       <!-- URL oculta — usada pelo auto-refresh -->
@@ -1495,6 +1495,7 @@ function navigate(view) {
   });
   window.scrollTo(0,0);
   if (view === 'logistica') cpRenderHistory();
+  if (view === 'transporte') onTranspOpen();
 }
 
 // ══════════════════════════════════════════════
@@ -2178,8 +2179,15 @@ function switchTranspTab(tab) {
   document.querySelectorAll('.transp-tab').forEach(t => t.classList.toggle('active', t.dataset.transpTab === tab));
   document.querySelectorAll('.transp-tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('transp-panel-' + tab).classList.add('active');
-  // Auto-carrega faturamento na primeira vez que entra na aba
   if (tab === 'faturamento' && fatRawData.length === 0) {
+    const url = document.getElementById('fatUrlInput').value.trim();
+    if (url) fatLoadData(false);
+  }
+}
+
+// Auto-load faturamento na abertura do módulo (é a primeira aba agora)
+function onTranspOpen() {
+  if (fatRawData.length === 0) {
     const url = document.getElementById('fatUrlInput').value.trim();
     if (url) fatLoadData(false);
   }
@@ -2502,16 +2510,17 @@ function fatApplyFilters() {
   const dtFim = document.getElementById('fatFiltroDataFim').value;
   const busca = document.getElementById('fatFiltroBusca').value.toLowerCase();
 
+  const dIni = fatInputToDate(dtIni, false);
+  const dFim = fatInputToDate(dtFim, true);
+
   fatFiltered = fatRawData.filter(r => {
     if (tipo && r.tipo !== tipo) return false;
     if (busca && !r.cte.toLowerCase().includes(busca) && !r.remetente.toLowerCase().includes(busca) && !r.dest.toLowerCase().includes(busca)) return false;
-    // data filtering (basic)
-    if (dtIni || dtFim) {
+    if (dIni || dFim) {
       const d = fatParseDate(r.data);
-      if (d) {
-        if (dtIni && d < new Date(dtIni)) return false;
-        if (dtFim && d > new Date(dtFim + 'T23:59:59')) return false;
-      }
+      if (!d) return true; // sem data: não filtra
+      if (dIni && d < dIni) return false;
+      if (dFim && d > dFim) return false;
     }
     return true;
   });
@@ -2529,12 +2538,34 @@ function fatClearFilters() {
 
 function fatParseDate(s) {
   if (!s) return null;
-  // tenta dd/mm/yyyy
-  const m = String(s).match(/(\d{2})\/(\d{2})\/(\d{4})/);
-  if (m) return new Date(`${m[3]}-${m[2]}-${m[1]}`);
-  // tenta yyyy-mm-dd
-  if (/\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+  const str = String(s).trim();
+  // dd/mm/yyyy  (formato brasileiro)
+  const m1 = str.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (m1) return new Date(+m1[3], +m1[2]-1, +m1[1]); // sem timezone — local
+  // dd/mm/yy
+  const m2 = str.match(/^(\d{2})\/(\d{2})\/(\d{2})$/);
+  if (m2) return new Date(2000 + +m2[3], +m2[2]-1, +m2[1]);
+  // yyyy-mm-dd
+  const m3 = str.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m3) return new Date(+m3[1], +m3[2]-1, +m3[3]);
+  // dd-mm-yyyy
+  const m4 = str.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (m4) return new Date(+m4[3], +m4[2]-1, +m4[1]);
   return null;
+}
+
+// Converte Date de filtro (yyyy-mm-dd string do input) para Date local
+function fatInputToDate(s, endOfDay) {
+  if (!s) return null;
+  const [y,m,d] = s.split('-').map(Number);
+  return endOfDay ? new Date(y, m-1, d, 23, 59, 59) : new Date(y, m-1, d, 0, 0, 0);
+}
+
+// Formata data como dd/mm para labels do gráfico
+function fatFmtLabel(s) {
+  const d = fatParseDate(s);
+  if (!d) return s;
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
 }
 
 function fatRenderAll() {
@@ -2664,18 +2695,49 @@ function fatRenderAll() {
       scales: { y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v } } } }
   });
 
-  // ── LINHA DIÁRIA ──
+  // ── EVOLUÇÃO DIÁRIA ──
+  // Labels formatados dd/mm, ordenados cronologicamente
+  const diasLabels = diasSort.map(d => fatFmtLabel(d));
   fatCharts.dia = new Chart(document.getElementById('fatChartDia'), {
     type: 'bar',
     data: {
-      labels: diasSort,
+      labels: diasLabels,
       datasets: [
-        { label: 'Saída',   data: diasSort.map(d => porDia[d]?.saida  ||0), backgroundColor: 'rgba(0,212,255,0.55)', borderRadius: 4 },
-        { label: 'Retorno', data: diasSort.map(d => porDia[d]?.retorno||0), backgroundColor: 'rgba(155,107,255,0.55)', borderRadius: 4 },
+        {
+          label: 'Saída',
+          data: diasSort.map(d => porDia[d]?.saida || 0),
+          backgroundColor: 'rgba(0,212,255,0.55)',
+          borderColor: '#00d4ff',
+          borderWidth: 1,
+          borderRadius: 4,
+        },
+        {
+          label: 'Retorno',
+          data: diasSort.map(d => porDia[d]?.retorno || 0),
+          backgroundColor: 'rgba(155,107,255,0.55)',
+          borderColor: '#9b6bff',
+          borderWidth: 1,
+          borderRadius: 4,
+        },
       ]
     },
-    options: { responsive: true, plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: c => ' ' + fatFmt(c.raw) } } },
-      scales: { x: { stacked: true }, y: { stacked: true, ticks: { callback: v => fatFmtShort(v) } } } }
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: {
+          callbacks: {
+            label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
+            footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
+          }
+        }
+      },
+      scales: {
+        x: { stacked: true, ticks: { maxRotation: 45, font: { size: 10 } } },
+        y: { stacked: true, ticks: { callback: v => fatFmtShort(v) }, beginAtZero: true }
+      }
+    }
   });
 }
 
