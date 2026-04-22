@@ -2282,13 +2282,12 @@ let fatCharts    = {};
 
 // Colunas esperadas (case-insensitive, busca parcial)
 const FAT_COLS = {
-  vlrCte:    ['VLR TOTAL CTE','VALOR CTE','VLR CTE','VALOR TOTAL CTE'],
-  tipoFrete: ['TIPO DE FRETE','TIPO FRETE','TIPO_FRETE'],
+  vlrCte:    ['VLR TOTAL CTE','VALOR TOTAL CTE','VLR CTE','VALOR CTE'],
+  tipoFrete: ['TIPO FRETE','TIPO DE FRETE','TIPO_FRETE'],
   pesoBrt:   ['PESO BRT','PESO BRUTO','PESOB','PESO_BRT'],
-  data:      ['DATA','DT EMISSAO','DT EMISSÃO','DATA EMISSAO','DATA_EMISSAO','EMISSAO'],
-  cte:       ['CTE','NR CTE','NUMERO CTE','NR_CTE','CT-E'],
-  remetente: ['REMETENTE','CLIENTE','EMBARCADOR'],
-  destinatario:['DESTINATARIO','DESTINATÁRIO','DEST'],
+  data:      ['DT CTE','DT EMISSAO','DT EMISSÃO','DATA EMISSAO','DATA_EMISSAO','DATA','EMISSAO'],
+  cte:       ['COD CTE','CTE','NR CTE','NUMERO CTE','NR_CTE','CT-E'],
+  cliente:   ['CLIENTE','REMETENTE','EMBARCADOR','RAZAO SOCIAL','NOME'],
 };
 
 function fatFindCol(headers, candidates) {
@@ -2302,13 +2301,15 @@ function fatFindCol(headers, candidates) {
 
 function fatParseNumber(v) {
   if (v === null || v === undefined || v === '') return 0;
-  return parseFloat(String(v).replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,'')) || 0;
+  // Remove R$, espaços, pontos de milhar; troca vírgula decimal por ponto
+  const s = String(v).replace(/R\$\s*/g,'').replace(/\s/g,'').replace(/\./g,'').replace(',','.');
+  return parseFloat(s.replace(/[^0-9.\-]/g,'')) || 0;
 }
 
 function fatNormTipo(v) {
   const s = String(v).toUpperCase().trim();
-  if (s.includes('SAIDA') || s.includes('SAÍDA') || s === 'S') return 'SAIDA';
-  if (s.includes('RETORNO') || s === 'R') return 'RETORNO';
+  if (s === 'SAIDA' || s === 'SAÍDA' || s === 'S' || s.startsWith('SA')) return 'SAIDA';
+  if (s === 'RETORNO' || s === 'R' || s.startsWith('RET')) return 'RETORNO';
   return s || '—';
 }
 
@@ -2449,23 +2450,21 @@ function fatParseCSV(text) {
   }
 
   const headers = parseLine(lines[0]);
-  const colVlr  = fatFindCol(headers, FAT_COLS.vlrCte);
-  const colTipo = fatFindCol(headers, FAT_COLS.tipoFrete);
-  const colPeso = fatFindCol(headers, FAT_COLS.pesoBrt);
-  const colData = fatFindCol(headers, FAT_COLS.data);
-  const colCte  = fatFindCol(headers, FAT_COLS.cte);
-  const colRem  = fatFindCol(headers, FAT_COLS.remetente);
-  const colDest = fatFindCol(headers, FAT_COLS.destinatario);
+  const colVlr     = fatFindCol(headers, FAT_COLS.vlrCte);
+  const colTipo    = fatFindCol(headers, FAT_COLS.tipoFrete);
+  const colPeso    = fatFindCol(headers, FAT_COLS.pesoBrt);
+  const colData    = fatFindCol(headers, FAT_COLS.data);
+  const colCte     = fatFindCol(headers, FAT_COLS.cte);
+  const colCliente = fatFindCol(headers, FAT_COLS.cliente);
 
   // Mostra aviso de quais colunas foram ou não encontradas
   const colStatus = [
-    { nome: 'VLR TOTAL CTE', found: colVlr  >= 0, required: true  },
-    { nome: 'TIPO DE FRETE',  found: colTipo >= 0, required: true  },
-    { nome: 'PESO BRT',       found: colPeso >= 0, required: true  },
-    { nome: 'DATA',           found: colData >= 0, required: false },
-    { nome: 'CT-e',           found: colCte  >= 0, required: false },
-    { nome: 'REMETENTE',      found: colRem  >= 0, required: false },
-    { nome: 'DESTINATÁRIO',   found: colDest >= 0, required: false },
+    { nome: 'VLR TOTAL CTE', found: colVlr     >= 0, required: true  },
+    { nome: 'TIPO FRETE',    found: colTipo    >= 0, required: true  },
+    { nome: 'PESO BRT',      found: colPeso    >= 0, required: true  },
+    { nome: 'DT CTE',        found: colData    >= 0, required: false },
+    { nome: 'COD CTE',       found: colCte     >= 0, required: false },
+    { nome: 'CLIENTE',       found: colCliente >= 0, required: false },
   ];
   const missingRequired = colStatus.filter(c => c.required && !c.found);
   if (missingRequired.length === 3) {
@@ -2488,13 +2487,12 @@ function fatParseCSV(text) {
     const cols = parseLine(lines[i]);
     if (cols.every(c => !c)) continue;
     fatRawData.push({
-      cte:   colCte  >= 0 ? cols[colCte]  : (i).toString(),
-      data:  colData >= 0 ? cols[colData] : '',
-      remetente: colRem  >= 0 ? cols[colRem]  : '—',
-      dest:  colDest >= 0 ? cols[colDest] : '—',
-      vlr:   fatParseNumber(colVlr  >= 0 ? cols[colVlr]  : 0),
-      tipo:  fatNormTipo(colTipo >= 0 ? cols[colTipo] : ''),
-      peso:  fatParseNumber(colPeso >= 0 ? cols[colPeso] : 0),
+      cte:     colCte     >= 0 ? cols[colCte]     : String(i),
+      data:    colData    >= 0 ? cols[colData]     : '',
+      cliente: colCliente >= 0 ? cols[colCliente]  : '—',
+      vlr:     fatParseNumber(colVlr  >= 0 ? cols[colVlr]  : 0),
+      tipo:    fatNormTipo(colTipo >= 0 ? cols[colTipo] : ''),
+      peso:    fatParseNumber(colPeso >= 0 ? cols[colPeso] : 0),
     });
   }
 
@@ -2515,7 +2513,7 @@ function fatApplyFilters() {
 
   fatFiltered = fatRawData.filter(r => {
     if (tipo && r.tipo !== tipo) return false;
-    if (busca && !r.cte.toLowerCase().includes(busca) && !r.remetente.toLowerCase().includes(busca) && !r.dest.toLowerCase().includes(busca)) return false;
+    if (busca && !r.cte.toLowerCase().includes(busca) && !r.cliente.toLowerCase().includes(busca)) return false;
     if (dIni || dFim) {
       const d = fatParseDate(r.data);
       if (!d) return true; // sem data: não filtra
@@ -2632,7 +2630,7 @@ function fatRenderAll() {
     <!-- CHARTS -->
     <div class="fat-charts-grid">
       <div class="fat-chart-card">
-        <div class="fat-chart-title">Faturamento por Tipo de Frete<span id="fatPizzaLegend" style="font-size:10px;color:var(--text3);font-weight:400"></span></div>
+        <div class="fat-chart-title">Faturamento por Tipo de Frete</div>
         <div class="fat-chart-container"><canvas id="fatChartPizza"></canvas></div>
       </div>
       <div class="fat-chart-card">
@@ -2642,6 +2640,10 @@ function fatRenderAll() {
       <div class="fat-chart-card full">
         <div class="fat-chart-title">Evolução Diária do Faturamento</div>
         <div class="fat-chart-container"><canvas id="fatChartDia" style="max-height:220px"></canvas></div>
+      </div>
+      <div class="fat-chart-card full">
+        <div class="fat-chart-title">Top 5 Clientes — Frete Retorno <span style="font-size:10px;color:var(--text3);font-weight:400">(por valor faturado)</span></div>
+        <div class="fat-chart-container"><canvas id="fatChartTop5" style="max-height:220px"></canvas></div>
       </div>
     </div>
 
@@ -2659,11 +2661,10 @@ function fatRenderAll() {
           <thead><tr>
             <th onclick="fatSortTable(0)">CT-e ↕</th>
             <th onclick="fatSortTable(1)">Data ↕</th>
-            <th onclick="fatSortTable(2)">Remetente ↕</th>
-            <th onclick="fatSortTable(3)">Destinatário ↕</th>
-            <th onclick="fatSortTable(4)">Tipo Frete ↕</th>
-            <th onclick="fatSortTable(5)">Vlr CT-e (R$) ↕</th>
-            <th onclick="fatSortTable(6)">Peso BRT (kg) ↕</th>
+            <th onclick="fatSortTable(2)">Cliente ↕</th>
+            <th onclick="fatSortTable(3)">Tipo Frete ↕</th>
+            <th onclick="fatSortTable(4)">Vlr CT-e (R$) ↕</th>
+            <th onclick="fatSortTable(5)">Peso BRT (kg) ↕</th>
           </tr></thead>
           <tbody id="fatTbody"></tbody>
         </table>
@@ -2694,6 +2695,65 @@ function fatRenderAll() {
     options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + Math.round(c.raw).toLocaleString('pt-BR') + ' kg' } } },
       scales: { y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v } } } }
   });
+
+  // ── TOP 5 CLIENTES RETORNO ──
+  const retornoClientes = {};
+  fatFiltered.filter(r => r.tipo === 'RETORNO').forEach(r => {
+    const cli = r.cliente || '—';
+    retornoClientes[cli] = (retornoClientes[cli] || 0) + r.vlr;
+  });
+  const top5 = Object.entries(retornoClientes)
+    .sort((a,b) => b[1]-a[1])
+    .slice(0,5);
+
+  if (top5.length > 0) {
+    const maxVal = top5[0][1];
+    const top5Labels = top5.map(([k]) => k.length > 28 ? k.slice(0,26)+'…' : k);
+    const top5Colors = ['rgba(155,107,255,0.75)','rgba(155,107,255,0.62)','rgba(155,107,255,0.50)','rgba(155,107,255,0.38)','rgba(155,107,255,0.28)'];
+    fatCharts.top5 = new Chart(document.getElementById('fatChartTop5'), {
+      type: 'bar',
+      data: {
+        labels: top5Labels,
+        datasets: [{
+          label: 'Faturamento Retorno',
+          data: top5.map(([,v]) => v),
+          backgroundColor: top5Colors,
+          borderColor: top5Colors.map(c => c.replace('0.','1.').replace(/,[^,]+\)$/,')')),
+          borderWidth: 1,
+          borderRadius: 6,
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => '  ' + fatFmt(c.raw) } }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { callback: v => fatFmtShort(v) },
+            grid: { color: 'rgba(255,255,255,0.04)' }
+          },
+          y: {
+            ticks: { font: { size: 11 } },
+            grid: { display: false }
+          }
+        }
+      }
+    });
+  } else {
+    const canvas = document.getElementById('fatChartTop5');
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      canvas.height = 60;
+      ctx.fillStyle = 'rgba(155,107,255,0.3)';
+      ctx.font = '13px Barlow, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Nenhum CT-e de Retorno no período selecionado', canvas.width/2, 35);
+    }
+  }
 
   // ── EVOLUÇÃO DIÁRIA ──
   // Labels formatados dd/mm, ordenados cronologicamente
@@ -2749,10 +2809,9 @@ function fatRenderTableRows(rows) {
   if (!tbody) return;
   const tagTipo = t => t==='SAIDA'?`<span class="fat-tag-saida">Saída</span>`:t==='RETORNO'?`<span class="fat-tag-retorno">Retorno</span>`:`<span class="fat-tag-outro">${t}</span>`;
   tbody.innerHTML = rows.map(r=>`<tr>
-    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte||'—'}</td>
     <td>${r.data||'—'}</td>
-    <td>${r.remetente}</td>
-    <td>${r.dest}</td>
+    <td>${r.cliente||'—'}</td>
     <td>${tagTipo(r.tipo)}</td>
     <td class="num" style="color:var(--green)">${fatFmt(r.vlr)}</td>
     <td class="num">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
@@ -2771,9 +2830,10 @@ function fatSortTable(col) {
   const asc = fatSortDir[col];
   fatFiltered.sort((a,b) => {
     const vals = [
-      [a.cte,b.cte], [a.data,b.data], [a.remetente,b.remetente], [a.dest,b.dest],
+      [a.cte,b.cte], [a.data,b.data], [a.cliente,b.cliente],
       [a.tipo,b.tipo], [a.vlr,b.vlr], [a.peso,b.peso]
     ][col];
+    if (!vals) return 0;
     if (typeof vals[0] === 'number') return asc ? vals[0]-vals[1] : vals[1]-vals[0];
     return asc ? String(vals[0]).localeCompare(String(vals[1]),'pt-BR') : String(vals[1]).localeCompare(String(vals[0]),'pt-BR');
   });
