@@ -1667,9 +1667,7 @@ function cpParseCSVText(csvText) {
     }
     result.push(cur.trim()); return result;
   }
-  const lines = csvText.split(/
-?
-/).filter(l => l.trim());
+  const lines = csvText.split(/\r?\n/).filter(l => l.trim());
   if (lines.length < 2) return;
   const rawHeaders = parseLine(lines[0]);
   const headers = rawHeaders.map(h => String(h).trim().toUpperCase());
