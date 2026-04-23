@@ -902,6 +902,11 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <span class="status-label">Painel</span>
         <span class="status-val" style="color:var(--green)">Online</span>
       </div>
+      <div class="status-item" id="homeStatCp">
+        <div class="status-dot" id="homeStatCpDot" style="background:var(--text3)"></div>
+        <span class="status-label">Carteira</span>
+        <span class="status-val" id="homeStatCpVal" style="color:var(--text3)">Aguardando</span>
+      </div>
       <div class="status-item" id="homeStatFat">
         <div class="status-dot" id="homeStatFatDot" style="background:var(--text3)"></div>
         <span class="status-label">Faturamento</span>
@@ -1120,7 +1125,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           Carteira de <span class="cp-logo-accent">&nbsp;Pedidos</span>
         </div>
-        <span class="cp-update" id="cpLastUpdate">Nenhum arquivo carregado</span>
+        <span class="cp-update" id="cpLastUpdate" style="font-family:Space Mono,monospace;font-size:11px;color:var(--text3)">Sincronizando...</span>
       </div>
 
       <!-- TABS -->
@@ -1134,16 +1139,30 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="cp-tab" data-tab="assistencia">Assistência</div>
       </div>
 
-      <!-- UPLOAD -->
-      <div class="cp-upload-bar">
-        <button class="cp-upload-btn" onclick="document.getElementById('cpFileInput').click()">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-          </svg>
-          Carregar Excel
-        </button>
-        <input type="file" id="cpFileInput" accept=".xls,.xlsx,.csv" onchange="cpLoadFile(event)" style="display:none">
-        <span class="cp-upload-info" id="cpUploadInfo">Selecione a planilha exportada do ERP (.xls, .xlsx)</span>
+      <!-- URL oculta Google Sheets -->
+      <input type="hidden" id="cpSheetUrl" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pub?gid=355877725&single=true&output=csv">
+
+      <!-- STATUS BAR AUTO-REFRESH -->
+      <div class="cp-upload-bar" id="cpStatusBar">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div id="cpStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
+          <span class="cp-upload-info" id="cpUploadInfo" style="margin:0">Carregando dados...</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
+          <span id="cpNextRefresh" style="font-size:11px;color:var(--text3);font-family:Space Mono,monospace;display:none"></span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:var(--text3)">Auto-refresh:</span>
+            <select id="cpRefreshInterval" onchange="cpSetRefreshInterval(this.value)"
+              style="background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;padding:2px 6px;font-family:Barlow,sans-serif;cursor:pointer">
+              <option value="0">Desativado</option>
+              <option value="5">5 min</option>
+              <option value="10" selected>10 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+            </select>
+          </div>
+          <button onclick="cpLoadSheet(false)" style="padding:4px 12px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);border-radius:6px;color:var(--neon);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
+        </div>
       </div>
 
       <!-- FILTERS -->
@@ -1494,7 +1513,7 @@ function navigate(view) {
     document.getElementById('view-'+v).style.display = v === view ? 'block' : 'none';
   });
   window.scrollTo(0,0);
-  if (view === 'logistica') cpRenderHistory();
+  if (view === 'logistica') { cpRenderHistory(); if (cpRawData.length === 0) cpLoadSheet(false); }
   if (view === 'transporte') onTranspOpen();
 }
 
@@ -1554,31 +1573,107 @@ document.querySelectorAll('.cp-tab').forEach(tab => {
 });
 
 // ── FILE LOAD ─────────────────────────────────
-function cpLoadFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  document.getElementById('cpUploadInfo').innerHTML = `<strong>Carregando ${file.name}...</strong>`;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try { cpParseFile(ev.target.result, file.name); }
-    catch(err) { alert('Erro ao ler arquivo: ' + err.message); }
-    finally { e.target.value = ''; }
-  };
-  reader.readAsArrayBuffer(file);
+// ── CARTEIRA AUTO-REFRESH STATE ───────────────
+let cpRefreshTimer   = null;
+let cpCountdownTimer = null;
+let cpRefreshSeconds = 600;
+let cpNextAt         = null;
+
+async function cpLoadSheet(silent = false) {
+  const url = document.getElementById('cpSheetUrl').value.trim();
+  if (!url) return;
+  cpSetStatus('syncing');
+  try {
+    const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    if (!text || text.trim().length < 5) throw new Error('Resposta vazia');
+    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html'))
+      throw new Error('Google retornou HTML — verifique se a planilha está publicada como CSV');
+    cpParseCSVText(text);
+    cpSetStatus('ok');
+    if (cpRefreshSeconds > 0) cpScheduleNext();
+  } catch(e) {
+    cpSetStatus('error', e.message);
+  }
 }
 
-function cpParseFile(buffer, name) {
-  const wb = XLSX.read(buffer, {type:'array'});
-  const ws = wb.Sheets[wb.SheetNames[0]];
-  let rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:'', blankrows:true, raw:false});
-  let headerIdx = 0;
-  for (let i = 0; i < Math.min(15, rows.length); i++) {
-    const cells = rows[i].map(c => String(c).trim().toUpperCase());
-    const hits = ['PEDIDO','CLIENTE','CARGA','REPRESENTANTE','BLOQUEIO','REGIAO'].filter(k => cells.includes(k));
-    if (hits.length >= 2) { headerIdx = i; break; }
+function cpSetRefreshInterval(minutes) {
+  cpRefreshSeconds = parseInt(minutes) * 60;
+  clearTimeout(cpRefreshTimer);
+  clearInterval(cpCountdownTimer);
+  cpNextAt = null;
+  document.getElementById('cpNextRefresh').style.display = 'none';
+  if (cpRefreshSeconds > 0 && cpRawData.length > 0) cpScheduleNext();
+}
+
+function cpScheduleNext() {
+  clearTimeout(cpRefreshTimer);
+  clearInterval(cpCountdownTimer);
+  cpNextAt = new Date(Date.now() + cpRefreshSeconds * 1000);
+  const el = document.getElementById('cpNextRefresh');
+  if (el) el.style.display = '';
+  cpUpdateCountdown();
+  cpCountdownTimer = setInterval(cpUpdateCountdown, 10000);
+  cpRefreshTimer   = setTimeout(() => cpLoadSheet(true), cpRefreshSeconds * 1000);
+}
+
+function cpUpdateCountdown() {
+  if (!cpNextAt) return;
+  const diff = Math.max(0, Math.round((cpNextAt - Date.now()) / 1000));
+  const m = Math.floor(diff / 60), s = diff % 60;
+  const el = document.getElementById('cpNextRefresh');
+  if (el) el.textContent = 'Próx: ' + (m > 0 ? m + 'min ' + String(s).padStart(2,'0') + 's' : s + 's');
+}
+
+function cpSetStatus(state, msg) {
+  const dot     = document.getElementById('cpStatusDot');
+  const info    = document.getElementById('cpUploadInfo');
+  const last    = document.getElementById('cpLastUpdate');
+  const homeDot = document.getElementById('homeStatCpDot');
+  const homeVal = document.getElementById('homeStatCpVal');
+  if (state === 'ok') {
+    const ts  = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    const ts2 = new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'});
+    if (dot)     { dot.style.background = 'var(--green)'; dot.style.boxShadow = '0 0 6px var(--green)'; }
+    if (info)    info.innerHTML = '<strong>' + cpRawData.length + ' pedidos</strong> carregados · Google Sheets';
+    if (last)    { last.textContent = 'Atualizado ' + ts; last.style.color = 'var(--green)'; }
+    if (homeDot) { homeDot.style.background = 'var(--green)'; homeDot.style.boxShadow = '0 0 6px var(--green)'; }
+    if (homeVal) { homeVal.textContent = 'Atualizado ' + ts2; homeVal.style.color = 'var(--green)'; }
+  } else if (state === 'syncing') {
+    if (dot)     { dot.style.background = 'var(--neon)'; dot.style.boxShadow = '0 0 6px var(--neon)'; }
+    if (info)    info.textContent = 'Sincronizando com Google Sheets...';
+    if (last)    { last.textContent = 'Sincronizando...'; last.style.color = 'var(--neon)'; }
+    if (homeDot) { homeDot.style.background = 'var(--neon)'; homeDot.style.boxShadow = '0 0 6px var(--neon)'; }
+    if (homeVal) { homeVal.textContent = 'Sincronizando...'; homeVal.style.color = 'var(--neon)'; }
+  } else if (state === 'error') {
+    if (dot)     { dot.style.background = 'var(--red)'; dot.style.boxShadow = ''; }
+    if (info)    info.innerHTML = '<span style="color:var(--red)">❌ Erro: ' + (msg||'') + '</span>';
+    if (last)    { last.textContent = 'Erro na sync'; last.style.color = 'var(--red)'; }
+    if (homeDot) { homeDot.style.background = 'var(--red)'; homeDot.style.boxShadow = ''; }
+    if (homeVal) { homeVal.textContent = 'Erro na sync'; homeVal.style.color = 'var(--red)'; }
   }
-  const headers = rows[headerIdx].map(h => String(h).trim().toUpperCase());
-  const dataRows = rows.slice(headerIdx+1).filter(r => r.some(c => c!==''&&c!==null&&c!==undefined));
+}
+
+function cpParseCSVText(csvText) {
+  // Parse CSV com suporte a aspas
+  function parseLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    result.push(cur.trim()); return result;
+  }
+  const lines = csvText.split(/
+?
+/).filter(l => l.trim());
+  if (lines.length < 2) return;
+  const rawHeaders = parseLine(lines[0]);
+  const headers = rawHeaders.map(h => String(h).trim().toUpperCase());
+  const dataRows = lines.slice(1).map(l => parseLine(l)).filter(r => r.some(c => c !== ''));
 
   const col = (exactKeys, partialKeys) => {
     for (const k of exactKeys) { const idx = headers.findIndex(h => h===k); if (idx>=0) return idx; }
@@ -1586,7 +1681,7 @@ function cpParseFile(buffer, name) {
     return -1;
   };
 
-  const iData    = col(['DATA VENDA'], ['DATA VENDA','DT VENDA']);
+  const iData    = col(['DATA VENDA','DT VENDA'], ['DATA VENDA','DT VENDA','DATA']);
   const iPedido  = col(['PEDIDO'], ['PEDIDO']);
   const iCliente = col(['CLIENTE'], ['CLIENTE']);
   const iRep     = col(['REPRESENTANTE'], ['REPRESENTANTE','REPRESENT']);
@@ -1673,8 +1768,7 @@ function cpParseFile(buffer, name) {
     };
   }).filter(r => r.pedido!==''&&r.valCarteira>0);
 
-  document.getElementById('cpUploadInfo').innerHTML = `<strong>${name}</strong> — ${cpRawData.length} pedidos carregados`;
-  document.getElementById('cpLastUpdate').textContent = 'Atualizado: '+new Date().toLocaleString('pt-BR');
+  // status updated via cpSetStatus('ok') after this function returns
   cpPopulateFilters();
   cpApplyFilters();
   document.getElementById('cpChartsGrid').style.display = 'grid';
@@ -2880,6 +2974,9 @@ function fatLoadFile(input) {
 
 // ── INIT ──────────────────────────────────────
 cpRenderHistory();
+// Inicia carregamento da Carteira ao abrir a página
+// Carrega Carteira automaticamente ao abrir a página
+setTimeout(() => cpLoadSheet(false), 500);
 
 // Inicia auto-refresh do Faturamento assim que a página carrega
 // (primeiro carregamento acontece quando o usuário abre a aba Faturamento)
