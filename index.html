@@ -1227,6 +1227,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
               <div class="cp-chart-container"><canvas id="cpChartPizza"></canvas></div>
             </div>
             <div class="cp-chart-card">
+              <div class="cp-chart-title">Distribuição da Carteira por Idade</div>
+              <div class="cp-chart-container"><canvas id="cpChartDistribuicao"></canvas></div>
+            </div>
+            <div class="cp-chart-card">
               <div class="cp-chart-title">Carteira por Representante</div>
               <div class="cp-chart-container"><canvas id="cpChartRep"></canvas></div>
             </div>
@@ -1837,6 +1841,7 @@ function cpRenderKPIs() {
   const disp     = d.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0);
   const blq      = d.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0);
   const peso     = d.reduce((s,r)=>s+r.pesoBrt,0);
+  const ate30    = d.filter(r=>r.dias<=30).reduce((s,r)=>s+r.valCarteira,0);
   const mais30   = d.filter(r=>r.dias>30).reduce((s,r)=>s+r.valCarteira,0);
   const mais60   = d.filter(r=>r.dias>60).reduce((s,r)=>s+r.valCarteira,0);
   const kpis = [
@@ -1845,13 +1850,15 @@ function cpRenderKPIs() {
     {label:'Disponível', value:fmt(disp), sub:`${d.filter(r=>r.statusCarga==='Disponível'&&r.bloqueio!=='BLQ').length} pedidos`, color:'#00ff88'},
     {label:'Bloqueado', value:fmt(blq), sub:`${d.filter(r=>r.bloqueio==='BLQ').length} pedidos`, color:'#ff3d5a'},
     {label:'Peso Total', value:fmtPeso(peso)+' kg', sub:'bruto', color:'#00e5cc'},
+    {label:'Carteira ≤ 30 dias', value:fmt(ate30), sub:`${cpPct(ate30,total)}% da carteira · ${d.filter(r=>r.dias<=30).length} pedidos`, color:'#00e5cc', highlight:true},
     {label:'Carteira > 30 dias', value:fmt(mais30), sub:`${cpPct(mais30,total)}% da carteira`, color:'#f5c518'},
     {label:'Carteira > 60 dias', value:fmt(mais60), sub:`${cpPct(mais60,total)}% da carteira`, color:'#ff7b2e'},
   ];
   document.getElementById('cpKpiGrid').innerHTML = kpis.map(k=>`
-    <div class="cp-kpi" style="--k-color:${k.color}">
+    <div class="cp-kpi${k.highlight?' cp-kpi--highlight':''}" style="--k-color:${k.color}${k.highlight?';background:rgba(0,229,204,0.07);border-color:rgba(0,229,204,0.25)':''}">
+      ${k.highlight?`<div style="position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);opacity:0.8;font-weight:700">DESTAQUE</div>`:''}
       <div class="cp-kpi-label">${k.label}</div>
-      <div class="cp-kpi-value">${k.value}</div>
+      <div class="cp-kpi-value" style="${k.highlight?'color:var(--teal)':''}">${k.value}</div>
       <div class="cp-kpi-sub">${k.sub}</div>
     </div>
   `).join('');
@@ -1882,7 +1889,76 @@ function cpDestroyChart(id) {
 }
 
 function cpRenderCharts() {
-  cpRenderMicroChart(); cpRenderPizzaChart(); cpRenderRepChart(); cpRenderIdadeChart();
+  cpRenderMicroChart(); cpRenderPizzaChart(); cpRenderRepChart(); cpRenderIdadeChart(); cpRenderDistribuicaoChart();
+}
+
+function cpRenderDistribuicaoChart() {
+  cpDestroyChart('cpChartDistribuicao');
+  const d = cpFilteredData;
+  const ate30  = d.filter(r=>r.dias<=30).reduce((s,r)=>s+r.valCarteira,0);
+  const de31a60= d.filter(r=>r.dias>30&&r.dias<=60).reduce((s,r)=>s+r.valCarteira,0);
+  const mais60 = d.filter(r=>r.dias>60).reduce((s,r)=>s+r.valCarteira,0);
+  const total  = ate30 + de31a60 + mais60;
+  if (!total) return;
+  const labels = ['≤ 30 dias','31–60 dias','> 60 dias'];
+  const vals   = [ate30, de31a60, mais60];
+  const bgs    = ['rgba(0,229,204,0.75)','rgba(245,197,24,0.75)','rgba(255,61,90,0.75)'];
+  const borders= ['#00e5cc','#f5c518','#ff3d5a'];
+
+  // Plugin que imprime % diretamente sobre cada fatia
+  const distPctPlugin = {
+    id: 'distPctLabel',
+    afterDatasetsDraw(chart) {
+      const {ctx, data} = chart;
+      const sum = data.datasets[0].data.reduce((a,b)=>a+b,0);
+      if (!sum) return;
+      chart.getDatasetMeta(0).data.forEach((arc, i) => {
+        const val = data.datasets[0].data[i];
+        const pct = Math.round(val / sum * 100);
+        if (pct < 3) return;
+        const {x, y} = arc.tooltipPosition();
+        ctx.save();
+        ctx.font = 'bold 13px Barlow, sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 4;
+        ctx.fillText(pct + '%', x, y);
+        ctx.restore();
+      });
+    }
+  };
+
+  cpCharts['cpChartDistribuicao'] = new Chart(document.getElementById('cpChartDistribuicao'), {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: vals,
+        backgroundColor: bgs,
+        borderColor: borders,
+        borderWidth: 2,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: '60%',
+      plugins: {
+        legend: { position: 'bottom', labels: { padding: 16, font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: c => {
+              const pct = Math.round(c.raw / total * 100);
+              return '  ' + fmt(c.raw) + '  (' + pct + '%)';
+            }
+          }
+        }
+      }
+    },
+    plugins: [distPctPlugin]
+  });
 }
 
 function cpSetMicroChart(mode, btn) {
