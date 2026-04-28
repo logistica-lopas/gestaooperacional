@@ -858,9 +858,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .fat-kpi-row { grid-template-columns: 1fr 1fr; }
   .fat-charts-grid { grid-template-columns: 1fr; }
   .fat-chart-card.full { grid-column: 1; }
-}
-
-@media (max-width: 800px) {
   .modules-grid, .soon-grid, .submod-grid { grid-template-columns: 1fr; }
   .cp-charts-grid { grid-template-columns: 1fr; }
   .cp-chart-card.full { grid-column: 1; }
@@ -961,6 +958,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="module-stat-lbl">Eficiência</div>
           </div>
         </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:-14px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">⚠ Dados ilustrativos — acesse o módulo para dados reais</div>
         <div class="module-footer">
           <div class="module-tags">
             <span class="module-tag" style="color:var(--neon);border-color:rgba(0,212,255,0.2)">SP</span>
@@ -1010,6 +1008,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="module-stat-lbl">KM/Mês</div>
           </div>
         </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:-14px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">⚠ Dados ilustrativos — acesse o módulo para dados reais</div>
         <div class="module-footer">
           <div class="module-tags" style="display:flex;gap:12px;align-items:center">
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)">
@@ -1407,7 +1406,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
         </div>
         <!-- Botão contextual: muda conforme aba ativa -->
-        <button id="transpImportBtn" class="transp-import-btn" onclick="transpLoadData()" style="display:none">
+        <button id="transpImportBtn" class="transp-import-btn" onclick="transpLoadData(this)" style="display:none">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           Simular Import ERP
         </button>
@@ -1421,7 +1420,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
       <div class="transp-tab" data-transp-tab="frota" onclick="switchTranspTab('frota')">
         <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Frota & Rotas
+        Frota & Rotas <span style="font-size:9px;padding:1px 5px;background:rgba(245,197,24,0.15);color:var(--yellow);border:1px solid rgba(245,197,24,0.3);border-radius:3px;margin-left:4px;letter-spacing:0.5px">DEMO</span>
       </div>
     </div>
   </div>
@@ -1435,7 +1434,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
         <div style="font-size:18px;font-weight:500;margin-bottom:8px">Nenhum dado carregado</div>
         <p style="color:var(--text2);font-size:13px">Clique em "Simular Import ERP" para popular o painel de frota</p>
-        <button class="transp-import-btn" onclick="transpLoadData()" style="margin:20px auto 0;display:inline-flex">
+        <button class="transp-import-btn" onclick="transpLoadData(this)" style="margin:20px auto 0;display:inline-flex">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
           Simular Import ERP
         </button>
@@ -1449,7 +1448,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
       <!-- URL oculta — usada pelo auto-refresh -->
       <input type="hidden" id="fatUrlInput" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSM0E2ffi7l7T3up6OaMBEVGpIZacPH_105BRdV6zXDuFkkhCKYjjAWPX8GwF_QcMpUmJh3JZzI269j/pub?gid=1553494155&single=true&output=csv">
-      <input type="hidden" id="fatLoadBtn">
       <span id="fatStatusText" style="display:none"></span>
 
       <!-- FILTROS -->
@@ -1549,6 +1547,16 @@ document.getElementById('submod-carteira').classList.add('active');
 Chart.defaults.color = '#7a8599';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
 Chart.defaults.font.family = 'Barlow, sans-serif';
+
+// ── SANITIZAÇÃO XSS ───────────────────────────
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 // ══════════════════════════════════════════════
 // CARTEIRA STATE
@@ -2055,7 +2063,7 @@ function cpRenderTableLogistica() {
   })).sort((a,b)=>b.emCarga+b.disponivel-(a.emCarga+a.disponivel));
   document.getElementById('tLogisticaBody').innerHTML = rows.map(r=>`
     <tr>
-      <td>${r.micro}</td>
+      <td>${esc(r.micro)}</td>
       <td class="num">${fmt(r.emCarga)}</td>
       <td class="num" style="color:var(--green)">${fmt(r.disponivel)}</td>
       <td class="num">${fmtPeso(r.pesoDisp)}</td>
@@ -2076,7 +2084,7 @@ function cpRenderTableRep() {
   })).sort((a,b)=>b.total-a.total);
   document.getElementById('tRepBody').innerHTML = rows.map(r=>`
     <tr>
-      <td>${r.rep}</td>
+      <td>${esc(r.rep)}</td>
       <td class="num">${fmt(r.emCarga)}</td>
       <td class="num" style="color:var(--green)">${fmt(r.disponivel)}</td>
       <td class="num" style="color:${r.bloqueado>0?'var(--red)':'inherit'}">${fmt(r.bloqueado)}</td>
@@ -2090,8 +2098,8 @@ function cpRenderTableBloqueios() {
     ? '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:24px">Nenhum pedido bloqueado</td></tr>'
     : blq.map(r=>`
     <tr>
-      <td>${r.cliente}</td>
-      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
+      <td>${esc(r.cliente)}</td>
+      <td>${esc(r.representante.split(' ').slice(0,2).join(' '))}</td>
       <td class="num">${fmt(r.valCarteira)}</td>
       <td class="num">
         <span class="badge badge-${r.semaforo==='red'?'red':r.semaforo==='orange'?'orange':'yellow'}">
@@ -2118,14 +2126,14 @@ function cpRenderDetPage() {
   const page = cpDetAllFiltered.slice(start, start+CP_PAGE_SIZE);
   document.getElementById('tDetalhesBody').innerHTML = page.map(r=>`
     <tr>
-      <td><span class="badge badge-blue">${r.pedido}</span></td>
-      <td>${r.dataVendaStr}</td>
-      <td>${r.cliente}</td>
-      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
-      <td>${r.cidade}</td>
+      <td><span class="badge badge-blue">${esc(r.pedido)}</span></td>
+      <td>${esc(r.dataVendaStr)}</td>
+      <td>${esc(r.cliente)}</td>
+      <td>${esc(r.representante.split(' ').slice(0,2).join(' '))}</td>
+      <td>${esc(r.cidade)}</td>
       <td class="num">${fmtPeso(r.pesoBrt)}</td>
       <td class="num">${fmt(r.valCarteira)}</td>
-      <td><span class="badge ${r.tipoFrete==='Retira'?'badge-yellow':'badge-blue'}">${r.tipoFrete}</span></td>
+      <td><span class="badge ${r.tipoFrete==='Retira'?'badge-yellow':'badge-blue'}">${esc(r.tipoFrete)}</span></td>
       <td>
         ${r.statusCarga==='Em Carga'?'<span class="badge badge-purple">Em Carga</span>':'<span class="badge badge-green">Disponível</span>'}
         ${r.bloqueio==='BLQ'?'<span class="badge badge-red">BLQ</span>':''}
@@ -2222,11 +2230,11 @@ function cpRenderTipoTab() {
     ? '<tr><td colspan="10" style="text-align:center;color:var(--text2);padding:24px">Nenhuma assistência encontrada</td></tr>'
     : tRows.map(r=>`
     <tr>
-      <td><span class="badge badge-blue">${r.pedido}</span></td>
-      <td>${r.dataVendaStr}</td>
-      <td>${r.cliente}</td>
-      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
-      <td>${r.micro}</td>
+      <td><span class="badge badge-blue">${esc(r.pedido)}</span></td>
+      <td>${esc(r.dataVendaStr)}</td>
+      <td>${esc(r.cliente)}</td>
+      <td>${esc(r.representante.split(' ').slice(0,2).join(' '))}</td>
+      <td>${esc(r.micro)}</td>
       <td class="num">${fmtPeso(r.pesoBrt)}</td>
       <td class="num">${fmt(r.valCarteira)}</td>
       <td>${r.statusCarga==='Em Carga'?'<span class="badge badge-purple">Em Carga</span>':'<span class="badge badge-green">Disponível</span>'}
@@ -2326,9 +2334,14 @@ function cpSortTable(tableId, colIdx) {
   rows.forEach(r=>tbody.appendChild(r));
 }
 
-// ── FORMAT UTILS ──────────────────────────────
-function fmt(n) { if(!n&&n!==0) return 'R$ 0'; return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
-function fmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
+// ── FORMAT UTILS (compartilhado Carteira + Faturamento) ──
+function fmtBRL(n) { if(!n&&n!==0) return 'R$ 0'; return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
+function fmtBRLShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
+// Aliases para compatibilidade com código existente
+function fmt(n)      { return fmtBRL(n); }
+function fmtShort(n) { return fmtBRLShort(n); }
+function fatFmt(n)      { return fmtBRL(n); }
+function fatFmtShort(n) { return fmtBRLShort(n); }
 function fmtPeso(n) { return Math.round(n).toLocaleString('pt-BR'); }
 function fmtPesoShort(n) { if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return Math.round(n); }
 function cpPct(a,b) { return b===0?0:Math.round((a/b)*100); }
@@ -2364,8 +2377,8 @@ function onTranspOpen() {
 // ══════════════════════════════════════════════
 // TRANSPORTE SIMULATED DATA (Frota)
 // ══════════════════════════════════════════════
-function transpLoadData() {
-  const btn = event.currentTarget;
+function transpLoadData(el) {
+  const btn = el || event.currentTarget;
   btn.textContent = 'Importando...';
   setTimeout(() => {
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> ↻ Re-importar`;
@@ -2492,8 +2505,7 @@ async function fatLoadData(silent = false) {
   const url = document.getElementById('fatUrlInput').value.trim();
   if (!url) { fatSetStatus('⚠ Cole a URL CSV da planilha publicada.', 'var(--yellow)'); return; }
 
-  const btn = document.getElementById('fatLoadBtn');
-  if (btn) btn.disabled = true;
+  const btn = null; // botão de load removido (auto-load via URL fixa)
   fatSetStatus('Atualizando...', 'var(--neon)');
   fatHomeStatus('syncing');
 
@@ -2969,17 +2981,14 @@ function fatRenderAll() {
   });
 }
 
-function fatFmt(n) { return 'R$ ' + Math.round(n||0).toLocaleString('pt-BR'); }
-function fatFmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
-
 function fatRenderTableRows(rows) {
   const tbody = document.getElementById('fatTbody');
   if (!tbody) return;
   const tagTipo = t => t==='SAIDA'?`<span class="fat-tag-saida">Saída</span>`:t==='RETORNO'?`<span class="fat-tag-retorno">Retorno</span>`:`<span class="fat-tag-outro">${t}</span>`;
   tbody.innerHTML = rows.map(r=>`<tr>
-    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte||'—'}</td>
-    <td>${r.data||'—'}</td>
-    <td>${r.cliente||'—'}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${esc(r.cte)||'—'}</td>
+    <td>${esc(r.data)||'—'}</td>
+    <td>${esc(r.cliente)||'—'}</td>
     <td>${tagTipo(r.tipo)}</td>
     <td class="num" style="color:var(--green)">${fatFmt(r.vlr)}</td>
     <td class="num">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
@@ -3048,12 +3057,10 @@ function fatLoadFile(input) {
 
 // ── INIT ──────────────────────────────────────
 cpRenderHistory();
-// Inicia carregamento da Carteira ao abrir a página
 // Carrega Carteira automaticamente ao abrir a página
 setTimeout(() => cpLoadSheet(false), 500);
 
-// Inicia auto-refresh do Faturamento assim que a página carrega
-// (primeiro carregamento acontece quando o usuário abre a aba Faturamento)
+// Sincroniza intervalo de refresh do Faturamento com o seletor da Home
 (function initFatRefresh() {
   const sel = document.getElementById('homeRefreshInterval');
   if (sel) {
