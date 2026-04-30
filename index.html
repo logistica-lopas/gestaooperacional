@@ -1406,15 +1406,31 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
       </div>
 
-      <!-- CSV LOADER BAR -->
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(0,255,136,0.03);border-bottom:1px solid var(--border);flex-wrap:wrap">
-        <input type="text" id="fat-metas-csv-url" placeholder="Cole aqui o link CSV do Google Sheets com faturamento por representante..."
-          style="flex:1;min-width:280px;padding:7px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:Barlow,sans-serif;font-size:12px">
-        <button onclick="fatMetasCarregarCSV()"
-          style="display:flex;align-items:center;gap:7px;padding:7px 16px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:7px;color:var(--green);cursor:pointer;font-family:Barlow,sans-serif;font-weight:600;font-size:12px">
-          ↗ Carregar CSV
-        </button>
-        <span id="fat-metas-hint" style="font-size:11px;color:var(--text3)">Dados da planilha Metas_Lopas.xlsx · <span id="fat-metas-data">30/04/2026</span></span>
+      <!-- URL fixa (auto-carregada) + barra de status -->
+      <input type="hidden" id="fat-metas-csv-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pub?gid=289455641&single=true&output=csv">
+
+      <!-- STATUS BAR (mesmo padrão da Carteira) -->
+      <div class="cp-upload-bar" id="fatMetasStatusBar">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div id="fatMetasStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
+          <span id="fatMetasStatusInfo" style="font-size:12px;color:var(--text2)">Carregando dados...</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
+          <span id="fatMetasNextRefresh" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;display:none"></span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:var(--text3)">Auto-refresh:</span>
+            <select id="fatMetasRefreshInterval" onchange="fatMetasSetRefreshInterval(this.value)"
+              style="background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;padding:2px 6px;font-family:Barlow,sans-serif;cursor:pointer">
+              <option value="0">Desativado</option>
+              <option value="5">5 min</option>
+              <option value="10" selected>10 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+            </select>
+          </div>
+          <button onclick="fatMetasCarregarCSV(false)"
+            style="padding:4px 12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);border-radius:6px;color:var(--green);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
+        </div>
       </div>
 
       <!-- KPIs SUMMARY -->
@@ -3219,8 +3235,11 @@ function fatMetasInit() {
   fatMetasInited = true;
   fatMetasState = JSON.parse(JSON.stringify(fatMetasRawData));
   fatMetasExpanded = fatMetasState.gerentes.map((_, i) => i === 0);
+  // Renderiza com dados iniciais enquanto carrega o CSV
   fatMetasRenderSummary();
   fatMetasRenderGerentes();
+  // Auto-carrega CSV (igual à Carteira de Pedidos)
+  fatMetasCarregarCSV(false);
 }
 
 // ── CÁLCULOS ──────────────────────────────────
@@ -3436,16 +3455,71 @@ function fatMetasUpdatePrev(gi, ri, val) {
   fatMetasRenderSummary(); fatMetasRenderGerentes();
 }
 
-function fatMetasCarregarCSV() {
-  const url = document.getElementById('fat-metas-csv-url').value.trim();
-  if (!url) { alert('Cole o link do CSV antes de carregar.'); return; }
-  const hint = document.getElementById('fat-metas-hint');
-  hint.textContent = 'Carregando...';
+// ── AUTO-REFRESH ──────────────────────────────
+let fatMetasRefreshTimer   = null;
+let fatMetasCountdownTimer = null;
+let fatMetasRefreshSeconds = 600;
+let fatMetasNextAt         = null;
 
-  fetch(url)
+function fatMetasSetRefreshInterval(minutes) {
+  fatMetasRefreshSeconds = parseInt(minutes) * 60;
+  clearTimeout(fatMetasRefreshTimer);
+  clearInterval(fatMetasCountdownTimer);
+  fatMetasNextAt = null;
+  const el = document.getElementById('fatMetasNextRefresh');
+  if (el) el.style.display = 'none';
+  if (fatMetasRefreshSeconds > 0 && fatMetasInited) fatMetasScheduleNext();
+}
+
+function fatMetasScheduleNext() {
+  clearTimeout(fatMetasRefreshTimer);
+  clearInterval(fatMetasCountdownTimer);
+  fatMetasNextAt = new Date(Date.now() + fatMetasRefreshSeconds * 1000);
+  const el = document.getElementById('fatMetasNextRefresh');
+  if (el) el.style.display = '';
+  fatMetasUpdateCountdown();
+  fatMetasCountdownTimer = setInterval(fatMetasUpdateCountdown, 10000);
+  fatMetasRefreshTimer   = setTimeout(() => fatMetasCarregarCSV(true), fatMetasRefreshSeconds * 1000);
+}
+
+function fatMetasUpdateCountdown() {
+  if (!fatMetasNextAt) return;
+  const diff = Math.max(0, Math.round((fatMetasNextAt - Date.now()) / 1000));
+  const m = Math.floor(diff / 60), s = diff % 60;
+  const el = document.getElementById('fatMetasNextRefresh');
+  if (el) el.textContent = 'Próx: ' + (m > 0 ? m + 'min ' + String(s).padStart(2,'0') + 's' : s + 's');
+}
+
+function fatMetasSetStatus(state, msg) {
+  const dot  = document.getElementById('fatMetasStatusDot');
+  const info = document.getElementById('fatMetasStatusInfo');
+  if (!dot || !info) return;
+  if (state === 'ok') {
+    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0';
+    info.style.color  = 'var(--text2)';
+    info.innerHTML    = msg || '';
+  } else if (state === 'syncing') {
+    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon);flex-shrink:0';
+    info.style.color  = 'var(--neon)';
+    info.textContent  = 'Sincronizando com Google Sheets...';
+  } else if (state === 'error') {
+    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0';
+    info.style.color  = 'var(--red)';
+    info.innerHTML    = msg || 'Erro ao carregar';
+  }
+}
+
+function fatMetasCarregarCSV(silent = false) {
+  const url = document.getElementById('fat-metas-csv-url').value.trim();
+  if (!url) return;
+
+  fatMetasSetStatus('syncing');
+
+  fetch(url, { cache: 'no-store' })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
     .then(text => {
-      // ── Parser CSV com suporte a aspas e \r\n ──────────────
+
+      // ── Parser CSV com suporte completo a aspas e \r\n ────
       function parseCSVLine(line) {
         const result = []; let cur = ''; let inQ = false;
         for (let i = 0; i < line.length; i++) {
@@ -3458,18 +3532,16 @@ function fatMetasCarregarCSV() {
         return result;
       }
 
-      // ── Parser numérico: suporta pt-BR (1.234,56) e en-US (1234.56) ──
+      // ── Parser numérico: pt-BR (1.234,56) e en-US (1234.56) ──
       function parseBRL(s) {
         s = String(s).replace(/"/g, '').trim();
-        if (!s) return 0;
+        if (!s || s === '-') return 0;
         if (/[.,]/.test(s)) {
           const lastComma = s.lastIndexOf(',');
           const lastDot   = s.lastIndexOf('.');
           if (lastComma > lastDot) {
-            // vírgula = decimal (formato pt-BR): '1.050.078,68'
             return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
           }
-          // ponto = decimal (formato en-US): '1050078.68'
           return parseFloat(s.replace(/,/g, '')) || 0;
         }
         return parseFloat(s) || 0;
@@ -3481,27 +3553,40 @@ function fatMetasCarregarCSV() {
       const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, '').trim());
 
       // ── Detectar coluna de representante ──
-      const repIdx = header.findIndex(h =>
-        h.includes('consul') || h.includes('representante') ||
-        h.includes('rep') || h === 'nome'
-      );
+      const repIdx = (() => {
+        const prioridade = [
+          h => h === 'consultor' || h === 'consultora',
+          h => h === 'representante',
+          h => h.includes('consul'),
+          h => h.includes('representante'),
+          h => h === 'rep',
+        ];
+        for (const fn of prioridade) { const i = header.findIndex(fn); if (i >= 0) return i; }
+        return -1;
+      })();
 
-      // ── Detectar coluna de faturamento — busca ampla ──
-      const fatIdx = header.findIndex(h =>
-        h.includes('vlr liq') || h.includes('vlr fat') ||
-        h.includes('faturado') || h.includes('fat liq') ||
-        h.includes('liquido') || h.includes('líquido') ||
-        h === 'fat' || h === 'vlr' || h === 'valor'
-      );
+      // ── Detectar coluna de VALOR faturado — prioridade decrescente ──
+      // Colunas com 'vlr' ou 'valor' + 'liq'/'fat' têm preferência sobre 'faturado' simples
+      // para evitar pegar colunas de quantidade/contagem
+      const fatIdx = (() => {
+        const prioridade = [
+          h => h.includes('vlr liq fat') || h.includes('vlr líq fat'),
+          h => h.includes('vlr fat') && h.includes('liq'),
+          h => h === 'vlr liq' || h === 'vlr líq',
+          h => h.includes('vlr fat'),
+          h => h.includes('valor fat'),
+          h => h.includes('fat liq') || h.includes('fat líq'),
+          h => h.includes('vlr liq') || h.includes('vlr líq'),
+          h => h.includes('faturado') && (h.includes('vlr') || h.includes('valor') || h.includes('liq')),
+          h => h === 'vlr' || h === 'valor',
+          h => h === 'faturado',
+        ];
+        for (const fn of prioridade) { const i = header.findIndex(fn); if (i >= 0) return i; }
+        return -1;
+      })();
 
-      if (repIdx < 0) throw new Error(
-        'Coluna de representante não encontrada.\n' +
-        'Colunas detectadas: ' + header.join(' | ')
-      );
-      if (fatIdx < 0) throw new Error(
-        'Coluna de faturamento não encontrada.\n' +
-        'Colunas detectadas: ' + header.join(' | ')
-      );
+      if (repIdx < 0) throw new Error('Coluna de representante não encontrada. Colunas: ' + header.join(' | '));
+      if (fatIdx < 0) throw new Error('Coluna de faturamento não encontrada. Colunas: ' + header.join(' | '));
 
       // ── Agregar faturamento por representante ──
       const fatMap = {};
@@ -3512,26 +3597,28 @@ function fatMetasCarregarCSV() {
         if (rep) fatMap[rep] = (fatMap[rep] || 0) + fat;
       }
 
-      // ── Cruzar com os representantes cadastrados ──
+      // ── Cruzar com representantes cadastrados (12 chars iniciais) ──
       let updated = 0;
       fatMetasState.gerentes.forEach(g => g.reps.forEach(r => {
-        // Busca pelo início do nome (primeiros 12 chars), case-insensitive
         const chave = r.nome.slice(0, 12).toUpperCase();
         const key = Object.keys(fatMap).find(k => k.toUpperCase().includes(chave));
         if (key !== undefined) { r.fat = fatMap[key]; updated++; }
       }));
 
-      const el = document.getElementById('fat-metas-update');
-      el.style.display = 'inline'; setTimeout(() => { el.style.display = 'none'; }, 3500);
-      hint.innerHTML =
-        `CSV carregado · col. rep: <code style="color:var(--neon);font-size:10px">${header[repIdx]}</code>` +
-        ` · col. fat: <code style="color:var(--neon);font-size:10px">${header[fatIdx]}</code>` +
-        ` · <strong style="color:var(--green)">${updated}</strong> representantes atualizados` +
-        ` · ${new Date().toLocaleDateString('pt-BR')}`;
-      fatMetasRenderSummary(); fatMetasRenderGerentes();
+      const ts = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      fatMetasSetStatus('ok',
+        `<strong>${updated} representantes</strong> carregados &middot; ` +
+        `rep: <code style="color:var(--neon);font-size:10px">${esc(header[repIdx])}</code> &middot; ` +
+        `fat: <code style="color:var(--green);font-size:10px">${esc(header[fatIdx])}</code> &middot; ` +
+        `Atualizado ${ts}`
+      );
+
+      if (fatMetasRefreshSeconds > 0) fatMetasScheduleNext();
+      fatMetasRenderSummary();
+      fatMetasRenderGerentes();
     })
     .catch(e => {
-      hint.innerHTML = `<span style="color:var(--red)">❌ Erro: ${esc(e.message)}</span>`;
+      fatMetasSetStatus('error', '❌ ' + esc(e.message));
     });
 }
 </script>
