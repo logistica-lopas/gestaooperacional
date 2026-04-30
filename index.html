@@ -3519,7 +3519,7 @@ function fatMetasCarregarCSV(silent = false) {
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
     .then(text => {
 
-      // ── Parser CSV com suporte completo a aspas e \r\n ────
+      // ── Parser CSV: respeita aspas duplas e \r\n ──────────────
       function parseCSVLine(line) {
         const result = []; let cur = ''; let inQ = false;
         for (let i = 0; i < line.length; i++) {
@@ -3552,24 +3552,35 @@ function fatMetasCarregarCSV(silent = false) {
 
       const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, '').trim());
 
-      // ── Detectar coluna de representante ──
+      // ── Detectar coluna CONSULTOR (representante) ──
       const repIdx = (() => {
-        const prioridade = [
+        const pri = [
           h => h === 'consultor' || h === 'consultora',
           h => h === 'representante',
           h => h.includes('consul'),
           h => h.includes('representante'),
           h => h === 'rep',
         ];
-        for (const fn of prioridade) { const i = header.findIndex(fn); if (i >= 0) return i; }
+        for (const fn of pri) { const i = header.findIndex(fn); if (i >= 0) return i; }
         return -1;
       })();
 
-      // ── Detectar coluna de VALOR faturado — prioridade decrescente ──
-      // Colunas com 'vlr' ou 'valor' + 'liq'/'fat' têm preferência sobre 'faturado' simples
-      // para evitar pegar colunas de quantidade/contagem
+      // ── Detectar coluna GERENTE ──
+      const gerIdx = (() => {
+        const pri = [
+          h => h === 'gerente',
+          h => h.includes('gerente'),
+          h => h === 'supervisor' || h === 'gestor',
+          h => h.includes('supervisor') || h.includes('gestor'),
+        ];
+        for (const fn of pri) { const i = header.findIndex(fn); if (i >= 0) return i; }
+        return -1;
+      })();
+
+      // ── Detectar coluna VLR LIQ FATURADO ──
       const fatIdx = (() => {
-        const prioridade = [
+        const pri = [
+          h => h === 'vlr liq faturado' || h === 'vlr líq faturado',
           h => h.includes('vlr liq fat') || h.includes('vlr líq fat'),
           h => h.includes('vlr fat') && h.includes('liq'),
           h => h === 'vlr liq' || h === 'vlr líq',
@@ -3581,35 +3592,79 @@ function fatMetasCarregarCSV(silent = false) {
           h => h === 'vlr' || h === 'valor',
           h => h === 'faturado',
         ];
-        for (const fn of prioridade) { const i = header.findIndex(fn); if (i >= 0) return i; }
+        for (const fn of pri) { const i = header.findIndex(fn); if (i >= 0) return i; }
         return -1;
       })();
 
-      if (repIdx < 0) throw new Error('Coluna de representante não encontrada. Colunas: ' + header.join(' | '));
-      if (fatIdx < 0) throw new Error('Coluna de faturamento não encontrada. Colunas: ' + header.join(' | '));
+      if (repIdx < 0) throw new Error('Coluna CONSULTOR não encontrada. Colunas: ' + header.join(' | '));
+      if (fatIdx < 0) throw new Error('Coluna VLR LIQ FATURADO não encontrada. Colunas: ' + header.join(' | '));
 
-      // ── Agregar faturamento por representante ──
-      const fatMap = {};
+      // ── SOMASES: agregar por chave "GERENTE|||CONSULTOR" ──────
+      // Isso garante que RODRIGO sob BALTAZAR e RODRIGO sob MARCOS
+      // ficam em buckets separados e não se somam
+      const fatMap = {};   // chave: "GERENTE|||CONSULTOR" → valor total
+      const fatMapSemGer = {}; // fallback sem gerente: "CONSULTOR" → valor
+
       for (let i = 1; i < lines.length; i++) {
         const cols = parseCSVLine(lines[i]);
-        const rep  = (cols[repIdx] || '').replace(/"/g, '').trim();
+        const rep  = (cols[repIdx] || '').replace(/"/g, '').trim().toUpperCase();
+        const ger  = gerIdx >= 0 ? (cols[gerIdx] || '').replace(/"/g, '').trim().toUpperCase() : '';
         const fat  = parseBRL(cols[fatIdx] || '0');
-        if (rep) fatMap[rep] = (fatMap[rep] || 0) + fat;
+        if (!rep) continue;
+
+        // Chave composta gerente+consultor (SOMASES)
+        if (ger) {
+          const chave = ger + '|||' + rep;
+          fatMap[chave] = (fatMap[chave] || 0) + fat;
+        }
+        // Fallback: só consultor (para casos sem gerente na linha)
+        fatMapSemGer[rep] = (fatMapSemGer[rep] || 0) + fat;
       }
 
-      // ── Cruzar com representantes cadastrados (12 chars iniciais) ──
+      // ── Cruzar com o estado cadastrado ───────────────────────
+      // Para cada gerente, busca no fatMap pela chave GERENTE+CONSULTOR
+      // Isso é o SOMASES: só soma linhas onde GERENTE e CONSULTOR batem
       let updated = 0;
-      fatMetasState.gerentes.forEach(g => g.reps.forEach(r => {
-        const chave = r.nome.slice(0, 12).toUpperCase();
-        const key = Object.keys(fatMap).find(k => k.toUpperCase().includes(chave));
-        if (key !== undefined) { r.fat = fatMap[key]; updated++; }
-      }));
+      fatMetasState.gerentes.forEach(g => {
+        // Preparar chave do gerente: primeiros 12 chars em upper
+        const gerChave = g.nome.slice(0, 12).toUpperCase();
+
+        g.reps.forEach(r => {
+          const repChave = r.nome.slice(0, 12).toUpperCase();
+
+          if (gerIdx >= 0) {
+            // Buscar a chave composta: achar linha que bate gerente E consultor
+            const chaveComposta = Object.keys(fatMap).find(k => {
+              const [kGer, kRep] = k.split('|||');
+              return kGer.includes(gerChave) && kRep.includes(repChave);
+            });
+
+            if (chaveComposta !== undefined) {
+              r.fat = fatMap[chaveComposta];
+              updated++;
+              return;
+            }
+          }
+
+          // Fallback: sem coluna de gerente, usa só o consultor
+          const keyFallback = Object.keys(fatMapSemGer).find(k => k.includes(repChave));
+          if (keyFallback !== undefined) {
+            r.fat = fatMapSemGer[keyFallback];
+            updated++;
+          }
+        });
+      });
 
       const ts = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+      const modoGer = gerIdx >= 0
+        ? `<span style="color:var(--green);font-size:10px">✓ SOMASES ativo (gerente + consultor)</span>`
+        : `<span style="color:var(--yellow);font-size:10px">⚠ Sem coluna gerente — somando só por consultor</span>`;
+
       fatMetasSetStatus('ok',
-        `<strong>${updated} representantes</strong> carregados &middot; ` +
-        `rep: <code style="color:var(--neon);font-size:10px">${esc(header[repIdx])}</code> &middot; ` +
-        `fat: <code style="color:var(--green);font-size:10px">${esc(header[fatIdx])}</code> &middot; ` +
+        `<strong>${updated} representantes</strong> atualizados &middot; ` +
+        `${modoGer} &middot; ` +
+        `rep[${repIdx}]: <code style="color:var(--neon);font-size:10px">${esc(header[repIdx])}</code> &middot; ` +
+        `fat[${fatIdx}]: <code style="color:var(--green);font-size:10px">${esc(header[fatIdx])}</code> &middot; ` +
         `Atualizado ${ts}`
       );
 
