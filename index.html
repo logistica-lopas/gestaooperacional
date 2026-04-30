@@ -1098,15 +1098,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="submod-tag" style="background:rgba(155,107,255,0.1);color:var(--purple);border-color:rgba(155,107,255,0.2)">Em breve</div>
       </div>
 
-      <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88;opacity:0.5;cursor:default">
+      <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88" onclick="showSubmod('faturamento')">
         <div class="submod-icon" style="color:var(--green)">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
           </svg>
         </div>
         <div class="submod-name">Faturamento</div>
-        <div class="submod-desc">Análise de faturamento por período, meta vs realizado e projeção mensal.</div>
-        <div class="submod-tag" style="background:rgba(0,255,136,0.08);color:var(--green);border-color:rgba(0,255,136,0.2)">Em breve</div>
+        <div class="submod-desc">Meta vs realizado por gerente e representante, previsão mensal e carga de CSV.</div>
+        <div class="submod-tag" style="background:rgba(0,255,136,0.08);color:var(--green);border-color:rgba(0,255,136,0.2)">Google Sheets / CSV</div>
       </div>
     </div>
 
@@ -1382,6 +1382,49 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
       </div><!-- /cp-content -->
     </div><!-- /carteira-panel -->
+
+    <!-- ═══════════════════════════════════════════
+         PAINEL FATURAMENTO — METAS POR GERENTE
+    ═══════════════════════════════════════════ -->
+    <div id="fat-metas-panel" style="display:none">
+
+      <!-- TOP BAR -->
+      <div class="cp-topbar">
+        <div class="cp-logo">
+          <div class="cp-logo-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.8">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+            </svg>
+          </div>
+          Painel de <span class="cp-logo-accent" style="color:var(--green)">&nbsp;Faturamento</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px">
+          <span style="font-size:11px;color:var(--text3)">Mês de referência:</span>
+          <input type="month" id="fat-mes-ref" value="2026-04"
+            style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:Barlow,sans-serif;font-size:11px;padding:3px 8px;cursor:pointer">
+          <span id="fat-metas-update" style="font-size:11px;color:var(--green);font-family:'Space Mono',monospace;display:none">✓ Dados atualizados!</span>
+        </div>
+      </div>
+
+      <!-- CSV LOADER BAR -->
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 20px;background:rgba(0,255,136,0.03);border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <input type="text" id="fat-metas-csv-url" placeholder="Cole aqui o link CSV do Google Sheets com faturamento por representante..."
+          style="flex:1;min-width:280px;padding:7px 12px;background:var(--bg4);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:Barlow,sans-serif;font-size:12px">
+        <button onclick="fatMetasCarregarCSV()"
+          style="display:flex;align-items:center;gap:7px;padding:7px 16px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:7px;color:var(--green);cursor:pointer;font-family:Barlow,sans-serif;font-weight:600;font-size:12px">
+          ↗ Carregar CSV
+        </button>
+        <span id="fat-metas-hint" style="font-size:11px;color:var(--text3)">Dados da planilha Metas_Lopas.xlsx · <span id="fat-metas-data">30/04/2026</span></span>
+      </div>
+
+      <!-- KPIs SUMMARY -->
+      <div id="fat-metas-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;padding:16px 20px 0"></div>
+
+      <!-- GERENTES -->
+      <div id="fat-metas-gerentes" style="padding:14px 20px 32px"></div>
+
+    </div><!-- /fat-metas-panel -->
+
   </div><!-- /view-content -->
 </div><!-- /view-logistica -->
 
@@ -1537,7 +1580,17 @@ function showSubmod(name) {
   document.querySelectorAll('.submod-card').forEach(c => c.classList.remove('active'));
   const el = document.getElementById('submod-'+name);
   if (el) el.classList.add('active');
-  document.getElementById('carteira-panel').style.display = 'block';
+  // Mostrar painel correto
+  const carteira = document.getElementById('carteira-panel');
+  const fatMetas = document.getElementById('fat-metas-panel');
+  if (name === 'faturamento') {
+    carteira.style.display = 'none';
+    fatMetas.style.display = 'block';
+    fatMetasInit();
+  } else {
+    carteira.style.display = 'block';
+    fatMetas.style.display = 'none';
+  }
 }
 document.getElementById('submod-carteira').classList.add('active');
 
@@ -3067,6 +3120,363 @@ setTimeout(() => cpLoadSheet(false), 500);
     fatRefreshSeconds = parseInt(sel.value) * 60;
   }
 })();
+
+// ══════════════════════════════════════════════
+// FATURAMENTO METAS — PAINEL LOGÍSTICA
+// ══════════════════════════════════════════════
+const fatMetasRawData = {
+  gerentes: [
+    {
+      nome: "Baltazar Oliveira de Almeida",
+      reps: [
+        {nome:"DILSON E FILHOS COMERCIO E REPRESENTACOES", meta:1049140.79, fat:1050078.68},
+        {nome:"DINAMICA REP EM VENDAS LTDA ME", meta:749140.79, fat:736431.174},
+        {nome:"G L REPRESENTACOES DE UBA LTDA", meta:535100.57, fat:538104.054},
+        {nome:"LEONARDO CLAUDIO DE SOUZA LIMA", meta:642120.68, fat:632203.967},
+        {nome:"LYARA REPRESENTAÇOES", meta:1840402.26, fat:1790355.965},
+        {nome:"MULTIPLA COMERCIO E REPRES DO NORTE LTDA", meta:346080.45, fat:481956.279},
+        {nome:"NIRA REPRESENTACOES LTDA", meta:428080.45, fat:364360.254},
+        {nome:"PAOLOMAK COMERCIO E REPRESENTACOES", meta:2575502.83, fat:2857972.34},
+        {nome:"PAULO BAHIA REPRESENTACOES LTDA.", meta:481590.51, fat:545228.223},
+        {nome:"RODRIGO PUCCETTI CARNEIRO", meta:428080.45, fat:345789.604},
+        {nome:"SAMOR REPRESENTACOES LTDA", meta:321060.34, fat:267512.734},
+        {nome:"STARTUP. REP. COMERCIAL", meta:556570.4, fat:496476.23},
+        {nome:"VARELLA REPRESENTACOES LTDA.-ME", meta:749140.79, fat:897902.353}
+      ]
+    },
+    {
+      nome: "Emmanuel Rangel de Andrade",
+      reps: [
+        {nome:"CARNEIRO & BATISTA REPRESENTACOES LTDA", meta:653372.44, fat:632555.427},
+        {nome:"CASSIO DA SILVA ALVES BISPO", meta:131649.67, fat:157485.001},
+        {nome:"CELESTIAL REPRESENTACOES LTDA.", meta:269862.77, fat:117006.53},
+        {nome:"C J M REPRESENTACOES LTDA", meta:138631.86, fat:120111.461},
+        {nome:"CONQUISTA REPRESENTACOES LTDA", meta:45952.37, fat:4243.13},
+        {nome:"DIOGO FIGUEIREDO ALVES REPRESENTACOES", meta:309901.8, fat:388398.29},
+        {nome:"F J R COSTA COMERCIO DE REPRESENTACOES", meta:118014.62, fat:51301.75},
+        {nome:"JORGE & MAIA REPRESENTACAO DE MOVEIS LTD", meta:58510.97, fat:65128.15},
+        {nome:"LARISSA DOS SANTOS DIAS AMPARO", meta:160000, fat:60198.7},
+        {nome:"PAULO SERGIO REPRESENTACOES LTDA", meta:1267737.58, fat:1195171.808},
+        {nome:"RP REPRESENTACOES COMERCIAS LTDA ME", meta:368463.17, fat:377561.68},
+        {nome:"R L REPRESENTACOES LTDA", meta:54264.95, fat:0},
+        {nome:"TAVARES E MARTINS LTDA", meta:557454.15, fat:850164.81},
+        {nome:"ULYSSES G PATRIOTA REPRESENTACAO", meta:163941.94, fat:111320.152},
+        {nome:"W.A SITTA & CIA LTDA", meta:1216900.17, fat:1262222.35}
+      ]
+    },
+    {
+      nome: "Flavio Martins de Souza Junior",
+      reps: [
+        {nome:"DELTA REPRESENTACOES LTDA", meta:710191.22, fat:401412.7},
+        {nome:"DUYLIO HENRIQUE DE OLIVEIRA REP. LTDA", meta:0, fat:71283.54},
+        {nome:"E BRAZ REPRESENTAÇÕES COMERCIAIS ME", meta:129125.68, fat:108033.111},
+        {nome:"EDERSON MEIRELES DE SIQUEIRA E CIA LTDA", meta:516502.7, fat:613472.542},
+        {nome:"FLAVIO MARTINS DE SOUZA JUNIOR", meta:64562.84, fat:137016.8},
+        {nome:"FRANCISCO A DE OLIVEIRA", meta:458396.15, fat:607551.089},
+        {nome:"GENESIS COMERCIO E REPRESENTACOES LTDA", meta:645628.38, fat:595043.25},
+        {nome:"GRI REPRESENTACOES LTDA", meta:129125.68, fat:79896.37},
+        {nome:"HGP JUNIOR REPRESENTACOES", meta:697278.65, fat:679163.429},
+        {nome:"JRS SERVICOS DE REPRESENTACOES LTDA", meta:258251.35, fat:212551.58},
+        {nome:"L O REP.DE MOV. E ELETRODOMESTICOS LTDA", meta:774754.06, fat:730069.929},
+        {nome:"NOBRE REPRESENTACOES", meta:290532.77, fat:190865.37},
+        {nome:"S.HILDERVANE DE ARAUJO REPRESENTACOES", meta:387377.03, fat:285085.57},
+        {nome:"TAVARES E MARTINS LTDA", meta:1265431.63, fat:1775001.122},
+        {nome:"VRA REPRESENTACOES LTDA", meta:129125.68, fat:334824.02}
+      ]
+    },
+    {
+      nome: "Marcos Antonio de Oliveira",
+      reps: [
+        {nome:"ARAUJO PROMOCAO DE VENDAS LTDA", meta:177870.03, fat:173188.312},
+        {nome:"ARLEM REPRESENTACOES E PROMOCOES LTDA", meta:106722.02, fat:41772.682},
+        {nome:"AUGUSTO & FERETTI PROMOCOES E REPRESENTA", meta:106722.02, fat:62022.977},
+        {nome:"BDX BUSINESS LTDA", meta:142296.02, fat:219139.4},
+        {nome:"COMERCIO E REPRESENTACAO MANTOVANI LTDA", meta:42688.81, fat:15768.01},
+        {nome:"E A DE QUEIROZ LTDA", meta:0, fat:219499.26},
+        {nome:"FLX PROMOCAO E REPRESENTACOES COMERCIAIS LTDA", meta:156525.63, fat:119353.592},
+        {nome:"GM INGA REP. COMERCIAIS LTDA", meta:284592.05, fat:302570.952},
+        {nome:"HENRIQUE DORNAS REPRESENTACOES LTDA", meta:0, fat:16684.19},
+        {nome:"JFZ MULTISOLUCOES COMERCIAIS LTDA", meta:71148.01, fat:6198.93},
+        {nome:"LMGX PROMOCOES E REPRES. COMERCIAIS LTDA", meta:284592.05, fat:107261.63},
+        {nome:"LOPES & LOPES REPRESENTACOES LTDA.", meta:903579.76, fat:1185991.44},
+        {nome:"P. S. MARTINS - REPRESENTACOES", meta:711480.12, fat:189605.74},
+        {nome:"P7 PROMOCOES E REPRESENTACOES LTDA", meta:547839.7, fat:693645.227},
+        {nome:"RODRIGO PUCCETTI CARNEIRO", meta:3151856.95, fat:3996101.204},
+        {nome:"REPRESENTACOES GEVEVE LTDA", meta:106722.02, fat:193240.084},
+        {nome:"TOP MOVEIS E COLCHOES LTDA", meta:213444.04, fat:127416.36},
+        {nome:"WAGNER WILLIANS MARIANO REPRESENTACOES", meta:106722.02, fat:141656.543}
+      ]
+    }
+  ]
+};
+
+let fatMetasState = null;
+let fatMetasExpanded = [];
+let fatMetasInited = false;
+
+function fatMetasInit() {
+  if (fatMetasInited) return;
+  fatMetasInited = true;
+  fatMetasState = JSON.parse(JSON.stringify(fatMetasRawData));
+  fatMetasExpanded = fatMetasState.gerentes.map((_, i) => i === 0);
+  fatMetasRenderSummary();
+  fatMetasRenderGerentes();
+}
+
+// ── CÁLCULOS ──────────────────────────────────
+function fatMetasCalcG(g) {
+  const totalMeta = g.reps.reduce((s,r) => s + (r.meta||0), 0);
+  const totalFat  = g.reps.reduce((s,r) => s + (r.fat||0), 0);
+  const totalPrev = g.reps.reduce((s,r) => s + (r.prev||0), 0);
+  const falta = totalMeta - totalFat;
+  const pct = totalMeta > 0 ? totalFat / totalMeta : (totalFat > 0 ? Infinity : 0);
+  return { totalMeta, totalFat, totalPrev, falta, pct };
+}
+
+function fatMetasPctClass(p) {
+  if (!isFinite(p) || p === Infinity) return 'fm-pct-amber';
+  return p >= 1 ? 'fm-pct-green' : p >= 0.8 ? 'fm-pct-amber' : 'fm-pct-red';
+}
+
+function fatMetasFmtPct(v) {
+  return isFinite(v) && v !== Infinity ? (v * 100).toFixed(1) + '%' : '—';
+}
+
+function fatMetasFmtBRL(v) {
+  return (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits:0, maximumFractionDigits:0});
+}
+
+// ── SUMMARY ───────────────────────────────────
+function fatMetasRenderSummary() {
+  if (!fatMetasState) return;
+  const totalMeta = fatMetasState.gerentes.reduce((s,g) => s + g.reps.reduce((a,r) => a + (r.meta||0), 0), 0);
+  const totalFat  = fatMetasState.gerentes.reduce((s,g) => s + g.reps.reduce((a,r) => a + (r.fat||0), 0), 0);
+  const totalPrev = fatMetasState.gerentes.reduce((s,g) => s + g.reps.reduce((a,r) => a + (r.prev||0), 0), 0);
+  const pct = totalMeta > 0 ? totalFat / totalMeta : 0;
+  const falta = totalMeta - totalFat;
+  const pClass = pct >= 1 ? 'var(--green)' : pct >= 0.8 ? 'var(--yellow)' : 'var(--red)';
+
+  const kpis = [
+    {label:'Meta Total', val:fatMetasFmtBRL(totalMeta), color:'var(--neon)'},
+    {label:'Faturado', val:fatMetasFmtBRL(totalFat), color:'var(--green)'},
+    {label:'% da Meta', val:fatMetasFmtPct(pct), color:pClass},
+    {label: falta >= 0 ? 'Falta Faturar' : 'Acima da Meta', val:fatMetasFmtBRL(Math.abs(falta)), color: falta >= 0 ? 'var(--red)' : 'var(--green)'},
+    ...(totalPrev > 0 ? [
+      {label:'Previsão', val:fatMetasFmtBRL(totalPrev), color:'var(--yellow)'},
+      {label:'Fat + Prev', val:fatMetasFmtBRL(totalFat + totalPrev), color:'var(--purple)'},
+    ] : [])
+  ];
+
+  document.getElementById('fat-metas-summary').innerHTML = kpis.map(k => `
+    <div class="cp-kpi" style="--k-color:${k.color}">
+      <div class="cp-kpi-label">${k.label}</div>
+      <div class="cp-kpi-value" style="color:${k.color};font-size:16px">${k.val}</div>
+    </div>`).join('');
+}
+
+// ── GERENTES ──────────────────────────────────
+function fatMetasRenderGerentes() {
+  if (!fatMetasState) return;
+  const wrap = document.getElementById('fat-metas-gerentes');
+  wrap.innerHTML = '';
+
+  // Inject styles once
+  if (!document.getElementById('fm-styles')) {
+    const s = document.createElement('style');
+    s.id = 'fm-styles';
+    s.textContent = `
+      .fm-block { background:var(--bg2); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; }
+      .fm-hd { display:flex; align-items:center; justify-content:space-between; padding:12px 18px;
+        background:var(--bg3); cursor:pointer; gap:8px; flex-wrap:wrap; user-select:none;
+        border-bottom:1px solid var(--border); transition:background 0.2s; }
+      .fm-hd:hover { background:var(--bg4); }
+      .fm-nome { font-size:14px; font-weight:600; color:var(--text); letter-spacing:-0.2px; }
+      .fm-badges { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+      .fm-chevron { font-size:10px; color:var(--text3); transition:transform 0.25s; display:inline-block; margin-right:6px; }
+      .fm-chevron.open { transform:rotate(180deg); }
+      .fm-prog { height:3px; }
+      .fm-bar { height:100%; transition:width 0.5s ease; }
+      .fm-bar-green { background:var(--green); box-shadow:0 0 6px rgba(0,255,136,0.4); }
+      .fm-bar-amber { background:var(--yellow); }
+      .fm-bar-red   { background:var(--red); }
+      .fm-body { overflow:hidden; transition:max-height 0.3s ease; }
+      .fm-pct-green { background:rgba(0,255,136,0.12); color:var(--green); border:1px solid rgba(0,255,136,0.25); }
+      .fm-pct-amber { background:rgba(245,197,24,0.12); color:var(--yellow); border:1px solid rgba(245,197,24,0.25); }
+      .fm-pct-red   { background:rgba(255,61,90,0.12);  color:var(--red);    border:1px solid rgba(255,61,90,0.25); }
+      .fm-pct-tag { font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; display:inline-block; }
+      .fm-minibar-wrap { width:52px; height:3px; background:rgba(255,255,255,0.07); border-radius:3px; display:inline-block; vertical-align:middle; overflow:hidden; margin-top:2px; }
+      .fm-minibar { height:100%; border-radius:3px; }
+      .fm-tbl { width:100%; border-collapse:collapse; font-size:12px; }
+      .fm-tbl th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3);
+        background:var(--bg4); padding:7px 12px; text-align:right; position:sticky; top:0; white-space:nowrap; }
+      .fm-tbl th:first-child { text-align:left; }
+      .fm-tbl td { padding:7px 12px; border-bottom:1px solid var(--border); text-align:right; color:var(--text); vertical-align:middle; white-space:nowrap; }
+      .fm-tbl td:first-child { text-align:left; font-size:11px; color:var(--text2); max-width:220px; white-space:normal; line-height:1.4; }
+      .fm-tbl tr:hover td { background:rgba(255,255,255,0.02); }
+      .fm-total-row td { font-weight:600; background:rgba(255,255,255,0.03); border-top:1px solid var(--border2); border-bottom:none; color:var(--text); }
+      .fm-meta-input, .fm-prev-input {
+        font-family:Barlow,sans-serif; font-size:11px; text-align:right; padding:4px 7px;
+        border:1px solid var(--border2); border-radius:5px; background:var(--bg4); color:var(--text);
+      }
+      .fm-meta-input { width:110px; } .fm-prev-input { width:95px; }
+      .fm-meta-input:focus, .fm-prev-input:focus { outline:none; border-color:var(--neon); box-shadow:0 0 0 2px rgba(0,212,255,0.12); }
+    `;
+    document.head.appendChild(s);
+  }
+
+  fatMetasState.gerentes.forEach((g, gi) => {
+    const c = fatMetasCalcG(g);
+    const barW = Math.min(isFinite(c.pct) && c.pct !== Infinity ? c.pct * 100 : 100, 100);
+    const barCls = c.pct >= 1 ? 'fm-bar-green' : c.pct >= 0.8 ? 'fm-bar-amber' : 'fm-bar-red';
+    const isOpen = fatMetasExpanded[gi];
+
+    const div = document.createElement('div');
+    div.className = 'fm-block';
+    div.innerHTML = `
+      <div class="fm-hd" onclick="fatMetasToggle(${gi})">
+        <div style="display:flex;align-items:center">
+          <span class="fm-chevron ${isOpen?'open':''}">▼</span>
+          <span class="fm-nome">${esc(g.nome)}</span>
+        </div>
+        <div class="fm-badges">
+          <span style="font-size:11px;color:var(--text3)">${g.reps.length} representantes</span>
+          <span style="font-size:12px;color:var(--text2);font-family:'Space Mono',monospace">${fatMetasFmtBRL(c.totalFat)}</span>
+          <span class="fm-pct-tag ${fatMetasPctClass(c.pct)}">${fatMetasFmtPct(c.pct)}</span>
+        </div>
+      </div>
+      <div class="fm-prog"><div class="fm-bar ${barCls}" style="width:${barW}%"></div></div>
+      <div class="fm-body" id="fm-body-${gi}" style="max-height:${isOpen?'4000px':'0'}">
+        <div style="overflow-x:auto">
+          <table class="fm-tbl">
+            <thead><tr>
+              <th>Representante</th>
+              <th>Meta (R$)</th>
+              <th>Faturado</th>
+              <th>% Meta</th>
+              <th>Falta / Sobra</th>
+              <th>Previsão</th>
+              <th>Fat + Prev</th>
+            </tr></thead>
+            <tbody id="fm-tbody-${gi}"></tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    wrap.appendChild(div);
+
+    const tbody = document.getElementById('fm-tbody-'+gi);
+
+    // Rep rows
+    g.reps.forEach((r, ri) => {
+      const pct   = r.meta > 0 ? r.fat / r.meta : (r.fat > 0 ? Infinity : 0);
+      const falta = (r.meta||0) - r.fat;
+      const prev  = r.prev || 0;
+      const fatPrev = r.fat + prev;
+      const bw = Math.min(isFinite(pct) && pct !== Infinity ? pct * 100 : 100, 100);
+      const barC = pct >= 1 ? 'fm-bar-green' : pct >= 0.8 ? 'fm-bar-amber' : 'fm-bar-red';
+      const nomeShort = r.nome.length > 38 ? r.nome.slice(0,36) + '…' : r.nome;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td title="${esc(r.nome)}">${esc(nomeShort)}</td>
+        <td>
+          <input class="fm-meta-input" type="number" value="${(r.meta||0).toFixed(0)}"
+            onchange="fatMetasUpdateMeta(${gi},${ri},this.value)" step="1000" min="0">
+        </td>
+        <td style="font-family:'Space Mono',monospace;font-size:11px">${fatMetasFmtBRL(r.fat)}</td>
+        <td>
+          <span class="fm-pct-tag ${fatMetasPctClass(pct)}">${fatMetasFmtPct(pct)}</span><br>
+          <div class="fm-minibar-wrap"><div class="fm-minibar ${barC}" style="width:${bw}%"></div></div>
+        </td>
+        <td style="font-family:'Space Mono',monospace;font-size:11px;color:${falta>0?'var(--red)':'var(--green)'}">
+          ${falta>0?'-':'+'}${fatMetasFmtBRL(Math.abs(falta))}
+        </td>
+        <td>
+          <input class="fm-prev-input" type="number" value="${prev>0?prev.toFixed(0):''}"
+            placeholder="0" onchange="fatMetasUpdatePrev(${gi},${ri},this.value)" step="1000" min="0">
+        </td>
+        <td style="font-family:'Space Mono',monospace;font-size:11px;font-weight:600">${fatPrev>0?fatMetasFmtBRL(fatPrev):'—'}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Total row
+    const totRow = document.createElement('tr');
+    totRow.className = 'fm-total-row';
+    const prevG = c.totalPrev;
+    totRow.innerHTML = `
+      <td>Total ${esc(g.nome.split(' ')[0])}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px">${fatMetasFmtBRL(c.totalMeta)}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px">${fatMetasFmtBRL(c.totalFat)}</td>
+      <td><span class="fm-pct-tag ${fatMetasPctClass(c.pct)}">${fatMetasFmtPct(c.pct)}</span></td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px;color:${c.falta>0?'var(--red)':'var(--green)'}">
+        ${c.falta>0?'-':'+'}${fatMetasFmtBRL(Math.abs(c.falta))}
+      </td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px">${prevG>0?fatMetasFmtBRL(prevG):'—'}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px">${prevG>0?fatMetasFmtBRL(c.totalFat+prevG):'—'}</td>
+    `;
+    tbody.appendChild(totRow);
+  });
+}
+
+function fatMetasToggle(gi) {
+  fatMetasExpanded[gi] = !fatMetasExpanded[gi];
+  const body    = document.getElementById('fm-body-'+gi);
+  const chevron = body.closest('.fm-block').querySelector('.fm-chevron');
+  body.style.maxHeight = fatMetasExpanded[gi] ? '4000px' : '0';
+  chevron.classList.toggle('open', fatMetasExpanded[gi]);
+}
+
+function fatMetasUpdateMeta(gi, ri, val) {
+  fatMetasState.gerentes[gi].reps[ri].meta = parseFloat(val) || 0;
+  fatMetasRenderSummary(); fatMetasRenderGerentes();
+}
+function fatMetasUpdatePrev(gi, ri, val) {
+  fatMetasState.gerentes[gi].reps[ri].prev = parseFloat(val) || 0;
+  fatMetasRenderSummary(); fatMetasRenderGerentes();
+}
+
+function fatMetasCarregarCSV() {
+  const url = document.getElementById('fat-metas-csv-url').value.trim();
+  if (!url) { alert('Cole o link do CSV antes de carregar.'); return; }
+  const hint = document.getElementById('fat-metas-hint');
+  hint.textContent = 'Carregando...';
+
+  fetch(url)
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+    .then(text => {
+      const rows = text.trim().split('\n');
+      if (rows.length < 2) throw new Error('CSV vazio ou inválido');
+      const header = rows[0].split(',').map(h => h.trim().replace(/"/g,'').toLowerCase());
+      const repIdx = header.findIndex(h => h.includes('consul') || h.includes('representante'));
+      const fatIdx = header.findIndex(h => h.includes('vlr liq fat') || h.includes('faturado') || h === 'fat');
+      if (fatIdx < 0) throw new Error('Coluna de faturado não encontrada. Colunas: ' + header.join(', '));
+
+      const fatMap = {};
+      for (let i = 1; i < rows.length; i++) {
+        const cols = rows[i].split(',');
+        const rep  = cols[repIdx]?.replace(/"/g,'').trim();
+        const fat  = parseFloat(cols[fatIdx]?.replace(/[^0-9.\-]/g,'')) || 0;
+        if (rep) fatMap[rep] = (fatMap[rep]||0) + fat;
+      }
+
+      let updated = 0;
+      fatMetasState.gerentes.forEach(g => g.reps.forEach(r => {
+        const key = Object.keys(fatMap).find(k =>
+          k.toUpperCase().includes(r.nome.slice(0,12).toUpperCase())
+        );
+        if (key !== undefined) { r.fat = fatMap[key]; updated++; }
+      }));
+
+      const el = document.getElementById('fat-metas-update');
+      el.style.display = 'inline'; setTimeout(() => { el.style.display = 'none'; }, 3500);
+      hint.innerHTML = `CSV carregado · <strong style="color:var(--green)">${updated}</strong> representantes atualizados · ${new Date().toLocaleDateString('pt-BR')}`;
+      fatMetasRenderSummary(); fatMetasRenderGerentes();
+    })
+    .catch(e => {
+      hint.innerHTML = `<span style="color:var(--red)">❌ Erro: ${esc(e.message)}</span>`;
+    });
+}
 </script>
 </body>
 </html>
