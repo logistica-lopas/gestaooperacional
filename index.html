@@ -3445,32 +3445,89 @@ function fatMetasCarregarCSV() {
   fetch(url)
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
     .then(text => {
-      const rows = text.trim().split('\n');
-      if (rows.length < 2) throw new Error('CSV vazio ou inválido');
-      const header = rows[0].split(',').map(h => h.trim().replace(/"/g,'').toLowerCase());
-      const repIdx = header.findIndex(h => h.includes('consul') || h.includes('representante'));
-      const fatIdx = header.findIndex(h => h.includes('vlr liq fat') || h.includes('faturado') || h === 'fat');
-      if (fatIdx < 0) throw new Error('Coluna de faturado não encontrada. Colunas: ' + header.join(', '));
-
-      const fatMap = {};
-      for (let i = 1; i < rows.length; i++) {
-        const cols = rows[i].split(',');
-        const rep  = cols[repIdx]?.replace(/"/g,'').trim();
-        const fat  = parseFloat(cols[fatIdx]?.replace(/[^0-9.\-]/g,'')) || 0;
-        if (rep) fatMap[rep] = (fatMap[rep]||0) + fat;
+      // ── Parser CSV com suporte a aspas e \r\n ──────────────
+      function parseCSVLine(line) {
+        const result = []; let cur = ''; let inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') { inQ = !inQ; }
+          else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+          else cur += ch;
+        }
+        result.push(cur.trim());
+        return result;
       }
 
+      // ── Parser numérico: suporta pt-BR (1.234,56) e en-US (1234.56) ──
+      function parseBRL(s) {
+        s = String(s).replace(/"/g, '').trim();
+        if (!s) return 0;
+        if (/[.,]/.test(s)) {
+          const lastComma = s.lastIndexOf(',');
+          const lastDot   = s.lastIndexOf('.');
+          if (lastComma > lastDot) {
+            // vírgula = decimal (formato pt-BR): '1.050.078,68'
+            return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+          }
+          // ponto = decimal (formato en-US): '1050078.68'
+          return parseFloat(s.replace(/,/g, '')) || 0;
+        }
+        return parseFloat(s) || 0;
+      }
+
+      const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+      if (lines.length < 2) throw new Error('CSV vazio ou inválido');
+
+      const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, '').trim());
+
+      // ── Detectar coluna de representante ──
+      const repIdx = header.findIndex(h =>
+        h.includes('consul') || h.includes('representante') ||
+        h.includes('rep') || h === 'nome'
+      );
+
+      // ── Detectar coluna de faturamento — busca ampla ──
+      const fatIdx = header.findIndex(h =>
+        h.includes('vlr liq') || h.includes('vlr fat') ||
+        h.includes('faturado') || h.includes('fat liq') ||
+        h.includes('liquido') || h.includes('líquido') ||
+        h === 'fat' || h === 'vlr' || h === 'valor'
+      );
+
+      if (repIdx < 0) throw new Error(
+        'Coluna de representante não encontrada.\n' +
+        'Colunas detectadas: ' + header.join(' | ')
+      );
+      if (fatIdx < 0) throw new Error(
+        'Coluna de faturamento não encontrada.\n' +
+        'Colunas detectadas: ' + header.join(' | ')
+      );
+
+      // ── Agregar faturamento por representante ──
+      const fatMap = {};
+      for (let i = 1; i < lines.length; i++) {
+        const cols = parseCSVLine(lines[i]);
+        const rep  = (cols[repIdx] || '').replace(/"/g, '').trim();
+        const fat  = parseBRL(cols[fatIdx] || '0');
+        if (rep) fatMap[rep] = (fatMap[rep] || 0) + fat;
+      }
+
+      // ── Cruzar com os representantes cadastrados ──
       let updated = 0;
       fatMetasState.gerentes.forEach(g => g.reps.forEach(r => {
-        const key = Object.keys(fatMap).find(k =>
-          k.toUpperCase().includes(r.nome.slice(0,12).toUpperCase())
-        );
+        // Busca pelo início do nome (primeiros 12 chars), case-insensitive
+        const chave = r.nome.slice(0, 12).toUpperCase();
+        const key = Object.keys(fatMap).find(k => k.toUpperCase().includes(chave));
         if (key !== undefined) { r.fat = fatMap[key]; updated++; }
       }));
 
       const el = document.getElementById('fat-metas-update');
       el.style.display = 'inline'; setTimeout(() => { el.style.display = 'none'; }, 3500);
-      hint.innerHTML = `CSV carregado · <strong style="color:var(--green)">${updated}</strong> representantes atualizados · ${new Date().toLocaleDateString('pt-BR')}`;
+      hint.innerHTML =
+        `CSV carregado · col. rep: <code style="color:var(--neon);font-size:10px">${header[repIdx]}</code>` +
+        ` · col. fat: <code style="color:var(--neon);font-size:10px">${header[fatIdx]}</code>` +
+        ` · <strong style="color:var(--green)">${updated}</strong> representantes atualizados` +
+        ` · ${new Date().toLocaleDateString('pt-BR')}`;
       fatMetasRenderSummary(); fatMetasRenderGerentes();
     })
     .catch(e => {
