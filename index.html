@@ -1384,9 +1384,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
     </div><!-- /carteira-panel -->
 
     <!-- ═══════════════════════════════════════════
-         PAINEL FATURAMENTO — METAS POR GERENTE
+         PAINEL FATURAMENTO — ANALYTICS
     ═══════════════════════════════════════════ -->
     <div id="fat-metas-panel" style="display:none">
+
+      <!-- URL CSV oculta -->
+      <input type="hidden" id="fat-metas-csv-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pub?gid=289455641&single=true&output=csv">
 
       <!-- TOP BAR -->
       <div class="cp-topbar">
@@ -1398,28 +1401,29 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           Painel de <span class="cp-logo-accent" style="color:var(--green)">&nbsp;Faturamento</span>
         </div>
-        <div style="display:flex;align-items:center;gap:14px">
-          <span style="font-size:11px;color:var(--text3)">Mês de referência:</span>
-          <input type="month" id="fat-mes-ref" value="2026-04"
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <label style="font-size:11px;color:var(--text3)">Período:</label>
+          <input type="date" id="fv-dt-ini"
             style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:Barlow,sans-serif;font-size:11px;padding:3px 8px;cursor:pointer">
-          <span id="fat-metas-update" style="font-size:11px;color:var(--green);font-family:'Space Mono',monospace;display:none">✓ Dados atualizados!</span>
+          <span style="font-size:11px;color:var(--text3)">até</span>
+          <input type="date" id="fv-dt-fim"
+            style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:Barlow,sans-serif;font-size:11px;padding:3px 8px;cursor:pointer">
+          <button onclick="fvAplicarFiltro()" style="padding:3px 12px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);border-radius:6px;color:var(--neon);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">Filtrar</button>
+          <button onclick="fvLimparFiltro()" style="padding:3px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-family:Barlow,sans-serif;font-size:11px;cursor:pointer">Tudo</button>
         </div>
       </div>
 
-      <!-- URL fixa (auto-carregada) + barra de status -->
-      <input type="hidden" id="fat-metas-csv-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pub?gid=289455641&single=true&output=csv">
-
-      <!-- STATUS BAR (mesmo padrão da Carteira) -->
-      <div class="cp-upload-bar" id="fatMetasStatusBar">
+      <!-- STATUS BAR -->
+      <div class="cp-upload-bar" id="fvStatusBar">
         <div style="display:flex;align-items:center;gap:8px">
-          <div id="fatMetasStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
-          <span id="fatMetasStatusInfo" style="font-size:12px;color:var(--text2)">Carregando dados...</span>
+          <div id="fvDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
+          <span id="fvInfo" style="font-size:12px;color:var(--text2)">Carregando dados...</span>
         </div>
         <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
-          <span id="fatMetasNextRefresh" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;display:none"></span>
+          <span id="fvNextRefresh" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;display:none"></span>
           <div style="display:flex;align-items:center;gap:6px">
             <span style="font-size:11px;color:var(--text3)">Auto-refresh:</span>
-            <select id="fatMetasRefreshInterval" onchange="fatMetasSetRefreshInterval(this.value)"
+            <select id="fvRefreshSel" onchange="fvSetRefresh(this.value)"
               style="background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;padding:2px 6px;font-family:Barlow,sans-serif;cursor:pointer">
               <option value="0">Desativado</option>
               <option value="5">5 min</option>
@@ -1428,16 +1432,44 @@ tr:hover td { background: rgba(255,255,255,0.02); }
               <option value="30">30 min</option>
             </select>
           </div>
-          <button onclick="fatMetasCarregarCSV(false)"
-            style="padding:4px 12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);border-radius:6px;color:var(--green);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
+          <button onclick="fvCarregar()" style="padding:4px 12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);border-radius:6px;color:var(--green);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
         </div>
       </div>
 
-      <!-- KPIs SUMMARY -->
-      <div id="fat-metas-summary" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;padding:16px 20px 0"></div>
+      <!-- KPIs -->
+      <div id="fv-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding:16px 20px 0"></div>
 
-      <!-- GERENTES -->
-      <div id="fat-metas-gerentes" style="padding:14px 20px 32px"></div>
+      <!-- GRÁFICOS ROW 1: Faturamento diário + Classificação -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 20px 0">
+        <div class="cp-chart-card">
+          <div class="cp-chart-title">Faturamento Diário</div>
+          <div style="position:relative;height:220px"><canvas id="fv-chart-diario"></canvas></div>
+        </div>
+        <div class="cp-chart-card">
+          <div class="cp-chart-title">Por Classificação</div>
+          <div style="position:relative;height:220px"><canvas id="fv-chart-classif"></canvas></div>
+        </div>
+      </div>
+
+      <!-- GRÁFICOS ROW 2: Top 10 Grupos -->
+      <div style="padding:12px 20px 0">
+        <div class="cp-chart-card">
+          <div class="cp-chart-title">Top 10 — Faturamento por Grupo de Cliente</div>
+          <div id="fv-top10" style="padding:6px 0 4px"></div>
+        </div>
+      </div>
+
+      <!-- PESO ROW -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 20px 32px">
+        <div class="cp-chart-card">
+          <div class="cp-chart-title">Peso Diário Faturado (kg)</div>
+          <div style="position:relative;height:200px"><canvas id="fv-chart-peso"></canvas></div>
+        </div>
+        <div class="cp-chart-card">
+          <div class="cp-chart-title">Faturamento por Tipo de Frete</div>
+          <div style="position:relative;height:200px"><canvas id="fv-chart-frete"></canvas></div>
+        </div>
+      </div>
 
     </div><!-- /fat-metas-panel -->
 
@@ -3138,547 +3170,401 @@ setTimeout(() => cpLoadSheet(false), 500);
 })();
 
 // ══════════════════════════════════════════════
-// FATURAMENTO METAS — PAINEL LOGÍSTICA
+// FATURAMENTO — ANALYTICS PANEL
 // ══════════════════════════════════════════════
-const fatMetasRawData = {
-  gerentes: [
-    {
-      nome: "Baltazar Oliveira de Almeida",
-      reps: [
-        {nome:"DILSON E FILHOS COMERCIO E REPRESENTACOES", meta:1049140.79, fat:0},
-        {nome:"DINAMICA REP EM VENDAS LTDA ME", meta:749140.79, fat:0},
-        {nome:"G L REPRESENTACOES DE UBA LTDA", meta:535100.57, fat:0},
-        {nome:"LEONARDO CLAUDIO DE SOUZA LIMA", meta:642120.68, fat:0},
-        {nome:"LYARA REPRESENTAÇOES", meta:1840402.26, fat:0},
-        {nome:"MULTIPLA COMERCIO E REPRES DO NORTE LTDA", meta:346080.45, fat:0},
-        {nome:"NIRA REPRESENTACOES LTDA", meta:428080.45, fat:0},
-        {nome:"PAOLOMAK COMERCIO E REPRESENTACOES", meta:2575502.83, fat:0},
-        {nome:"PAULO BAHIA REPRESENTACOES LTDA.", meta:481590.51, fat:0},
-        {nome:"RODRIGO PUCCETTI CARNEIRO", meta:428080.45, fat:0},
-        {nome:"SAMOR REPRESENTACOES LTDA", meta:321060.34, fat:0},
-        {nome:"STARTUP. REP. COMERCIAL", meta:556570.4, fat:0},
-        {nome:"VARELLA REPRESENTACOES LTDA.-ME", meta:749140.79, fat:0}
-      ]
-    },
-    {
-      nome: "Emmanuel Rangel de Andrade",
-      reps: [
-        {nome:"CARNEIRO & BATISTA REPRESENTACOES LTDA", meta:653372.44, fat:0},
-        {nome:"CASSIO DA SILVA ALVES BISPO", meta:131649.67, fat:0},
-        {nome:"CELESTIAL REPRESENTACOES LTDA.", meta:269862.77, fat:0},
-        {nome:"C J M REPRESENTACOES LTDA", meta:138631.86, fat:0},
-        {nome:"CONQUISTA REPRESENTACOES LTDA", meta:45952.37, fat:0},
-        {nome:"DIOGO FIGUEIREDO ALVES REPRESENTACOES", meta:309901.8, fat:0},
-        {nome:"F J R COSTA COMERCIO DE REPRESENTACOES", meta:118014.62, fat:0},
-        {nome:"JORGE & MAIA REPRESENTACAO DE MOVEIS LTD", meta:58510.97, fat:0},
-        {nome:"LARISSA DOS SANTOS DIAS AMPARO", meta:160000, fat:0},
-        {nome:"PAULO SERGIO REPRESENTACOES LTDA", meta:1267737.58, fat:0},
-        {nome:"RP REPRESENTACOES COMERCIAS LTDA ME", meta:368463.17, fat:0},
-        {nome:"R L REPRESENTACOES LTDA", meta:54264.95, fat:0},
-        {nome:"TAVARES E MARTINS LTDA", meta:557454.15, fat:0},
-        {nome:"ULYSSES G PATRIOTA REPRESENTACAO", meta:163941.94, fat:0},
-        {nome:"W.A SITTA & CIA LTDA", meta:1216900.17, fat:0}
-      ]
-    },
-    {
-      nome: "Flavio Martins de Souza Junior",
-      reps: [
-        {nome:"DELTA REPRESENTACOES LTDA", meta:710191.22, fat:0},
-        {nome:"DUYLIO HENRIQUE DE OLIVEIRA REP. LTDA", meta:0, fat:0},
-        {nome:"E BRAZ REPRESENTAÇÕES COMERCIAIS ME", meta:129125.68, fat:0},
-        {nome:"EDERSON MEIRELES DE SIQUEIRA E CIA LTDA", meta:516502.7, fat:0},
-        {nome:"FLAVIO MARTINS DE SOUZA JUNIOR", meta:64562.84, fat:0},
-        {nome:"FRANCISCO A DE OLIVEIRA", meta:458396.15, fat:0},
-        {nome:"GENESIS COMERCIO E REPRESENTACOES LTDA", meta:645628.38, fat:0},
-        {nome:"GRI REPRESENTACOES LTDA", meta:129125.68, fat:0},
-        {nome:"HGP JUNIOR REPRESENTACOES", meta:697278.65, fat:0},
-        {nome:"JRS SERVICOS DE REPRESENTACOES LTDA", meta:258251.35, fat:0},
-        {nome:"L O REP.DE MOV. E ELETRODOMESTICOS LTDA", meta:774754.06, fat:0},
-        {nome:"NOBRE REPRESENTACOES", meta:290532.77, fat:0},
-        {nome:"S.HILDERVANE DE ARAUJO REPRESENTACOES", meta:387377.03, fat:0},
-        {nome:"TAVARES E MARTINS LTDA", meta:1265431.63, fat:0},
-        {nome:"VRA REPRESENTACOES LTDA", meta:129125.68, fat:0}
-      ]
-    },
-    {
-      nome: "Marcos Antonio de Oliveira",
-      reps: [
-        {nome:"ARAUJO PROMOCAO DE VENDAS LTDA", meta:177870.03, fat:0},
-        {nome:"ARLEM REPRESENTACOES E PROMOCOES LTDA", meta:106722.02, fat:0},
-        {nome:"AUGUSTO & FERETTI PROMOCOES E REPRESENTA", meta:106722.02, fat:0},
-        {nome:"BDX BUSINESS LTDA", meta:142296.02, fat:0},
-        {nome:"COMERCIO E REPRESENTACAO MANTOVANI LTDA", meta:42688.81, fat:0},
-        {nome:"E A DE QUEIROZ LTDA", meta:0, fat:0},
-        {nome:"FLX PROMOCAO E REPRESENTACOES COMERCIAIS LTDA", meta:156525.63, fat:0},
-        {nome:"GM INGA REP. COMERCIAIS LTDA", meta:284592.05, fat:0},
-        {nome:"HENRIQUE DORNAS REPRESENTACOES LTDA", meta:0, fat:0},
-        {nome:"JFZ MULTISOLUCOES COMERCIAIS LTDA", meta:71148.01, fat:0},
-        {nome:"LMGX PROMOCOES E REPRES. COMERCIAIS LTDA", meta:284592.05, fat:0},
-        {nome:"LOPES & LOPES REPRESENTACOES LTDA.", meta:903579.76, fat:0},
-        {nome:"P. S. MARTINS - REPRESENTACOES", meta:711480.12, fat:0},
-        {nome:"P7 PROMOCOES E REPRESENTACOES LTDA", meta:547839.7, fat:0},
-        {nome:"RODRIGO PUCCETTI CARNEIRO", meta:3151856.95, fat:0},
-        {nome:"REPRESENTACOES GEVEVE LTDA", meta:106722.02, fat:0},
-        {nome:"TOP MOVEIS E COLCHOES LTDA", meta:213444.04, fat:0},
-        {nome:"WAGNER WILLIANS MARIANO REPRESENTACOES", meta:106722.02, fat:0}
-      ]
-    }
-  ]
-};
 
-let fatMetasState = null;
-let fatMetasExpanded = [];
-let fatMetasInited = false;
+// ── Estado global ─────────────────────────────
+let fvAllRows    = [];   // todas as linhas do CSV parsed
+let fvFiltered   = [];   // linhas após filtro de data
+let fvInited     = false;
+let fvChartDia   = null;
+let fvChartCla   = null;
+let fvChartPeso  = null;
+let fvChartFrete = null;
+let fvRefTimer   = null;
+let fvCdTimer    = null;
+let fvRefSecs    = 600;
+let fvNextAt     = null;
 
-function fatMetasInit() {
-  // Reseta faturado para 0 a cada abertura — valores vêm exclusivamente do CSV
-  fatMetasState = JSON.parse(JSON.stringify(fatMetasRawData));
-
-  if (!fatMetasInited) {
-    fatMetasInited = true;
-    fatMetasExpanded = fatMetasState.gerentes.map((_, i) => i === 0);
+// ── CSV parser (mesmo padrão do sistema) ──────
+function fvParseCSVLine(line) {
+  const r = []; let c = ''; let q = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') { q = !q; }
+    else if (ch === ',' && !q) { r.push(c.trim()); c = ''; }
+    else c += ch;
   }
-
-  // Renderiza estrutura com faturado zerado enquanto CSV carrega
-  fatMetasRenderSummary();
-  fatMetasRenderGerentes();
-  // Sempre recarrega o CSV ao abrir a aba
-  fatMetasCarregarCSV(false);
+  r.push(c.trim()); return r;
 }
 
-// ── CÁLCULOS ──────────────────────────────────
-function fatMetasCalcG(g) {
-  const totalMeta = g.reps.reduce((s,r) => s + (r.meta||0), 0);
-  const totalFat  = g.reps.reduce((s,r) => s + (r.fat||0), 0);
-  const totalPrev = g.reps.reduce((s,r) => s + (r.prev||0), 0);
-  const falta = totalMeta - totalFat;
-  const pct = totalMeta > 0 ? totalFat / totalMeta : (totalFat > 0 ? Infinity : 0);
-  return { totalMeta, totalFat, totalPrev, falta, pct };
-}
-
-function fatMetasPctClass(p) {
-  if (!isFinite(p) || p === Infinity) return 'fm-pct-amber';
-  return p >= 1 ? 'fm-pct-green' : p >= 0.8 ? 'fm-pct-amber' : 'fm-pct-red';
-}
-
-function fatMetasFmtPct(v) {
-  return isFinite(v) && v !== Infinity ? (v * 100).toFixed(1) + '%' : '—';
-}
-
-function fatMetasFmtBRL(v) {
-  return (v||0).toLocaleString('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits:0, maximumFractionDigits:0});
-}
-
-// ── SUMMARY ───────────────────────────────────
-function fatMetasRenderSummary() {
-  if (!fatMetasState) return;
-  const totalMeta = fatMetasState.gerentes.reduce((s,g) => s + g.reps.reduce((a,r) => a + (r.meta||0), 0), 0);
-  const totalFat  = fatMetasState.gerentes.reduce((s,g) => s + g.reps.reduce((a,r) => a + (r.fat||0), 0), 0);
-  const totalPrev = fatMetasState.gerentes.reduce((s,g) => s + g.reps.reduce((a,r) => a + (r.prev||0), 0), 0);
-  const pct = totalMeta > 0 ? totalFat / totalMeta : 0;
-  const falta = totalMeta - totalFat;
-  const pClass = pct >= 1 ? 'var(--green)' : pct >= 0.8 ? 'var(--yellow)' : 'var(--red)';
-
-  const kpis = [
-    {label:'Meta Total', val:fatMetasFmtBRL(totalMeta), color:'var(--neon)'},
-    {label:'Faturado', val:fatMetasFmtBRL(totalFat), color:'var(--green)'},
-    {label:'% da Meta', val:fatMetasFmtPct(pct), color:pClass},
-    {label: falta >= 0 ? 'Falta Faturar' : 'Acima da Meta', val:fatMetasFmtBRL(Math.abs(falta)), color: falta >= 0 ? 'var(--red)' : 'var(--green)'},
-    ...(totalPrev > 0 ? [
-      {label:'Previsão', val:fatMetasFmtBRL(totalPrev), color:'var(--yellow)'},
-      {label:'Fat + Prev', val:fatMetasFmtBRL(totalFat + totalPrev), color:'var(--purple)'},
-    ] : [])
-  ];
-
-  document.getElementById('fat-metas-summary').innerHTML = kpis.map(k => `
-    <div class="cp-kpi" style="--k-color:${k.color}">
-      <div class="cp-kpi-label">${k.label}</div>
-      <div class="cp-kpi-value" style="color:${k.color};font-size:16px">${k.val}</div>
-    </div>`).join('');
-}
-
-// ── GERENTES ──────────────────────────────────
-function fatMetasRenderGerentes() {
-  if (!fatMetasState) return;
-  const wrap = document.getElementById('fat-metas-gerentes');
-  wrap.innerHTML = '';
-
-  // Inject styles once
-  if (!document.getElementById('fm-styles')) {
-    const s = document.createElement('style');
-    s.id = 'fm-styles';
-    s.textContent = `
-      .fm-block { background:var(--bg2); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:12px; }
-      .fm-hd { display:flex; align-items:center; justify-content:space-between; padding:12px 18px;
-        background:var(--bg3); cursor:pointer; gap:8px; flex-wrap:wrap; user-select:none;
-        border-bottom:1px solid var(--border); transition:background 0.2s; }
-      .fm-hd:hover { background:var(--bg4); }
-      .fm-nome { font-size:14px; font-weight:600; color:var(--text); letter-spacing:-0.2px; }
-      .fm-badges { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-      .fm-chevron { font-size:10px; color:var(--text3); transition:transform 0.25s; display:inline-block; margin-right:6px; }
-      .fm-chevron.open { transform:rotate(180deg); }
-      .fm-prog { height:3px; }
-      .fm-bar { height:100%; transition:width 0.5s ease; }
-      .fm-bar-green { background:var(--green); box-shadow:0 0 6px rgba(0,255,136,0.4); }
-      .fm-bar-amber { background:var(--yellow); }
-      .fm-bar-red   { background:var(--red); }
-      .fm-body { overflow:hidden; transition:max-height 0.3s ease; }
-      .fm-pct-green { background:rgba(0,255,136,0.12); color:var(--green); border:1px solid rgba(0,255,136,0.25); }
-      .fm-pct-amber { background:rgba(245,197,24,0.12); color:var(--yellow); border:1px solid rgba(245,197,24,0.25); }
-      .fm-pct-red   { background:rgba(255,61,90,0.12);  color:var(--red);    border:1px solid rgba(255,61,90,0.25); }
-      .fm-pct-tag { font-size:10px; font-weight:600; padding:2px 8px; border-radius:20px; display:inline-block; }
-      .fm-minibar-wrap { width:52px; height:3px; background:rgba(255,255,255,0.07); border-radius:3px; display:inline-block; vertical-align:middle; overflow:hidden; margin-top:2px; }
-      .fm-minibar { height:100%; border-radius:3px; }
-      .fm-tbl { width:100%; border-collapse:collapse; font-size:12px; }
-      .fm-tbl th { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text3);
-        background:var(--bg4); padding:7px 12px; text-align:right; position:sticky; top:0; white-space:nowrap; }
-      .fm-tbl th:first-child { text-align:left; }
-      .fm-tbl td { padding:7px 12px; border-bottom:1px solid var(--border); text-align:right; color:var(--text); vertical-align:middle; white-space:nowrap; }
-      .fm-tbl td:first-child { text-align:left; font-size:11px; color:var(--text2); max-width:220px; white-space:normal; line-height:1.4; }
-      .fm-tbl tr:hover td { background:rgba(255,255,255,0.02); }
-      .fm-total-row td { font-weight:600; background:rgba(255,255,255,0.03); border-top:1px solid var(--border2); border-bottom:none; color:var(--text); }
-      .fm-meta-input, .fm-prev-input {
-        font-family:Barlow,sans-serif; font-size:11px; text-align:right; padding:4px 7px;
-        border:1px solid var(--border2); border-radius:5px; background:var(--bg4); color:var(--text);
-      }
-      .fm-meta-input { width:110px; } .fm-prev-input { width:95px; }
-      .fm-meta-input:focus, .fm-prev-input:focus { outline:none; border-color:var(--neon); box-shadow:0 0 0 2px rgba(0,212,255,0.12); }
-    `;
-    document.head.appendChild(s);
+function fvParseBRL(s) {
+  s = String(s).replace(/"/g, '').trim();
+  if (!s || s === '-') return 0;
+  if (/[.,]/.test(s)) {
+    const lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
+    if (lc > ld) return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+    return parseFloat(s.replace(/,/g, '')) || 0;
   }
-
-  fatMetasState.gerentes.forEach((g, gi) => {
-    const c = fatMetasCalcG(g);
-    const barW = Math.min(isFinite(c.pct) && c.pct !== Infinity ? c.pct * 100 : 100, 100);
-    const barCls = c.pct >= 1 ? 'fm-bar-green' : c.pct >= 0.8 ? 'fm-bar-amber' : 'fm-bar-red';
-    const isOpen = fatMetasExpanded[gi];
-
-    const div = document.createElement('div');
-    div.className = 'fm-block';
-    div.innerHTML = `
-      <div class="fm-hd" onclick="fatMetasToggle(${gi})">
-        <div style="display:flex;align-items:center">
-          <span class="fm-chevron ${isOpen?'open':''}">▼</span>
-          <span class="fm-nome">${esc(g.nome)}</span>
-        </div>
-        <div class="fm-badges">
-          <span style="font-size:11px;color:var(--text3)">${g.reps.length} representantes</span>
-          <span style="font-size:12px;color:var(--text2);font-family:'Space Mono',monospace">${fatMetasFmtBRL(c.totalFat)}</span>
-          <span class="fm-pct-tag ${fatMetasPctClass(c.pct)}">${fatMetasFmtPct(c.pct)}</span>
-        </div>
-      </div>
-      <div class="fm-prog"><div class="fm-bar ${barCls}" style="width:${barW}%"></div></div>
-      <div class="fm-body" id="fm-body-${gi}" style="max-height:${isOpen?'4000px':'0'}">
-        <div style="overflow-x:auto">
-          <table class="fm-tbl">
-            <thead><tr>
-              <th>Representante</th>
-              <th>Meta (R$)</th>
-              <th>Faturado</th>
-              <th>% Meta</th>
-              <th>Falta / Sobra</th>
-              <th>Previsão</th>
-              <th>Fat + Prev</th>
-            </tr></thead>
-            <tbody id="fm-tbody-${gi}"></tbody>
-          </table>
-        </div>
-      </div>
-    `;
-    wrap.appendChild(div);
-
-    const tbody = document.getElementById('fm-tbody-'+gi);
-
-    // Rep rows
-    g.reps.forEach((r, ri) => {
-      const pct   = r.meta > 0 ? r.fat / r.meta : (r.fat > 0 ? Infinity : 0);
-      const falta = (r.meta||0) - r.fat;
-      const prev  = r.prev || 0;
-      const fatPrev = r.fat + prev;
-      const bw = Math.min(isFinite(pct) && pct !== Infinity ? pct * 100 : 100, 100);
-      const barC = pct >= 1 ? 'fm-bar-green' : pct >= 0.8 ? 'fm-bar-amber' : 'fm-bar-red';
-      const nomeShort = r.nome.length > 38 ? r.nome.slice(0,36) + '…' : r.nome;
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td title="${esc(r.nome)}">${esc(nomeShort)}</td>
-        <td>
-          <input class="fm-meta-input" type="number" value="${(r.meta||0).toFixed(0)}"
-            onchange="fatMetasUpdateMeta(${gi},${ri},this.value)" step="1000" min="0">
-        </td>
-        <td style="font-family:'Space Mono',monospace;font-size:11px">${fatMetasFmtBRL(r.fat)}</td>
-        <td>
-          <span class="fm-pct-tag ${fatMetasPctClass(pct)}">${fatMetasFmtPct(pct)}</span><br>
-          <div class="fm-minibar-wrap"><div class="fm-minibar ${barC}" style="width:${bw}%"></div></div>
-        </td>
-        <td style="font-family:'Space Mono',monospace;font-size:11px;color:${falta>0?'var(--red)':'var(--green)'}">
-          ${falta>0?'-':'+'}${fatMetasFmtBRL(Math.abs(falta))}
-        </td>
-        <td>
-          <input class="fm-prev-input" type="number" value="${prev>0?prev.toFixed(0):''}"
-            placeholder="0" onchange="fatMetasUpdatePrev(${gi},${ri},this.value)" step="1000" min="0">
-        </td>
-        <td style="font-family:'Space Mono',monospace;font-size:11px;font-weight:600">${fatPrev>0?fatMetasFmtBRL(fatPrev):'—'}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    // Total row
-    const totRow = document.createElement('tr');
-    totRow.className = 'fm-total-row';
-    const prevG = c.totalPrev;
-    totRow.innerHTML = `
-      <td>Total ${esc(g.nome.split(' ')[0])}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px">${fatMetasFmtBRL(c.totalMeta)}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px">${fatMetasFmtBRL(c.totalFat)}</td>
-      <td><span class="fm-pct-tag ${fatMetasPctClass(c.pct)}">${fatMetasFmtPct(c.pct)}</span></td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;color:${c.falta>0?'var(--red)':'var(--green)'}">
-        ${c.falta>0?'-':'+'}${fatMetasFmtBRL(Math.abs(c.falta))}
-      </td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px">${prevG>0?fatMetasFmtBRL(prevG):'—'}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px">${prevG>0?fatMetasFmtBRL(c.totalFat+prevG):'—'}</td>
-    `;
-    tbody.appendChild(totRow);
-  });
+  return parseFloat(s) || 0;
 }
 
-function fatMetasToggle(gi) {
-  fatMetasExpanded[gi] = !fatMetasExpanded[gi];
-  const body    = document.getElementById('fm-body-'+gi);
-  const chevron = body.closest('.fm-block').querySelector('.fm-chevron');
-  body.style.maxHeight = fatMetasExpanded[gi] ? '4000px' : '0';
-  chevron.classList.toggle('open', fatMetasExpanded[gi]);
+function fvParseData(s) {
+  if (!s) return null;
+  s = String(s).replace(/"/g, '').trim();
+  // Formatos: dd/mm/yyyy, mm/dd/yyyy hh:mm, yyyy-mm-dd
+  let m;
+  if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) {
+    // Detectar se é dd/mm ou mm/dd: se dia > 12 então é dd/mm
+    const a = parseInt(m[1]), b = parseInt(m[2]);
+    if (a > 12) return new Date(parseInt(m[3]), b - 1, a);
+    return new Date(parseInt(m[3]), b - 1, a); // assume dd/mm
+  }
+  if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)))
+    return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
+  return null;
 }
 
-function fatMetasUpdateMeta(gi, ri, val) {
-  fatMetasState.gerentes[gi].reps[ri].meta = parseFloat(val) || 0;
-  fatMetasRenderSummary(); fatMetasRenderGerentes();
-}
-function fatMetasUpdatePrev(gi, ri, val) {
-  fatMetasState.gerentes[gi].reps[ri].prev = parseFloat(val) || 0;
-  fatMetasRenderSummary(); fatMetasRenderGerentes();
+function fvFmtData(d) {
+  if (!d) return '—';
+  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
 }
 
-// ── AUTO-REFRESH ──────────────────────────────
-let fatMetasRefreshTimer   = null;
-let fatMetasCountdownTimer = null;
-let fatMetasRefreshSeconds = 600;
-let fatMetasNextAt         = null;
+// ── Status bar ────────────────────────────────
+function fvSetStatus(state, msg) {
+  const dot = document.getElementById('fvDot');
+  const inf = document.getElementById('fvInfo');
+  if (!dot || !inf) return;
+  const styles = {
+    ok:      'background:var(--green);box-shadow:0 0 6px var(--green)',
+    syncing: 'background:var(--neon);box-shadow:0 0 6px var(--neon)',
+    error:   'background:var(--red)'
+  };
+  dot.style.cssText = `width:8px;height:8px;border-radius:50%;flex-shrink:0;${styles[state]||styles.ok}`;
+  inf.style.color   = state === 'syncing' ? 'var(--neon)' : state === 'error' ? 'var(--red)' : 'var(--text2)';
+  if (state === 'syncing') inf.textContent = 'Sincronizando com Google Sheets...';
+  else inf.innerHTML = msg || '';
+}
 
-function fatMetasSetRefreshInterval(minutes) {
-  fatMetasRefreshSeconds = parseInt(minutes) * 60;
-  clearTimeout(fatMetasRefreshTimer);
-  clearInterval(fatMetasCountdownTimer);
-  fatMetasNextAt = null;
-  const el = document.getElementById('fatMetasNextRefresh');
+// ── Auto-refresh ──────────────────────────────
+function fvSetRefresh(min) {
+  fvRefSecs = parseInt(min) * 60;
+  clearTimeout(fvRefTimer); clearInterval(fvCdTimer);
+  fvNextAt = null;
+  const el = document.getElementById('fvNextRefresh');
   if (el) el.style.display = 'none';
-  if (fatMetasRefreshSeconds > 0 && fatMetasInited) fatMetasScheduleNext();
+  if (fvRefSecs > 0 && fvInited) fvScheduleNext();
 }
 
-function fatMetasScheduleNext() {
-  clearTimeout(fatMetasRefreshTimer);
-  clearInterval(fatMetasCountdownTimer);
-  fatMetasNextAt = new Date(Date.now() + fatMetasRefreshSeconds * 1000);
-  const el = document.getElementById('fatMetasNextRefresh');
+function fvScheduleNext() {
+  clearTimeout(fvRefTimer); clearInterval(fvCdTimer);
+  fvNextAt = new Date(Date.now() + fvRefSecs * 1000);
+  const el = document.getElementById('fvNextRefresh');
   if (el) el.style.display = '';
-  fatMetasUpdateCountdown();
-  fatMetasCountdownTimer = setInterval(fatMetasUpdateCountdown, 10000);
-  fatMetasRefreshTimer   = setTimeout(() => fatMetasCarregarCSV(true), fatMetasRefreshSeconds * 1000);
+  fvUpdateCd();
+  fvCdTimer  = setInterval(fvUpdateCd, 10000);
+  fvRefTimer = setTimeout(fvCarregar, fvRefSecs * 1000);
 }
 
-function fatMetasUpdateCountdown() {
-  if (!fatMetasNextAt) return;
-  const diff = Math.max(0, Math.round((fatMetasNextAt - Date.now()) / 1000));
-  const m = Math.floor(diff / 60), s = diff % 60;
-  const el = document.getElementById('fatMetasNextRefresh');
+function fvUpdateCd() {
+  if (!fvNextAt) return;
+  const d = Math.max(0, Math.round((fvNextAt - Date.now()) / 1000));
+  const m = Math.floor(d / 60), s = d % 60;
+  const el = document.getElementById('fvNextRefresh');
   if (el) el.textContent = 'Próx: ' + (m > 0 ? m + 'min ' + String(s).padStart(2,'0') + 's' : s + 's');
 }
 
-function fatMetasSetStatus(state, msg) {
-  const dot  = document.getElementById('fatMetasStatusDot');
-  const info = document.getElementById('fatMetasStatusInfo');
-  if (!dot || !info) return;
-  if (state === 'ok') {
-    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);flex-shrink:0';
-    info.style.color  = 'var(--text2)';
-    info.innerHTML    = msg || '';
-  } else if (state === 'syncing') {
-    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon);flex-shrink:0';
-    info.style.color  = 'var(--neon)';
-    info.textContent  = 'Sincronizando com Google Sheets...';
-  } else if (state === 'error') {
-    dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0';
-    info.style.color  = 'var(--red)';
-    info.innerHTML    = msg || 'Erro ao carregar';
-  }
+// ── Init ──────────────────────────────────────
+function fatMetasInit() {
+  fvCarregar();
 }
 
-function fatMetasCarregarCSV(silent = false) {
+// ── Filtro de data ────────────────────────────
+function fvAplicarFiltro() {
+  const ini = document.getElementById('fv-dt-ini').value;
+  const fim = document.getElementById('fv-dt-fim').value;
+  if (!ini && !fim) { fvFiltered = [...fvAllRows]; }
+  else {
+    const dIni = ini ? new Date(ini + 'T00:00:00') : null;
+    const dFim = fim ? new Date(fim + 'T23:59:59') : null;
+    fvFiltered = fvAllRows.filter(r => {
+      if (!r._data) return true;
+      if (dIni && r._data < dIni) return false;
+      if (dFim && r._data > dFim) return false;
+      return true;
+    });
+  }
+  fvRender();
+}
+
+function fvLimparFiltro() {
+  document.getElementById('fv-dt-ini').value = '';
+  document.getElementById('fv-dt-fim').value = '';
+  fvFiltered = [...fvAllRows];
+  fvRender();
+}
+
+// ── Carregar CSV ──────────────────────────────
+function fvCarregar() {
   const url = document.getElementById('fat-metas-csv-url').value.trim();
   if (!url) return;
-
-  fatMetasSetStatus('syncing');
+  fvSetStatus('syncing');
 
   fetch(url, { cache: 'no-store' })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
     .then(text => {
-
-      // ── Parser CSV: respeita aspas duplas e \r\n ──────────────
-      function parseCSVLine(line) {
-        const result = []; let cur = ''; let inQ = false;
-        for (let i = 0; i < line.length; i++) {
-          const ch = line[i];
-          if (ch === '"') { inQ = !inQ; }
-          else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
-          else cur += ch;
-        }
-        result.push(cur.trim());
-        return result;
-      }
-
-      // ── Parser numérico: pt-BR (1.234,56) e en-US (1234.56) ──
-      function parseBRL(s) {
-        s = String(s).replace(/"/g, '').trim();
-        if (!s || s === '-') return 0;
-        if (/[.,]/.test(s)) {
-          const lastComma = s.lastIndexOf(',');
-          const lastDot   = s.lastIndexOf('.');
-          if (lastComma > lastDot) {
-            return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
-          }
-          return parseFloat(s.replace(/,/g, '')) || 0;
-        }
-        return parseFloat(s) || 0;
-      }
-
       const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
-      if (lines.length < 2) throw new Error('CSV vazio ou inválido');
+      if (lines.length < 2) throw new Error('CSV vazio');
 
-      const header = parseCSVLine(lines[0]).map(h => h.toLowerCase().replace(/['"]/g, '').trim());
+      const hdr = fvParseCSVLine(lines[0]).map(h => h.replace(/"/g,'').trim().toUpperCase());
 
-      // ── Detectar coluna CONSULTOR (representante) ──
-      const repIdx = (() => {
-        const pri = [
-          h => h === 'consultor' || h === 'consultora',
-          h => h === 'representante',
-          h => h.includes('consul'),
-          h => h.includes('representante'),
-          h => h === 'rep',
-        ];
-        for (const fn of pri) { const i = header.findIndex(fn); if (i >= 0) return i; }
-        return -1;
-      })();
+      // Índices das colunas necessárias
+      const idx = {
+        dtNota:   hdr.findIndex(h => h === 'DATA NOTA' || h.includes('DATA NOTA')),
+        dtPed:    hdr.findIndex(h => h === 'DT PEDIDO' || h === 'DATA PEDIDO'),
+        vlr:      hdr.findIndex(h => h === 'VLR LIQ' || h === 'VLR LIQ FATURADO' || h.includes('VLR LIQ')),
+        peso:     hdr.findIndex(h => h === 'PESO LIQ' || h.includes('PESO LIQ')),
+        classif:  hdr.findIndex(h => h === 'CLASSIFICACAO' || h.includes('CLASSIF')),
+        grupo:    hdr.findIndex(h => h === 'GRUPO' || h.includes('GRUPO')),
+        frete:    hdr.findIndex(h => h === 'TP FRETE' || h === 'FRETE' || h.includes('FRETE')),
+        qtdFat:   hdr.findIndex(h => h === 'QTDE FATURADO' || h === 'FATURADO'),
+        nf:       hdr.findIndex(h => h === 'NUM NF' || h === 'NF'),
+      };
 
-      // ── Detectar coluna GERENTE ──
-      const gerIdx = (() => {
-        const pri = [
-          h => h === 'gerente',
-          h => h.includes('gerente'),
-          h => h === 'supervisor' || h === 'gestor',
-          h => h.includes('supervisor') || h.includes('gestor'),
-        ];
-        for (const fn of pri) { const i = header.findIndex(fn); if (i >= 0) return i; }
-        return -1;
-      })();
-
-      // ── Detectar coluna VLR LIQ FATURADO ──
-      const fatIdx = (() => {
-        const pri = [
-          h => h === 'vlr liq faturado' || h === 'vlr líq faturado',
-          h => h.includes('vlr liq fat') || h.includes('vlr líq fat'),
-          h => h.includes('vlr fat') && h.includes('liq'),
-          h => h === 'vlr liq' || h === 'vlr líq',
-          h => h.includes('vlr fat'),
-          h => h.includes('valor fat'),
-          h => h.includes('fat liq') || h.includes('fat líq'),
-          h => h.includes('vlr liq') || h.includes('vlr líq'),
-          h => h.includes('faturado') && (h.includes('vlr') || h.includes('valor') || h.includes('liq')),
-          h => h === 'vlr' || h === 'valor',
-          h => h === 'faturado',
-        ];
-        for (const fn of pri) { const i = header.findIndex(fn); if (i >= 0) return i; }
-        return -1;
-      })();
-
-      if (repIdx < 0) throw new Error('Coluna CONSULTOR não encontrada. Colunas: ' + header.join(' | '));
-      if (fatIdx < 0) throw new Error('Coluna VLR LIQ FATURADO não encontrada. Colunas: ' + header.join(' | '));
-
-      // ── SOMASES: agregar por chave "GERENTE|||CONSULTOR" ──────
-      // Isso garante que RODRIGO sob BALTAZAR e RODRIGO sob MARCOS
-      // ficam em buckets separados e não se somam
-      const fatMap = {};   // chave: "GERENTE|||CONSULTOR" → valor total
-      const fatMapSemGer = {}; // fallback sem gerente: "CONSULTOR" → valor
-
+      fvAllRows = [];
       for (let i = 1; i < lines.length; i++) {
-        const cols = parseCSVLine(lines[i]);
-        const rep  = (cols[repIdx] || '').replace(/"/g, '').trim().toUpperCase();
-        const ger  = gerIdx >= 0 ? (cols[gerIdx] || '').replace(/"/g, '').trim().toUpperCase() : '';
-        const fat  = parseBRL(cols[fatIdx] || '0');
-        if (!rep) continue;
+        const c = fvParseCSVLine(lines[i]);
+        const vlr  = fvParseBRL(c[idx.vlr]  ?? '0');
+        const peso = fvParseBRL(c[idx.peso]  ?? '0');
+        if (vlr === 0 && peso === 0) continue; // pula linhas vazias
 
-        // Chave composta gerente+consultor (SOMASES)
-        if (ger) {
-          const chave = ger + '|||' + rep;
-          fatMap[chave] = (fatMap[chave] || 0) + fat;
-        }
-        // Fallback: só consultor (para casos sem gerente na linha)
-        fatMapSemGer[rep] = (fatMapSemGer[rep] || 0) + fat;
+        const dtRaw = idx.dtNota >= 0 ? c[idx.dtNota] : (idx.dtPed >= 0 ? c[idx.dtPed] : '');
+        const dt    = fvParseData(dtRaw);
+
+        fvAllRows.push({
+          _data:   dt,
+          _dtStr:  dtRaw.replace(/"/g,'').trim(),
+          vlr,
+          peso,
+          classif: (c[idx.classif] ?? '').replace(/"/g,'').trim() || 'Sem classificação',
+          grupo:   (c[idx.grupo]   ?? '').replace(/"/g,'').trim() || 'Sem grupo',
+          frete:   (c[idx.frete]   ?? '').replace(/"/g,'').trim() || '—',
+        });
       }
 
-      // ── Cruzar com o estado cadastrado ───────────────────────
-      // Para cada gerente, busca no fatMap pela chave GERENTE+CONSULTOR
-      // Isso é o SOMASES: só soma linhas onde GERENTE e CONSULTOR batem
-      let updated = 0;
-      fatMetasState.gerentes.forEach(g => {
-        // Preparar chave do gerente: primeiros 12 chars em upper
-        const gerChave = g.nome.slice(0, 12).toUpperCase();
+      // Preset filtro: mínimo e máximo do CSV
+      const datas = fvAllRows.map(r => r._data).filter(Boolean);
+      if (datas.length) {
+        const min = new Date(Math.min(...datas)), max = new Date(Math.max(...datas));
+        const fmt = d => d.toISOString().slice(0,10);
+        const ini = document.getElementById('fv-dt-ini');
+        const fim = document.getElementById('fv-dt-fim');
+        if (!ini.value) ini.value = fmt(min);
+        if (!fim.value) fim.value = fmt(max);
+      }
 
-        g.reps.forEach(r => {
-          const repChave = r.nome.slice(0, 12).toUpperCase();
-
-          if (gerIdx >= 0) {
-            // Buscar a chave composta: achar linha que bate gerente E consultor
-            const chaveComposta = Object.keys(fatMap).find(k => {
-              const [kGer, kRep] = k.split('|||');
-              return kGer.includes(gerChave) && kRep.includes(repChave);
-            });
-
-            if (chaveComposta !== undefined) {
-              r.fat = fatMap[chaveComposta];
-              updated++;
-              return;
-            }
-          }
-
-          // Fallback: sem coluna de gerente, usa só o consultor
-          const keyFallback = Object.keys(fatMapSemGer).find(k => k.includes(repChave));
-          if (keyFallback !== undefined) {
-            r.fat = fatMapSemGer[keyFallback];
-            updated++;
-          }
-        });
-      });
+      fvFiltered = [...fvAllRows];
+      fvInited   = true;
 
       const ts = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      const modoGer = gerIdx >= 0
-        ? `<span style="color:var(--green);font-size:10px">✓ SOMASES ativo (gerente + consultor)</span>`
-        : `<span style="color:var(--yellow);font-size:10px">⚠ Sem coluna gerente — somando só por consultor</span>`;
+      fvSetStatus('ok', `<strong>${fvAllRows.length.toLocaleString('pt-BR')} linhas</strong> carregadas &middot; Atualizado ${ts}`);
 
-      fatMetasSetStatus('ok',
-        `<strong>${updated} representantes</strong> atualizados &middot; ` +
-        `${modoGer} &middot; ` +
-        `rep[${repIdx}]: <code style="color:var(--neon);font-size:10px">${esc(header[repIdx])}</code> &middot; ` +
-        `fat[${fatIdx}]: <code style="color:var(--green);font-size:10px">${esc(header[fatIdx])}</code> &middot; ` +
-        `Atualizado ${ts}`
-      );
-
-      if (fatMetasRefreshSeconds > 0) fatMetasScheduleNext();
-      fatMetasRenderSummary();
-      fatMetasRenderGerentes();
+      if (fvRefSecs > 0) fvScheduleNext();
+      fvRender();
     })
-    .catch(e => {
-      fatMetasSetStatus('error', '❌ ' + esc(e.message));
-    });
+    .catch(e => fvSetStatus('error', '❌ ' + esc(e.message)));
+}
+
+// ── Render principal ──────────────────────────
+function fvRender() {
+  const rows = fvFiltered;
+  const totalVlr  = rows.reduce((s, r) => s + r.vlr,  0);
+  const totalPeso = rows.reduce((s, r) => s + r.peso, 0);
+
+  // Agrupar por data para calcular hoje e ontem
+  const hoje   = new Date(); hoje.setHours(0,0,0,0);
+  const ontem  = new Date(hoje); ontem.setDate(ontem.getDate()-1);
+  const vlrHoje  = rows.filter(r => r._data && r._data >= hoje).reduce((s,r)=>s+r.vlr,0);
+  const pesoHoje = rows.filter(r => r._data && r._data >= hoje).reduce((s,r)=>s+r.peso,0);
+
+  // ── KPIs ────────────────────────────────────
+  const kpis = [
+    { label:'Faturado Total', val: fmtBRL(totalVlr), color:'var(--green)', sub: null },
+    { label:'Faturado Hoje',  val: fmtBRL(vlrHoje),  color:'var(--neon)',  sub: 'do dia atual' },
+    { label:'Peso Total (kg)',val: Math.round(totalPeso).toLocaleString('pt-BR') + ' kg', color:'var(--teal)', sub: null },
+    { label:'Peso Hoje (kg)', val: Math.round(pesoHoje).toLocaleString('pt-BR') + ' kg',  color:'var(--purple)', sub: 'do dia atual' },
+    { label:'Registros',      val: rows.length.toLocaleString('pt-BR'), color:'var(--text2)', sub: 'linhas no período' },
+  ];
+  document.getElementById('fv-kpis').innerHTML = kpis.map(k => `
+    <div class="cp-kpi" style="--k-color:${k.color}">
+      <div class="cp-kpi-label">${k.label}</div>
+      <div class="cp-kpi-value" style="color:${k.color};font-size:15px">${k.val}</div>
+      ${k.sub ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${k.sub}</div>` : ''}
+    </div>`).join('');
+
+  // ── Gráfico Diário ───────────────────────────
+  const diaMap = {};
+  rows.forEach(r => {
+    if (!r._data) return;
+    const k = fvFmtData(r._data);
+    diaMap[k] = (diaMap[k] || 0) + r.vlr;
+  });
+  const diasSorted = Object.keys(diaMap).sort((a,b) => {
+    const [da,ma] = a.split('/').map(Number);
+    const [db,mb] = b.split('/').map(Number);
+    return (ma*100+da) - (mb*100+db);
+  });
+
+  if (fvChartDia) fvChartDia.destroy();
+  const ctxDia = document.getElementById('fv-chart-diario');
+  if (ctxDia) fvChartDia = new Chart(ctxDia, {
+    type: 'bar',
+    data: {
+      labels: diasSorted,
+      datasets: [{
+        data: diasSorted.map(d => diaMap[d]),
+        backgroundColor: 'rgba(0,255,136,0.25)',
+        borderColor: '#00ff88',
+        borderWidth: 1.5,
+        borderRadius: 3,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => fmtBRL(ctx.raw) } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { font: { size: 10 }, callback: v => fmtBRLShort(v) } }
+      }
+    }
+  });
+
+  // ── Gráfico Classificação ────────────────────
+  const claMap = {};
+  rows.forEach(r => { claMap[r.classif] = (claMap[r.classif]||0) + r.vlr; });
+  const claSorted = Object.entries(claMap).sort((a,b) => b[1]-a[1]);
+  const claCores = ['#00ff88','#00d4ff','#a855f7','#f5c518','#ff3d5a','#00bcd4','#ff9800','#4caf50','#e91e63','#9c27b0'];
+
+  if (fvChartCla) fvChartCla.destroy();
+  const ctxCla = document.getElementById('fv-chart-classif');
+  if (ctxCla) fvChartCla = new Chart(ctxCla, {
+    type: 'doughnut',
+    data: {
+      labels: claSorted.map(([k])=>k),
+      datasets: [{ data: claSorted.map(([,v])=>v), backgroundColor: claCores, borderWidth: 0, hoverOffset: 8 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } },
+        tooltip: { callbacks: {
+          label: ctx => {
+            const pct = totalVlr > 0 ? (ctx.raw/totalVlr*100).toFixed(1)+'%' : '';
+            return ` ${fmtBRL(ctx.raw)}  (${pct})`;
+          }
+        }}
+      }
+    }
+  });
+
+  // ── Top 10 Grupos ─────────────────────────────
+  const grupoMap = {};
+  rows.forEach(r => { grupoMap[r.grupo] = (grupoMap[r.grupo]||0) + r.vlr; });
+  const top10 = Object.entries(grupoMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const maxG  = top10[0]?.[1] || 1;
+
+  document.getElementById('fv-top10').innerHTML = top10.map(([nome, val], i) => {
+    const pct    = totalVlr > 0 ? (val/totalVlr*100).toFixed(1) : '0.0';
+    const barPct = (val/maxG*100).toFixed(1);
+    const cor    = i < 3 ? 'var(--green)' : i < 6 ? 'var(--neon)' : 'var(--teal)';
+    return `
+    <div style="display:grid;grid-template-columns:20px 1fr 90px 60px;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;margin-bottom:2px;background:${i%2===0?'rgba(255,255,255,0.02)':'transparent'}">
+      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;text-align:right">${i+1}</div>
+      <div>
+        <div style="font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(nome)}">${esc(nome)}</div>
+        <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:3px;margin-top:4px">
+          <div style="height:100%;width:${barPct}%;background:${cor};border-radius:3px;box-shadow:0 0 4px ${cor}40"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:${cor};font-family:'Space Mono',monospace;text-align:right">${fmtBRL(val)}</div>
+      <div style="font-size:11px;color:var(--text3);text-align:right">${pct}%</div>
+    </div>`;
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Sem dados</div>';
+
+  // ── Gráfico Peso Diário ───────────────────────
+  const pesoMap = {};
+  rows.forEach(r => {
+    if (!r._data) return;
+    const k = fvFmtData(r._data);
+    pesoMap[k] = (pesoMap[k] || 0) + r.peso;
+  });
+  const pesoDias = Object.keys(pesoMap).sort((a,b) => {
+    const [da,ma] = a.split('/').map(Number);
+    const [db,mb] = b.split('/').map(Number);
+    return (ma*100+da) - (mb*100+db);
+  });
+
+  if (fvChartPeso) fvChartPeso.destroy();
+  const ctxPeso = document.getElementById('fv-chart-peso');
+  if (ctxPeso) fvChartPeso = new Chart(ctxPeso, {
+    type: 'line',
+    data: {
+      labels: pesoDias,
+      datasets: [{
+        data: pesoDias.map(d => pesoMap[d]),
+        borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.08)',
+        borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => Math.round(ctx.raw).toLocaleString('pt-BR') + ' kg' } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { font: { size: 10 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'t' : v } }
+      }
+    }
+  });
+
+  // ── Gráfico Frete ─────────────────────────────
+  const freteMap = {};
+  rows.forEach(r => {
+    const k = r.frete === 'R' ? 'Retira' : r.frete === 'C' ? 'CIF' : r.frete === 'F' ? 'FOB' : r.frete || 'Outros';
+    freteMap[k] = (freteMap[k] || 0) + r.vlr;
+  });
+  const freteSorted = Object.entries(freteMap).sort((a,b)=>b[1]-a[1]);
+
+  if (fvChartFrete) fvChartFrete.destroy();
+  const ctxFrete = document.getElementById('fv-chart-frete');
+  if (ctxFrete) fvChartFrete = new Chart(ctxFrete, {
+    type: 'bar',
+    data: {
+      labels: freteSorted.map(([k])=>k),
+      datasets: [{
+        data: freteSorted.map(([,v])=>v),
+        backgroundColor: ['rgba(0,212,255,0.3)','rgba(168,85,247,0.3)','rgba(245,197,24,0.3)','rgba(255,61,90,0.3)'],
+        borderColor:     ['#00d4ff','#a855f7','#f5c518','#ff3d5a'],
+        borderWidth: 1.5, borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { label: ctx => fmtBRL(ctx.raw) + ' (' + (totalVlr>0?(ctx.raw/totalVlr*100).toFixed(1):'0.0') + '%)' } }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' },
+          ticks: { font: { size: 10 }, callback: v => fmtBRLShort(v) } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
 }
 </script>
 </body>
