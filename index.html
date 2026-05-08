@@ -863,6 +863,100 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .cp-chart-card.full { grid-column: 1; }
   .home-header { flex-direction: column; align-items: flex-start; gap: 20px; }
 }
+
+/* ══ GLASSMORPHISM KPI CARDS ══════════════════ */
+.cp-kpi {
+  background: rgba(255,255,255,0.03) !important;
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-top: 1px solid rgba(255,255,255,0.13) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.cp-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08),
+              0 0 0 1px var(--k-color, rgba(0,212,255,0.2));
+}
+.cp-kpi-value {
+  font-family: 'Space Mono', monospace !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.5px;
+}
+
+/* ══ MODULE CARD GLOW HOVER ═══════════════════ */
+.module-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease !important;
+}
+.module-card--neon:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 1px rgba(0,212,255,0.35), 0 0 40px rgba(0,212,255,0.12), 0 16px 40px rgba(0,0,0,0.4) !important;
+  background: rgba(0,212,255,0.04) !important;
+  border-color: rgba(0,212,255,0.3) !important;
+}
+.module-card--green:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 0 1px rgba(0,255,136,0.35), 0 0 40px rgba(0,255,136,0.1), 0 16px 40px rgba(0,0,0,0.4) !important;
+  background: rgba(0,255,136,0.04) !important;
+  border-color: rgba(0,255,136,0.3) !important;
+}
+.module-tag {
+  transition: background 0.2s, color 0.2s !important;
+  cursor: default;
+}
+.module-card--neon:hover .module-tag { background: rgba(0,212,255,0.12) !important; }
+.module-card--green:hover .module-tag { background: rgba(0,255,136,0.12) !important; }
+
+/* ══ GRADIENT BARS (Chart.js via plugin) ══════ */
+/* Applied in JS — CSS anchor only */
+.fv-gradient-bar { border-radius: 4px; }
+
+/* ══ SPARKLINES NA STATUS BAR ═════════════════ */
+.status-sparkline {
+  display: inline-flex; align-items: flex-end; gap: 1.5px;
+  height: 14px; margin-left: 6px; opacity: 0.7;
+}
+.status-sparkline span {
+  width: 3px; border-radius: 1px; background: currentColor;
+  transition: height 0.3s ease;
+}
+
+/* ══ FILTER ACCORDION ═════════════════════════ */
+.filter-accordion-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 12px; background: rgba(0,212,255,0.06);
+  border: 1px solid rgba(0,212,255,0.15); border-radius: 7px;
+  color: var(--neon); font-family: Barlow,sans-serif; font-size:11px;
+  font-weight: 600; cursor: pointer; transition: var(--trans);
+}
+.filter-accordion-btn:hover { background: rgba(0,212,255,0.12); }
+.filter-accordion-body {
+  overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease;
+  max-height: 0; opacity: 0;
+}
+.filter-accordion-body.open { max-height: 200px; opacity: 1; }
+.filter-chevron { transition: transform 0.25s ease; font-size: 9px; }
+.filter-chevron.open { transform: rotate(180deg); }
+
+/* ══ ZERO VALUE EMPTY STATE ═══════════════════ */
+.kpi-zero { color: var(--text3) !important; }
+.kpi-zero-hint {
+  font-size: 9px; color: var(--text3); margin-top: 3px;
+  letter-spacing: 0.3px; font-style: italic;
+}
+
+/* ══ CRITICAL BADGE FOR TABLES ════════════════ */
+.badge-critical {
+  background: rgba(255,61,90,0.15); color: var(--red);
+  border: 1px solid rgba(255,61,90,0.3); font-size:9px;
+  padding: 1px 6px; border-radius: 10px; font-weight:700;
+  letter-spacing: 0.5px; animation: pulse-red 1.5s infinite;
+}
+@keyframes pulse-red {
+  0%,100% { box-shadow: 0 0 0 0 rgba(255,61,90,0.3); }
+  50%      { box-shadow: 0 0 0 3px rgba(255,61,90,0); }
+}
 </style>
 </head>
 <body>
@@ -898,16 +992,25 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="status-dot pulse-dot"></div>
         <span class="status-label">Painel</span>
         <span class="status-val" style="color:var(--green)">Online</span>
+        <span class="status-sparkline" style="color:var(--green)" id="sparkline-painel">
+          <span style="height:4px"></span><span style="height:7px"></span><span style="height:5px"></span><span style="height:9px"></span><span style="height:6px"></span><span style="height:11px"></span><span style="height:8px"></span><span style="height:14px"></span>
+        </span>
       </div>
       <div class="status-item" id="homeStatCp">
         <div class="status-dot" id="homeStatCpDot" style="background:var(--text3)"></div>
         <span class="status-label">Carteira</span>
         <span class="status-val" id="homeStatCpVal" style="color:var(--text3)">Aguardando</span>
+        <span class="status-sparkline" style="color:var(--neon)" id="sparkline-carteira">
+          <span style="height:3px"></span><span style="height:6px"></span><span style="height:4px"></span><span style="height:8px"></span><span style="height:5px"></span><span style="height:10px"></span><span style="height:7px"></span><span style="height:12px"></span>
+        </span>
       </div>
       <div class="status-item" id="homeStatFat">
         <div class="status-dot" id="homeStatFatDot" style="background:var(--text3)"></div>
         <span class="status-label">Faturamento</span>
         <span class="status-val" id="homeStatFatVal" style="color:var(--text3)">Aguardando</span>
+        <span class="status-sparkline" style="color:var(--green)" id="sparkline-fat">
+          <span style="height:5px"></span><span style="height:9px"></span><span style="height:6px"></span><span style="height:11px"></span><span style="height:8px"></span><span style="height:13px"></span><span style="height:10px"></span><span style="height:14px"></span>
+        </span>
       </div>
       <div class="status-item" id="homeStatFatNext" style="display:none">
         <div class="status-dot" style="background:var(--neon)"></div>
@@ -1165,37 +1268,48 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
 
       <!-- FILTERS -->
-      <div class="cp-filters">
+      <div class="cp-filters" style="flex-wrap:wrap;gap:8px;align-items:center">
+        <!-- Filtros principais sempre visíveis -->
         <div class="cp-filter-group"><label>Data Inicial</label><input type="date" id="fDataIni"></div>
         <div class="cp-filter-group"><label>Data Final</label><input type="date" id="fDataFim"></div>
         <div class="cp-filter-group"><label>Representante</label><select id="fRep"><option value="">Todos</option></select></div>
-        <div class="cp-filter-group"><label>Micro Região</label><select id="fMicro"><option value="">Todas</option></select></div>
-        <div class="cp-filter-group"><label>Cliente</label><select id="fCliente"><option value="">Todos</option></select></div>
-        <div class="cp-filter-group">
-          <label>Status Carga</label>
-          <select id="fStatus">
-            <option value="">Todos</option>
-            <option value="em_carga">Em Carga</option>
-            <option value="disponivel">Disponível</option>
-          </select>
+
+        <!-- Botão acordeão -->
+        <button class="filter-accordion-btn" onclick="cpToggleFilters(this)">
+          <span>Filtros Avançados</span>
+          <span class="filter-chevron">▼</span>
+        </button>
+        <button class="cp-filter-reset" onclick="cpResetFilters()" style="margin-left:0">↺ Limpar</button>
+
+        <!-- Filtros avançados retráteis -->
+        <div class="filter-accordion-body" id="cpAdvFilters" style="width:100%;display:flex;flex-wrap:wrap;gap:8px;max-height:0;opacity:0;overflow:hidden;transition:max-height 0.3s ease,opacity 0.3s ease">
+          <div class="cp-filter-group"><label>Micro Região</label><select id="fMicro"><option value="">Todas</option></select></div>
+          <div class="cp-filter-group"><label>Cliente</label><select id="fCliente"><option value="">Todos</option></select></div>
+          <div class="cp-filter-group">
+            <label>Status Carga</label>
+            <select id="fStatus">
+              <option value="">Todos</option>
+              <option value="em_carga">Em Carga</option>
+              <option value="disponivel">Disponível</option>
+            </select>
+          </div>
+          <div class="cp-filter-group">
+            <label>Bloqueio</label>
+            <select id="fBloqueio">
+              <option value="">Todos</option>
+              <option value="LIB">Liberado</option>
+              <option value="BLQ">Bloqueado</option>
+            </select>
+          </div>
+          <div class="cp-filter-group">
+            <label>Tipo Frete</label>
+            <select id="fFrete">
+              <option value="">Todos</option>
+              <option value="Retira">Retira</option>
+              <option value="Entrega">Entrega</option>
+            </select>
+          </div>
         </div>
-        <div class="cp-filter-group">
-          <label>Bloqueio</label>
-          <select id="fBloqueio">
-            <option value="">Todos</option>
-            <option value="LIB">Liberado</option>
-            <option value="BLQ">Bloqueado</option>
-          </select>
-        </div>
-        <div class="cp-filter-group">
-          <label>Tipo Frete</label>
-          <select id="fFrete">
-            <option value="">Todos</option>
-            <option value="Retira">Retira</option>
-            <option value="Entrega">Entrega</option>
-          </select>
-        </div>
-        <button class="cp-filter-reset" onclick="cpResetFilters()">↺ Limpar</button>
       </div>
 
       <!-- CONTENT -->
@@ -1905,6 +2019,19 @@ function cpPopulateFilters() {
   });
 }
 
+function cpToggleFilters(btn) {
+  const body    = document.getElementById('cpAdvFilters');
+  const chevron = btn.querySelector('.filter-chevron');
+  const isOpen  = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+  if (isOpen) {
+    body.style.maxHeight = '0'; body.style.opacity = '0';
+    chevron.style.transform = '';
+  } else {
+    body.style.maxHeight = '200px'; body.style.opacity = '1';
+    chevron.style.transform = 'rotate(180deg)';
+  }
+}
+
 function cpResetFilters() {
   ['fRep','fMicro','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => document.getElementById(id).value='');
   ['fDataIni','fDataFim'].forEach(id => document.getElementById(id).value='');
@@ -2226,8 +2353,11 @@ function cpRenderDetPage() {
   const start = (cpDetPage-1)*CP_PAGE_SIZE;
   const page = cpDetAllFiltered.slice(start, start+CP_PAGE_SIZE);
   document.getElementById('tDetalhesBody').innerHTML = page.map(r=>`
-    <tr>
-      <td><span class="badge badge-blue">${esc(r.pedido)}</span></td>
+    <tr ${r.semaforo==='red'?'style="background:rgba(255,61,90,0.03)"':''}>
+      <td>
+        <span class="badge badge-blue">${esc(r.pedido)}</span>
+        ${r.semaforo==='red'?'<span class="badge-critical" style="margin-left:4px">CRÍTICO</span>':''}
+      </td>
       <td>${esc(r.dataVendaStr)}</td>
       <td>${esc(r.cliente)}</td>
       <td>${esc(r.representante.split(' ').slice(0,2).join(' '))}</td>
@@ -3381,26 +3511,56 @@ function fvRender() {
   const totalVlr  = rows.reduce((s, r) => s + r.vlr,  0);
   const totalPeso = rows.reduce((s, r) => s + r.peso, 0);
 
-  // Agrupar por data para calcular hoje e ontem
   const hoje   = new Date(); hoje.setHours(0,0,0,0);
-  const ontem  = new Date(hoje); ontem.setDate(ontem.getDate()-1);
   const vlrHoje  = rows.filter(r => r._data && r._data >= hoje).reduce((s,r)=>s+r.vlr,0);
   const pesoHoje = rows.filter(r => r._data && r._data >= hoje).reduce((s,r)=>s+r.peso,0);
 
-  // ── KPIs ────────────────────────────────────
-  const kpis = [
-    { label:'Faturado Total', val: fmtBRL(totalVlr), color:'var(--green)', sub: null },
-    { label:'Faturado Hoje',  val: fmtBRL(vlrHoje),  color:'var(--neon)',  sub: 'do dia atual' },
-    { label:'Peso Total (kg)',val: Math.round(totalPeso).toLocaleString('pt-BR') + ' kg', color:'var(--teal)', sub: null },
-    { label:'Peso Hoje (kg)', val: Math.round(pesoHoje).toLocaleString('pt-BR') + ' kg',  color:'var(--purple)', sub: 'do dia atual' },
-    { label:'Registros',      val: rows.length.toLocaleString('pt-BR'), color:'var(--text2)', sub: 'linhas no período' },
+  // ── KPIs com glassmorphism + zero-state ───────
+  const kpisData = [
+    { label:'Faturado Total',  val: totalVlr,  fmt: v => fmtBRL(v),    color:'var(--green)',  zero:'Sem dados no período' },
+    { label:'Faturado Hoje',   val: vlrHoje,   fmt: v => fmtBRL(v),    color:'var(--neon)',   zero:'Aguardando fechamento do dia' },
+    { label:'Peso Total (t)',  val: totalPeso/1000, fmt: v => v.toFixed(1)+' t', color:'var(--teal)',   zero:'Sem dados' },
+    { label:'Peso Hoje (t)',   val: pesoHoje/1000,  fmt: v => v.toFixed(1)+' t', color:'var(--purple)', zero:'Aguardando fechamento do dia' },
+    { label:'Registros',       val: rows.length, fmt: v => v.toLocaleString('pt-BR'), color:'var(--text2)', zero:'Nenhum registro' },
   ];
-  document.getElementById('fv-kpis').innerHTML = kpis.map(k => `
+  document.getElementById('fv-kpis').innerHTML = kpisData.map(k => {
+    const isZero = k.val === 0;
+    return `
     <div class="cp-kpi" style="--k-color:${k.color}">
       <div class="cp-kpi-label">${k.label}</div>
-      <div class="cp-kpi-value" style="color:${k.color};font-size:15px">${k.val}</div>
-      ${k.sub ? `<div style="font-size:10px;color:var(--text3);margin-top:2px">${k.sub}</div>` : ''}
-    </div>`).join('');
+      <div class="cp-kpi-value ${isZero?'kpi-zero':''}" style="color:${isZero?'var(--text3)':k.color};font-size:15px">${k.fmt(k.val)}</div>
+      ${isZero ? `<div class="kpi-zero-hint">${k.zero}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  // ── Animação das sparklines ───────────────────
+  ['sparkline-painel','sparkline-carteira','sparkline-fat'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.querySelectorAll('span').forEach(s => {
+      const h = 3 + Math.random() * 11;
+      s.style.height = h + 'px';
+    });
+  });
+
+  // ── Plugin: gradiente vertical nas barras ────
+  const gradientPlugin = {
+    id: 'fvGradient',
+    beforeDatasetsDraw(chart) {
+      const {ctx, chartArea, data} = chart;
+      if (!chartArea || chart.config.type !== 'bar') return;
+      chart.data.datasets.forEach((ds, i) => {
+        const meta = chart.getDatasetMeta(i);
+        if (!meta.data.length) return;
+        const color = Array.isArray(ds.borderColor) ? ds.borderColor[0] : ds.borderColor;
+        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+        gradient.addColorStop(0,   color.replace(/[\d.]+\)$/, '0.6)').replace('rgb(','rgba('));
+        gradient.addColorStop(0.6, color.replace(/[\d.]+\)$/, '0.25)').replace('rgb(','rgba('));
+        gradient.addColorStop(1,   color.replace(/[\d.]+\)$/, '0.05)').replace('rgb(','rgba('));
+        ds.backgroundColor = gradient;
+      });
+    }
+  };
 
   // ── Gráfico Diário ───────────────────────────
   const diaMap = {};
@@ -3419,20 +3579,25 @@ function fvRender() {
   const ctxDia = document.getElementById('fv-chart-diario');
   if (ctxDia) fvChartDia = new Chart(ctxDia, {
     type: 'bar',
+    plugins: [gradientPlugin],
     data: {
       labels: diasSorted,
       datasets: [{
         data: diasSorted.map(d => diaMap[d]),
-        backgroundColor: 'rgba(0,255,136,0.25)',
+        backgroundColor: 'rgba(0,255,136,0.3)',
         borderColor: '#00ff88',
         borderWidth: 1.5,
-        borderRadius: 3,
+        borderRadius: 4,
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: ctx => fmtBRL(ctx.raw) } }
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          borderColor: '#00ff88', borderWidth: 1,
+          callbacks: { label: ctx => ' ' + fmtBRL(ctx.raw) }
+        }
       },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
@@ -3442,7 +3607,7 @@ function fvRender() {
     }
   });
 
-  // ── Gráfico Classificação ────────────────────
+  // ── Gráfico Classificação (legenda abaixo) ───
   const claMap = {};
   rows.forEach(r => { claMap[r.classif] = (claMap[r.classif]||0) + r.vlr; });
   const claSorted = Object.entries(claMap).sort((a,b) => b[1]-a[1]);
@@ -3453,20 +3618,28 @@ function fvRender() {
   if (ctxCla) fvChartCla = new Chart(ctxCla, {
     type: 'doughnut',
     data: {
-      labels: claSorted.map(([k])=>k),
-      datasets: [{ data: claSorted.map(([,v])=>v), backgroundColor: claCores, borderWidth: 0, hoverOffset: 8 }]
+      labels: claSorted.map(([k]) => k.length > 22 ? k.slice(0,20)+'…' : k),
+      datasets: [{ data: claSorted.map(([,v])=>v), backgroundColor: claCores, borderWidth: 0, hoverOffset: 10 }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } },
-        tooltip: { callbacks: {
-          label: ctx => {
-            const pct = totalVlr > 0 ? (ctx.raw/totalVlr*100).toFixed(1)+'%' : '';
-            return ` ${fmtBRL(ctx.raw)}  (${pct})`;
+        legend: {
+          position: 'bottom',
+          labels: { font: { size: 10 }, boxWidth: 9, padding: 7, color: '#7a8599' }
+        },
+        tooltip: {
+          borderColor: ctx => claCores[ctx.dataIndex] || '#00ff88',
+          borderWidth: 1,
+          callbacks: {
+            label: ctx => {
+              const pct = totalVlr > 0 ? (ctx.raw/totalVlr*100).toFixed(1)+'%' : '';
+              return ` ${fmtBRL(ctx.raw)}  (${pct})`;
+            }
           }
-        }}
-      }
+        }
+      },
+      cutout: '62%',
     }
   });
 
@@ -3486,15 +3659,15 @@ function fvRender() {
       <div>
         <div style="font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(nome)}">${esc(nome)}</div>
         <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:3px;margin-top:4px">
-          <div style="height:100%;width:${barPct}%;background:${cor};border-radius:3px;box-shadow:0 0 4px ${cor}40"></div>
+          <div style="height:100%;width:${barPct}%;background:${cor};border-radius:3px;box-shadow:0 0 4px ${cor}40;transition:width 0.6s ease"></div>
         </div>
       </div>
       <div style="font-size:11px;color:${cor};font-family:'Space Mono',monospace;text-align:right">${fmtBRL(val)}</div>
       <div style="font-size:11px;color:var(--text3);text-align:right">${pct}%</div>
     </div>`;
-  }).join('') || '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Sem dados</div>';
+  }).join('') || '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Sem dados no período</div>';
 
-  // ── Gráfico Peso Diário ───────────────────────
+  // ── Gráfico Peso Diário (em toneladas) ────────
   const pesoMap = {};
   rows.forEach(r => {
     if (!r._data) return;
@@ -3514,20 +3687,24 @@ function fvRender() {
     data: {
       labels: pesoDias,
       datasets: [{
-        data: pesoDias.map(d => pesoMap[d]),
+        data: pesoDias.map(d => +(pesoMap[d]/1000).toFixed(2)),
         borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.08)',
         borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true,
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: ctx => Math.round(ctx.raw).toLocaleString('pt-BR') + ' kg' } }
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          borderColor: '#00d4ff', borderWidth: 1,
+          callbacks: { label: ctx => ' ' + ctx.raw.toFixed(2) + ' t' }
+        }
       },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
         y: { grid: { color: 'rgba(255,255,255,0.05)' },
-          ticks: { font: { size: 10 }, callback: v => v >= 1000 ? (v/1000).toFixed(0)+'t' : v } }
+          ticks: { font: { size: 10 }, callback: v => v + ' t' } }
       }
     }
   });
@@ -3539,24 +3716,33 @@ function fvRender() {
     freteMap[k] = (freteMap[k] || 0) + r.vlr;
   });
   const freteSorted = Object.entries(freteMap).sort((a,b)=>b[1]-a[1]);
+  const freteCores  = ['#00d4ff','#a855f7','#f5c518','#ff3d5a','#00ff88'];
 
   if (fvChartFrete) fvChartFrete.destroy();
   const ctxFrete = document.getElementById('fv-chart-frete');
   if (ctxFrete) fvChartFrete = new Chart(ctxFrete, {
     type: 'bar',
+    plugins: [gradientPlugin],
     data: {
       labels: freteSorted.map(([k])=>k),
       datasets: [{
         data: freteSorted.map(([,v])=>v),
-        backgroundColor: ['rgba(0,212,255,0.3)','rgba(168,85,247,0.3)','rgba(245,197,24,0.3)','rgba(255,61,90,0.3)'],
-        borderColor:     ['#00d4ff','#a855f7','#f5c518','#ff3d5a'],
+        backgroundColor: freteCores.map(c => c.replace(/^#/, 'rgba(').replace(/(.{2})(.{2})(.{2})/, (m,r,g,b) =>
+          parseInt(r,16)+','+parseInt(g,16)+','+parseInt(b,16)+',')),
+        borderColor: freteCores,
         borderWidth: 1.5, borderRadius: 4,
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-      plugins: { legend: { display: false },
-        tooltip: { callbacks: { label: ctx => fmtBRL(ctx.raw) + ' (' + (totalVlr>0?(ctx.raw/totalVlr*100).toFixed(1):'0.0') + '%)' } }
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            labelColor: ctx => ({ borderColor: freteCores[ctx.dataIndex]||'#00d4ff', backgroundColor: freteCores[ctx.dataIndex]||'#00d4ff' }),
+            label: ctx => ' ' + fmtBRL(ctx.raw) + ' (' + (totalVlr>0?(ctx.raw/totalVlr*100).toFixed(1):'0.0') + '%)'
+          }
+        }
       },
       scales: {
         x: { grid: { color: 'rgba(255,255,255,0.05)' },
