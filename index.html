@@ -378,17 +378,18 @@ body::after {
 .cp-logo-accent { color: var(--neon); }
 .cp-update { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; }
 
-/* CARTEIRA TABS */
+/* CARTEIRA TABS — estilo compacto, unificado com Módulo 02 */
 .cp-tabs {
   display: flex; gap: 0; padding: 0 20px;
-  background: var(--bg3); border-bottom: 1px solid var(--border);
+  background: var(--bg2); border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 .cp-tab {
-  padding: 10px 18px; font-size: 12px; font-weight: 500;
+  padding: 11px 18px; font-size: 12px; font-weight: 600;
   color: var(--text3); cursor: pointer; white-space: nowrap;
   border-bottom: 2px solid transparent; transition: var(--trans);
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Barlow', sans-serif; letter-spacing: 0.3px;
+  display: flex; align-items: center; gap: 6px;
 }
 .cp-tab:hover { color: var(--text2); }
 .cp-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
@@ -1189,18 +1190,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="submod-tag">Excel / ERP</div>
       </div>
 
-      <div class="submod-card" id="submod-roteirizacao" style="--submod-color:#9b6bff;opacity:0.5;cursor:default">
-        <div class="submod-icon" style="color:var(--purple)">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/>
-            <path d="M7 11.5l10-5M7 12.5l10 5"/>
-          </svg>
-        </div>
-        <div class="submod-name">Roteirização</div>
-        <div class="submod-desc">Montagem e otimização de rotas por região, peso e janela de entrega.</div>
-        <div class="submod-tag" style="background:rgba(155,107,255,0.1);color:var(--purple);border-color:rgba(155,107,255,0.2)">Em breve</div>
-      </div>
-
       <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88" onclick="showSubmod('faturamento')">
         <div class="submod-icon" style="color:var(--green)">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -1230,12 +1219,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <span class="cp-update" id="cpLastUpdate" style="font-family:Space Mono,monospace;font-size:11px;color:var(--text3)">Sincronizando...</span>
       </div>
 
-      <!-- TABS -->
+      <!-- TABS — estilo compacto unificado com Módulo 02 -->
       <div class="cp-tabs">
         <div class="cp-tab active" data-tab="dashboard">Dashboard</div>
         <div class="cp-tab" data-tab="logistica-reg">Logística</div>
-        <div class="cp-tab" data-tab="representantes">Representantes</div>
-        <div class="cp-tab" data-tab="bloqueios">Bloqueios</div>
         <div class="cp-tab" data-tab="detalhes">Detalhamento</div>
         <div class="cp-tab" data-tab="historico">Histórico</div>
         <div class="cp-tab" data-tab="assistencia">Assistência</div>
@@ -1610,11 +1597,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="view-title">Transporte</div>
           </div>
         </div>
-        <!-- Botão contextual: muda conforme aba ativa -->
-        <button id="transpImportBtn" class="transp-import-btn" onclick="transpLoadData(this)" style="display:none">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Simular Import ERP
-        </button>
       </div>
     </div>
     <!-- ABAS INTERNAS DO TRANSPORTE -->
@@ -1622,27 +1604,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="transp-tab active" data-transp-tab="faturamento" onclick="switchTranspTab('faturamento')">
         <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         Faturamento
-      </div>
-      <div class="transp-tab" data-transp-tab="frota" onclick="switchTranspTab('frota')">
-        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Frota & Rotas <span style="font-size:9px;padding:1px 5px;background:rgba(245,197,24,0.15);color:var(--yellow);border:1px solid rgba(245,197,24,0.3);border-radius:3px;margin-left:4px;letter-spacing:0.5px">DEMO</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ABA: FROTA & ROTAS -->
-  <div class="transp-tab-panel" id="transp-panel-frota">
-    <div class="transp-inner" id="transpContent">
-      <div style="text-align:center;padding:80px 0">
-        <div style="width:80px;height:80px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green)">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        </div>
-        <div style="font-size:18px;font-weight:500;margin-bottom:8px">Nenhum dado carregado</div>
-        <p style="color:var(--text2);font-size:13px">Clique em "Simular Import ERP" para popular o painel de frota</p>
-        <button class="transp-import-btn" onclick="transpLoadData(this)" style="margin:20px auto 0;display:inline-flex">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Simular Import ERP
-        </button>
       </div>
     </div>
   </div>
@@ -2092,7 +2053,7 @@ function cpRenderKPIs() {
   ];
   document.getElementById('cpKpiGrid').innerHTML = kpis.map(k=>`
     <div class="cp-kpi${k.highlight?' cp-kpi--highlight':''}" style="--k-color:${k.color}${k.highlight?';background:rgba(0,229,204,0.07);border-color:rgba(0,229,204,0.25)':''}">
-      ${k.highlight?`<div style="position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);opacity:0.8;font-weight:700">DESTAQUE</div>`:''}
+      ${k.highlight?'':''}
       <div class="cp-kpi-label">${k.label}</div>
       <div class="cp-kpi-value" style="${k.highlight?'color:var(--teal)':''}">${k.value}</div>
       <div class="cp-kpi-sub">${k.sub}</div>
@@ -3512,16 +3473,16 @@ function fvRender() {
   const totalPeso = rows.reduce((s, r) => s + r.peso, 0);
 
   const hoje   = new Date(); hoje.setHours(0,0,0,0);
-  const vlrHoje  = rows.filter(r => r._data && r._data >= hoje).reduce((s,r)=>s+r.vlr,0);
-  const pesoHoje = rows.filter(r => r._data && r._data >= hoje).reduce((s,r)=>s+r.peso,0);
 
   // ── KPIs com glassmorphism + zero-state ───────
+  // Dias distintos com faturamento para calcular médias
+  const diasComDados = new Set(rows.filter(r=>r._data).map(r=>r._data.toDateString())).size || 1;
+
   const kpisData = [
-    { label:'Faturado Total',  val: totalVlr,  fmt: v => fmtBRL(v),    color:'var(--green)',  zero:'Sem dados no período' },
-    { label:'Faturado Hoje',   val: vlrHoje,   fmt: v => fmtBRL(v),    color:'var(--neon)',   zero:'Aguardando fechamento do dia' },
-    { label:'Peso Total (t)',  val: totalPeso/1000, fmt: v => v.toFixed(1)+' t', color:'var(--teal)',   zero:'Sem dados' },
-    { label:'Peso Hoje (t)',   val: pesoHoje/1000,  fmt: v => v.toFixed(1)+' t', color:'var(--purple)', zero:'Aguardando fechamento do dia' },
-    { label:'Registros',       val: rows.length, fmt: v => v.toLocaleString('pt-BR'), color:'var(--text2)', zero:'Nenhum registro' },
+    { label:'Faturado Total',  val: totalVlr,                      fmt: v => fmtBRL(v),               color:'var(--green)',  zero:'Sem dados no período' },
+    { label:'Média por Dia',   val: totalVlr / diasComDados,        fmt: v => fmtBRL(v),               color:'var(--neon)',   zero:'Aguardando dados' },
+    { label:'Peso Total (t)',  val: totalPeso / 1000,               fmt: v => v.toFixed(1)+' t',        color:'var(--teal)',   zero:'Sem dados' },
+    { label:'Peso Médio/Dia',  val: totalPeso / diasComDados / 1000, fmt: v => v.toFixed(2)+' t/dia',  color:'var(--purple)', zero:'Aguardando dados' },
   ];
   document.getElementById('fv-kpis').innerHTML = kpisData.map(k => {
     const isZero = k.val === 0;
@@ -3615,8 +3576,33 @@ function fvRender() {
 
   if (fvChartCla) fvChartCla.destroy();
   const ctxCla = document.getElementById('fv-chart-classif');
+  // Plugin: % labels on slices
+  const doughnutLabelPlugin = {
+    id: 'fvDoughnutLabels',
+    afterDatasetsDraw(chart) {
+      const {ctx, data} = chart;
+      const total = data.datasets[0].data.reduce((s,v)=>s+v,0);
+      chart.getDatasetMeta(0).data.forEach((arc, i) => {
+        const val = data.datasets[0].data[i];
+        const pct = total > 0 ? (val/total*100) : 0;
+        if (pct < 4) return; // não desenhar se fatia muito pequena
+        const angle = (arc.startAngle + arc.endAngle) / 2;
+        const r = (arc.innerRadius + arc.outerRadius) / 2;
+        const x = arc.x + Math.cos(angle) * r;
+        const y = arc.y + Math.sin(angle) * r;
+        ctx.save();
+        ctx.fillStyle = 'rgba(0,0,0,0.75)';
+        ctx.font = 'bold 10px Barlow, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(pct.toFixed(0)+'%', x, y);
+        ctx.restore();
+      });
+    }
+  };
   if (ctxCla) fvChartCla = new Chart(ctxCla, {
     type: 'doughnut',
+    plugins: [doughnutLabelPlugin],
     data: {
       labels: claSorted.map(([k]) => k.length > 22 ? k.slice(0,20)+'…' : k),
       datasets: [{ data: claSorted.map(([,v])=>v), backgroundColor: claCores, borderWidth: 0, hoverOffset: 10 }]
@@ -3639,7 +3625,7 @@ function fvRender() {
           }
         }
       },
-      cutout: '62%',
+      cutout: '55%',
     }
   });
 
@@ -3682,23 +3668,50 @@ function fvRender() {
 
   if (fvChartPeso) fvChartPeso.destroy();
   const ctxPeso = document.getElementById('fv-chart-peso');
+  const META_PESO_T = 330; // meta diária em toneladas
   if (ctxPeso) fvChartPeso = new Chart(ctxPeso, {
     type: 'line',
     data: {
       labels: pesoDias,
-      datasets: [{
-        data: pesoDias.map(d => +(pesoMap[d]/1000).toFixed(2)),
-        borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.08)',
-        borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true,
-      }]
+      datasets: [
+        {
+          label: 'Peso (t)',
+          data: pesoDias.map(d => +(pesoMap[d]/1000).toFixed(2)),
+          borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.08)',
+          borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true,
+          order: 1,
+        },
+        {
+          label: 'Meta 330 t',
+          data: pesoDias.map(() => META_PESO_T),
+          borderColor: '#f5c518',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          backgroundColor: 'transparent',
+          fill: false,
+          order: 0,
+          tension: 0,
+        }
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: true,
+          labels: {
+            font: { size: 10 }, boxWidth: 12, padding: 10, color: '#7a8599',
+            filter: item => item.text !== 'Meta 330 t' || true
+          }
+        },
         tooltip: {
           borderColor: '#00d4ff', borderWidth: 1,
-          callbacks: { label: ctx => ' ' + ctx.raw.toFixed(2) + ' t' }
+          callbacks: {
+            label: ctx => ctx.dataset.label === 'Meta 330 t'
+              ? ' Meta: 330 t'
+              : ' ' + ctx.raw.toFixed(2) + ' t'
+          }
         }
       },
       scales: {
