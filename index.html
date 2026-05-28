@@ -378,18 +378,17 @@ body::after {
 .cp-logo-accent { color: var(--neon); }
 .cp-update { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; }
 
-/* CARTEIRA TABS — estilo compacto, unificado com Módulo 02 */
+/* CARTEIRA TABS */
 .cp-tabs {
   display: flex; gap: 0; padding: 0 20px;
-  background: var(--bg2); border-bottom: 1px solid var(--border);
+  background: var(--bg3); border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 .cp-tab {
-  padding: 11px 18px; font-size: 12px; font-weight: 600;
+  padding: 10px 18px; font-size: 12px; font-weight: 500;
   color: var(--text3); cursor: pointer; white-space: nowrap;
   border-bottom: 2px solid transparent; transition: var(--trans);
-  font-family: 'Barlow', sans-serif; letter-spacing: 0.3px;
-  display: flex; align-items: center; gap: 6px;
+  font-family: 'Barlow', sans-serif;
 }
 .cp-tab:hover { color: var(--text2); }
 .cp-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
@@ -794,6 +793,96 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   display: flex; justify-content: space-between; align-items: center;
 }
 .fat-chart-container canvas { max-height: 240px; }
+.fat-chart-container-sm canvas { max-height: 160px; }
+
+/* ── CONTROLE SEMANAL ── */
+.sem-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 22px; flex-wrap: wrap; gap: 12px;
+}
+.sem-selector {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.sem-btn {
+  padding: 6px 14px; background: transparent;
+  border: 1px solid var(--border); border-radius: 7px;
+  color: var(--text2); cursor: pointer; font-family: 'Barlow', sans-serif;
+  font-size: 12px; font-weight: 600; transition: var(--trans);
+}
+.sem-btn:hover { border-color: var(--green); color: var(--green); }
+.sem-btn.active { background: rgba(0,255,136,0.12); border-color: rgba(0,255,136,0.35); color: var(--green); }
+.sem-select {
+  padding: 6px 12px; background: var(--bg4);
+  border: 1px solid var(--border); border-radius: 7px;
+  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 12px; cursor: pointer;
+}
+.sem-select:focus { outline: none; border-color: var(--green); }
+.sem-period-label {
+  font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace;
+}
+.sem-kpi-grid {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 12px; margin-bottom: 20px;
+}
+.sem-kpi {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 16px 14px; position: relative; overflow: hidden;
+  border-top: 2px solid var(--sem-color, var(--green));
+}
+.sem-kpi-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+.sem-kpi-value { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
+.sem-kpi-sub { font-size: 10px; color: var(--text3); }
+.sem-delta {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-top: 4px;
+}
+.sem-delta.up   { background: rgba(0,255,136,0.1); color: var(--green); }
+.sem-delta.down { background: rgba(255,61,90,0.1);  color: var(--red); }
+.sem-delta.flat { background: rgba(122,133,153,0.1); color: var(--text2); }
+
+.sem-charts-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;
+}
+.sem-chart-card {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; padding: 16px;
+}
+.sem-chart-title {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+}
+.sem-chart-card canvas { max-height: 200px; }
+.sem-full { grid-column: 1 / -1; }
+
+.sem-table-wrap {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 12px; overflow: hidden; margin-bottom: 14px;
+}
+.sem-table-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-bottom: 1px solid var(--border);
+}
+.sem-table-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); }
+.sem-tbl-scroll { overflow-x: auto; max-height: 300px; overflow-y: auto; }
+
+.sem-history-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px; margin-bottom: 20px;
+}
+.sem-hist-card {
+  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: var(--trans);
+}
+.sem-hist-card:hover { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.2); }
+.sem-hist-card.active { background: rgba(0,255,136,0.1); border-color: rgba(0,255,136,0.3); }
+.sem-hist-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.sem-hist-value { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--green); }
+.sem-hist-period { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+.sem-empty { text-align: center; padding: 60px 20px; }
+.sem-empty h3 { font-size: 15px; margin-bottom: 8px; color: var(--text); }
+.sem-empty p { font-size: 12px; color: var(--text2); }
 
 /* FATURAMENTO TABLE */
 .fat-table-wrap {
@@ -859,104 +948,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .fat-kpi-row { grid-template-columns: 1fr 1fr; }
   .fat-charts-grid { grid-template-columns: 1fr; }
   .fat-chart-card.full { grid-column: 1; }
+}
+
+@media (max-width: 800px) {
   .modules-grid, .soon-grid, .submod-grid { grid-template-columns: 1fr; }
   .cp-charts-grid { grid-template-columns: 1fr; }
   .cp-chart-card.full { grid-column: 1; }
   .home-header { flex-direction: column; align-items: flex-start; gap: 20px; }
-}
-
-/* ══ GLASSMORPHISM KPI CARDS ══════════════════ */
-.cp-kpi {
-  background: rgba(255,255,255,0.03) !important;
-  backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  border: 1px solid rgba(255,255,255,0.08) !important;
-  border-top: 1px solid rgba(255,255,255,0.13) !important;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-.cp-kpi:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08),
-              0 0 0 1px var(--k-color, rgba(0,212,255,0.2));
-}
-.cp-kpi-value {
-  font-family: 'Space Mono', monospace !important;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.5px;
-}
-
-/* ══ MODULE CARD GLOW HOVER ═══════════════════ */
-.module-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease !important;
-}
-.module-card--neon:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 0 1px rgba(0,212,255,0.35), 0 0 40px rgba(0,212,255,0.12), 0 16px 40px rgba(0,0,0,0.4) !important;
-  background: rgba(0,212,255,0.04) !important;
-  border-color: rgba(0,212,255,0.3) !important;
-}
-.module-card--green:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 0 1px rgba(0,255,136,0.35), 0 0 40px rgba(0,255,136,0.1), 0 16px 40px rgba(0,0,0,0.4) !important;
-  background: rgba(0,255,136,0.04) !important;
-  border-color: rgba(0,255,136,0.3) !important;
-}
-.module-tag {
-  transition: background 0.2s, color 0.2s !important;
-  cursor: default;
-}
-.module-card--neon:hover .module-tag { background: rgba(0,212,255,0.12) !important; }
-.module-card--green:hover .module-tag { background: rgba(0,255,136,0.12) !important; }
-
-/* ══ GRADIENT BARS (Chart.js via plugin) ══════ */
-/* Applied in JS — CSS anchor only */
-.fv-gradient-bar { border-radius: 4px; }
-
-/* ══ SPARKLINES NA STATUS BAR ═════════════════ */
-.status-sparkline {
-  display: inline-flex; align-items: flex-end; gap: 1.5px;
-  height: 14px; margin-left: 6px; opacity: 0.7;
-}
-.status-sparkline span {
-  width: 3px; border-radius: 1px; background: currentColor;
-  transition: height 0.3s ease;
-}
-
-/* ══ FILTER ACCORDION ═════════════════════════ */
-.filter-accordion-btn {
-  display: flex; align-items: center; gap: 7px;
-  padding: 5px 12px; background: rgba(0,212,255,0.06);
-  border: 1px solid rgba(0,212,255,0.15); border-radius: 7px;
-  color: var(--neon); font-family: Barlow,sans-serif; font-size:11px;
-  font-weight: 600; cursor: pointer; transition: var(--trans);
-}
-.filter-accordion-btn:hover { background: rgba(0,212,255,0.12); }
-.filter-accordion-body {
-  overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease;
-  max-height: 0; opacity: 0;
-}
-.filter-accordion-body.open { max-height: 200px; opacity: 1; }
-.filter-chevron { transition: transform 0.25s ease; font-size: 9px; }
-.filter-chevron.open { transform: rotate(180deg); }
-
-/* ══ ZERO VALUE EMPTY STATE ═══════════════════ */
-.kpi-zero { color: var(--text3) !important; }
-.kpi-zero-hint {
-  font-size: 9px; color: var(--text3); margin-top: 3px;
-  letter-spacing: 0.3px; font-style: italic;
-}
-
-/* ══ CRITICAL BADGE FOR TABLES ════════════════ */
-.badge-critical {
-  background: rgba(255,61,90,0.15); color: var(--red);
-  border: 1px solid rgba(255,61,90,0.3); font-size:9px;
-  padding: 1px 6px; border-radius: 10px; font-weight:700;
-  letter-spacing: 0.5px; animation: pulse-red 1.5s infinite;
-}
-@keyframes pulse-red {
-  0%,100% { box-shadow: 0 0 0 0 rgba(255,61,90,0.3); }
-  50%      { box-shadow: 0 0 0 3px rgba(255,61,90,0); }
 }
 </style>
 </head>
@@ -993,25 +991,16 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="status-dot pulse-dot"></div>
         <span class="status-label">Painel</span>
         <span class="status-val" style="color:var(--green)">Online</span>
-        <span class="status-sparkline" style="color:var(--green)" id="sparkline-painel">
-          <span style="height:4px"></span><span style="height:7px"></span><span style="height:5px"></span><span style="height:9px"></span><span style="height:6px"></span><span style="height:11px"></span><span style="height:8px"></span><span style="height:14px"></span>
-        </span>
       </div>
       <div class="status-item" id="homeStatCp">
         <div class="status-dot" id="homeStatCpDot" style="background:var(--text3)"></div>
         <span class="status-label">Carteira</span>
         <span class="status-val" id="homeStatCpVal" style="color:var(--text3)">Aguardando</span>
-        <span class="status-sparkline" style="color:var(--neon)" id="sparkline-carteira">
-          <span style="height:3px"></span><span style="height:6px"></span><span style="height:4px"></span><span style="height:8px"></span><span style="height:5px"></span><span style="height:10px"></span><span style="height:7px"></span><span style="height:12px"></span>
-        </span>
       </div>
       <div class="status-item" id="homeStatFat">
         <div class="status-dot" id="homeStatFatDot" style="background:var(--text3)"></div>
         <span class="status-label">Faturamento</span>
         <span class="status-val" id="homeStatFatVal" style="color:var(--text3)">Aguardando</span>
-        <span class="status-sparkline" style="color:var(--green)" id="sparkline-fat">
-          <span style="height:5px"></span><span style="height:9px"></span><span style="height:6px"></span><span style="height:11px"></span><span style="height:8px"></span><span style="height:13px"></span><span style="height:10px"></span><span style="height:14px"></span>
-        </span>
       </div>
       <div class="status-item" id="homeStatFatNext" style="display:none">
         <div class="status-dot" style="background:var(--neon)"></div>
@@ -1062,7 +1051,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="module-stat-lbl">Eficiência</div>
           </div>
         </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:-14px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">⚠ Dados ilustrativos — acesse o módulo para dados reais</div>
         <div class="module-footer">
           <div class="module-tags">
             <span class="module-tag" style="color:var(--neon);border-color:rgba(0,212,255,0.2)">SP</span>
@@ -1112,7 +1100,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="module-stat-lbl">KM/Mês</div>
           </div>
         </div>
-        <div style="font-size:10px;color:var(--text3);margin-top:-14px;margin-bottom:10px;letter-spacing:1px;text-transform:uppercase;">⚠ Dados ilustrativos — acesse o módulo para dados reais</div>
         <div class="module-footer">
           <div class="module-tags" style="display:flex;gap:12px;align-items:center">
             <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2)">
@@ -1190,15 +1177,27 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="submod-tag">Excel / ERP</div>
       </div>
 
-      <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88" onclick="showSubmod('faturamento')">
+      <div class="submod-card" id="submod-roteirizacao" style="--submod-color:#9b6bff;opacity:0.5;cursor:default">
+        <div class="submod-icon" style="color:var(--purple)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/>
+            <path d="M7 11.5l10-5M7 12.5l10 5"/>
+          </svg>
+        </div>
+        <div class="submod-name">Roteirização</div>
+        <div class="submod-desc">Montagem e otimização de rotas por região, peso e janela de entrega.</div>
+        <div class="submod-tag" style="background:rgba(155,107,255,0.1);color:var(--purple);border-color:rgba(155,107,255,0.2)">Em breve</div>
+      </div>
+
+      <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88;opacity:0.5;cursor:default">
         <div class="submod-icon" style="color:var(--green)">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
             <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
           </svg>
         </div>
         <div class="submod-name">Faturamento</div>
-        <div class="submod-desc">Meta vs realizado por gerente e representante, previsão mensal e carga de CSV.</div>
-        <div class="submod-tag" style="background:rgba(0,255,136,0.08);color:var(--green);border-color:rgba(0,255,136,0.2)">Google Sheets / CSV</div>
+        <div class="submod-desc">Análise de faturamento por período, meta vs realizado e projeção mensal.</div>
+        <div class="submod-tag" style="background:rgba(0,255,136,0.08);color:var(--green);border-color:rgba(0,255,136,0.2)">Em breve</div>
       </div>
     </div>
 
@@ -1219,10 +1218,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <span class="cp-update" id="cpLastUpdate" style="font-family:Space Mono,monospace;font-size:11px;color:var(--text3)">Sincronizando...</span>
       </div>
 
-      <!-- TABS — estilo compacto unificado com Módulo 02 -->
+      <!-- TABS -->
       <div class="cp-tabs">
         <div class="cp-tab active" data-tab="dashboard">Dashboard</div>
         <div class="cp-tab" data-tab="logistica-reg">Logística</div>
+        <div class="cp-tab" data-tab="representantes">Representantes</div>
+        <div class="cp-tab" data-tab="bloqueios">Bloqueios</div>
         <div class="cp-tab" data-tab="detalhes">Detalhamento</div>
         <div class="cp-tab" data-tab="historico">Histórico</div>
         <div class="cp-tab" data-tab="assistencia">Assistência</div>
@@ -1255,48 +1256,37 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
 
       <!-- FILTERS -->
-      <div class="cp-filters" style="flex-wrap:wrap;gap:8px;align-items:center">
-        <!-- Filtros principais sempre visíveis -->
+      <div class="cp-filters">
         <div class="cp-filter-group"><label>Data Inicial</label><input type="date" id="fDataIni"></div>
         <div class="cp-filter-group"><label>Data Final</label><input type="date" id="fDataFim"></div>
         <div class="cp-filter-group"><label>Representante</label><select id="fRep"><option value="">Todos</option></select></div>
-
-        <!-- Botão acordeão -->
-        <button class="filter-accordion-btn" onclick="cpToggleFilters(this)">
-          <span>Filtros Avançados</span>
-          <span class="filter-chevron">▼</span>
-        </button>
-        <button class="cp-filter-reset" onclick="cpResetFilters()" style="margin-left:0">↺ Limpar</button>
-
-        <!-- Filtros avançados retráteis -->
-        <div class="filter-accordion-body" id="cpAdvFilters" style="width:100%;display:flex;flex-wrap:wrap;gap:8px;max-height:0;opacity:0;overflow:hidden;transition:max-height 0.3s ease,opacity 0.3s ease">
-          <div class="cp-filter-group"><label>Micro Região</label><select id="fMicro"><option value="">Todas</option></select></div>
-          <div class="cp-filter-group"><label>Cliente</label><select id="fCliente"><option value="">Todos</option></select></div>
-          <div class="cp-filter-group">
-            <label>Status Carga</label>
-            <select id="fStatus">
-              <option value="">Todos</option>
-              <option value="em_carga">Em Carga</option>
-              <option value="disponivel">Disponível</option>
-            </select>
-          </div>
-          <div class="cp-filter-group">
-            <label>Bloqueio</label>
-            <select id="fBloqueio">
-              <option value="">Todos</option>
-              <option value="LIB">Liberado</option>
-              <option value="BLQ">Bloqueado</option>
-            </select>
-          </div>
-          <div class="cp-filter-group">
-            <label>Tipo Frete</label>
-            <select id="fFrete">
-              <option value="">Todos</option>
-              <option value="Retira">Retira</option>
-              <option value="Entrega">Entrega</option>
-            </select>
-          </div>
+        <div class="cp-filter-group"><label>Micro Região</label><select id="fMicro"><option value="">Todas</option></select></div>
+        <div class="cp-filter-group"><label>Cliente</label><select id="fCliente"><option value="">Todos</option></select></div>
+        <div class="cp-filter-group">
+          <label>Status Carga</label>
+          <select id="fStatus">
+            <option value="">Todos</option>
+            <option value="em_carga">Em Carga</option>
+            <option value="disponivel">Disponível</option>
+          </select>
         </div>
+        <div class="cp-filter-group">
+          <label>Bloqueio</label>
+          <select id="fBloqueio">
+            <option value="">Todos</option>
+            <option value="LIB">Liberado</option>
+            <option value="BLQ">Bloqueado</option>
+          </select>
+        </div>
+        <div class="cp-filter-group">
+          <label>Tipo Frete</label>
+          <select id="fFrete">
+            <option value="">Todos</option>
+            <option value="Retira">Retira</option>
+            <option value="Entrega">Entrega</option>
+          </select>
+        </div>
+        <button class="cp-filter-reset" onclick="cpResetFilters()">↺ Limpar</button>
       </div>
 
       <!-- CONTENT -->
@@ -1483,97 +1473,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
       </div><!-- /cp-content -->
     </div><!-- /carteira-panel -->
-
-    <!-- ═══════════════════════════════════════════
-         PAINEL FATURAMENTO — ANALYTICS
-    ═══════════════════════════════════════════ -->
-    <div id="fat-metas-panel" style="display:none">
-
-      <!-- URL CSV oculta -->
-      <input type="hidden" id="fat-metas-csv-url" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pub?gid=289455641&single=true&output=csv">
-
-      <!-- TOP BAR -->
-      <div class="cp-topbar">
-        <div class="cp-logo">
-          <div class="cp-logo-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00ff88" stroke-width="1.8">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-            </svg>
-          </div>
-          Painel de <span class="cp-logo-accent" style="color:var(--green)">&nbsp;Faturamento</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <label style="font-size:11px;color:var(--text3)">Período:</label>
-          <input type="date" id="fv-dt-ini"
-            style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:Barlow,sans-serif;font-size:11px;padding:3px 8px;cursor:pointer">
-          <span style="font-size:11px;color:var(--text3)">até</span>
-          <input type="date" id="fv-dt-fim"
-            style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-family:Barlow,sans-serif;font-size:11px;padding:3px 8px;cursor:pointer">
-          <button onclick="fvAplicarFiltro()" style="padding:3px 12px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);border-radius:6px;color:var(--neon);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">Filtrar</button>
-          <button onclick="fvLimparFiltro()" style="padding:3px 10px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text3);font-family:Barlow,sans-serif;font-size:11px;cursor:pointer">Tudo</button>
-        </div>
-      </div>
-
-      <!-- STATUS BAR -->
-      <div class="cp-upload-bar" id="fvStatusBar">
-        <div style="display:flex;align-items:center;gap:8px">
-          <div id="fvDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
-          <span id="fvInfo" style="font-size:12px;color:var(--text2)">Carregando dados...</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
-          <span id="fvNextRefresh" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace;display:none"></span>
-          <div style="display:flex;align-items:center;gap:6px">
-            <span style="font-size:11px;color:var(--text3)">Auto-refresh:</span>
-            <select id="fvRefreshSel" onchange="fvSetRefresh(this.value)"
-              style="background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;padding:2px 6px;font-family:Barlow,sans-serif;cursor:pointer">
-              <option value="0">Desativado</option>
-              <option value="5">5 min</option>
-              <option value="10" selected>10 min</option>
-              <option value="15">15 min</option>
-              <option value="30">30 min</option>
-            </select>
-          </div>
-          <button onclick="fvCarregar()" style="padding:4px 12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);border-radius:6px;color:var(--green);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
-        </div>
-      </div>
-
-      <!-- KPIs -->
-      <div id="fv-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;padding:16px 20px 0"></div>
-
-      <!-- GRÁFICOS ROW 1: Faturamento diário + Classificação -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:14px 20px 0">
-        <div class="cp-chart-card">
-          <div class="cp-chart-title">Faturamento Diário</div>
-          <div style="position:relative;height:220px"><canvas id="fv-chart-diario"></canvas></div>
-        </div>
-        <div class="cp-chart-card">
-          <div class="cp-chart-title">Por Classificação</div>
-          <div style="position:relative;height:220px"><canvas id="fv-chart-classif"></canvas></div>
-        </div>
-      </div>
-
-      <!-- GRÁFICOS ROW 2: Top 10 Grupos -->
-      <div style="padding:12px 20px 0">
-        <div class="cp-chart-card">
-          <div class="cp-chart-title">Top 10 — Faturamento por Grupo de Cliente</div>
-          <div id="fv-top10" style="padding:6px 0 4px"></div>
-        </div>
-      </div>
-
-      <!-- PESO ROW -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 20px 32px">
-        <div class="cp-chart-card">
-          <div class="cp-chart-title">Peso Diário Faturado (kg)</div>
-          <div style="position:relative;height:200px"><canvas id="fv-chart-peso"></canvas></div>
-        </div>
-        <div class="cp-chart-card">
-          <div class="cp-chart-title">Faturamento por Tipo de Frete</div>
-          <div style="position:relative;height:200px"><canvas id="fv-chart-frete"></canvas></div>
-        </div>
-      </div>
-
-    </div><!-- /fat-metas-panel -->
-
   </div><!-- /view-content -->
 </div><!-- /view-logistica -->
 
@@ -1597,6 +1496,11 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <div class="view-title">Transporte</div>
           </div>
         </div>
+        <!-- Botão contextual: muda conforme aba ativa -->
+        <button id="transpImportBtn" class="transp-import-btn" onclick="transpLoadData()" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Simular Import ERP
+        </button>
       </div>
     </div>
     <!-- ABAS INTERNAS DO TRANSPORTE -->
@@ -1604,6 +1508,107 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="transp-tab active" data-transp-tab="faturamento" onclick="switchTranspTab('faturamento')">
         <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         Faturamento
+      </div>
+      <div class="transp-tab" data-transp-tab="frota" onclick="switchTranspTab('frota')">
+        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Frota & Rotas
+      </div>
+      <div class="transp-tab" data-transp-tab="semanal" onclick="switchTranspTab('semanal')">
+        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Controle Semanal
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: FROTA & ROTAS -->
+  <div class="transp-tab-panel" id="transp-panel-frota">
+    <div class="transp-inner" id="transpContent">
+      <div style="text-align:center;padding:80px 0">
+        <div style="width:80px;height:80px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <div style="font-size:18px;font-weight:500;margin-bottom:8px">Nenhum dado carregado</div>
+        <p style="color:var(--text2);font-size:13px">Clique em "Simular Import ERP" para popular o painel de frota</p>
+        <button class="transp-import-btn" onclick="transpLoadData()" style="margin:20px auto 0;display:inline-flex">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Simular Import ERP
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABA: CONTROLE SEMANAL -->
+  <div class="transp-tab-panel" id="transp-panel-semanal">
+    <div id="sem-panel" style="max-width:1140px;margin:0 auto;padding:28px 28px 60px;animation:fadeIn 0.3s ease">
+
+      <div class="sem-empty" id="semEmpty">
+        <div style="width:72px;height:72px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--green)">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <h3>Faturamento não carregado</h3>
+        <p>Carregue os dados de faturamento na aba <strong style="color:var(--green)">Faturamento</strong> para visualizar o Controle Semanal.</p>
+      </div>
+
+      <div id="semContent" style="display:none">
+        <!-- HEADER -->
+        <div class="sem-header">
+          <div>
+            <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Módulo 02 — Transporte</div>
+            <div style="font-size:20px;font-weight:700;letter-spacing:-0.3px">Controle Semanal</div>
+          </div>
+          <div class="sem-selector">
+            <button class="sem-btn" onclick="semNavWeek(-1)">← Anterior</button>
+            <select class="sem-select" id="semWeekSelect" onchange="semSelectWeek(this.value)"></select>
+            <button class="sem-btn" onclick="semNavWeek(1)">Próxima →</button>
+            <span class="sem-period-label" id="semPeriodLabel"></span>
+          </div>
+        </div>
+
+        <!-- KPIs DA SEMANA -->
+        <div class="sem-kpi-grid" id="semKpiGrid"></div>
+
+        <!-- GRÁFICOS -->
+        <div class="sem-charts-row" id="semChartsRow">
+          <div class="sem-chart-card">
+            <div class="sem-chart-title">Distribuição da Semana por Tipo</div>
+            <canvas id="semChartPizza"></canvas>
+          </div>
+          <div class="sem-chart-card">
+            <div class="sem-chart-title">Faturamento por Dia da Semana</div>
+            <canvas id="semChartDia"></canvas>
+          </div>
+          <div class="sem-chart-card sem-full">
+            <div class="sem-chart-title">Histórico Semanal — Faturamento Acumulado (últimas semanas)</div>
+            <canvas id="semChartHistorico" style="max-height:180px"></canvas>
+          </div>
+        </div>
+
+        <!-- HISTÓRICO DE SEMANAS (mini cards) -->
+        <div style="margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Todas as Semanas do Ano</div>
+          <div class="sem-history-grid" id="semHistoryGrid"></div>
+        </div>
+
+        <!-- TABELA DETALHAMENTO -->
+        <div class="sem-table-wrap">
+          <div class="sem-table-header">
+            <span class="sem-table-title">CT-es da Semana Selecionada</span>
+            <span id="semTblCount" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace"></span>
+          </div>
+          <div class="sem-tbl-scroll">
+            <table id="semTable">
+              <thead><tr>
+                <th>CT-e</th>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Tipo Frete</th>
+                <th>Vlr CT-e (R$)</th>
+                <th>Peso BRT (kg)</th>
+              </tr></thead>
+              <tbody id="semTbody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1614,6 +1619,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
       <!-- URL oculta — usada pelo auto-refresh -->
       <input type="hidden" id="fatUrlInput" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vSM0E2ffi7l7T3up6OaMBEVGpIZacPH_105BRdV6zXDuFkkhCKYjjAWPX8GwF_QcMpUmJh3JZzI269j/pub?gid=1553494155&single=true&output=csv">
+      <input type="hidden" id="fatLoadBtn">
       <span id="fatStatusText" style="display:none"></span>
 
       <!-- FILTROS -->
@@ -1703,17 +1709,7 @@ function showSubmod(name) {
   document.querySelectorAll('.submod-card').forEach(c => c.classList.remove('active'));
   const el = document.getElementById('submod-'+name);
   if (el) el.classList.add('active');
-  // Mostrar painel correto
-  const carteira = document.getElementById('carteira-panel');
-  const fatMetas = document.getElementById('fat-metas-panel');
-  if (name === 'faturamento') {
-    carteira.style.display = 'none';
-    fatMetas.style.display = 'block';
-    fatMetasInit();
-  } else {
-    carteira.style.display = 'block';
-    fatMetas.style.display = 'none';
-  }
+  document.getElementById('carteira-panel').style.display = 'block';
 }
 document.getElementById('submod-carteira').classList.add('active');
 
@@ -1723,16 +1719,6 @@ document.getElementById('submod-carteira').classList.add('active');
 Chart.defaults.color = '#7a8599';
 Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
 Chart.defaults.font.family = 'Barlow, sans-serif';
-
-// ── SANITIZAÇÃO XSS ───────────────────────────
-function esc(str) {
-  return String(str ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 // ══════════════════════════════════════════════
 // CARTEIRA STATE
@@ -1980,19 +1966,6 @@ function cpPopulateFilters() {
   });
 }
 
-function cpToggleFilters(btn) {
-  const body    = document.getElementById('cpAdvFilters');
-  const chevron = btn.querySelector('.filter-chevron');
-  const isOpen  = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
-  if (isOpen) {
-    body.style.maxHeight = '0'; body.style.opacity = '0';
-    chevron.style.transform = '';
-  } else {
-    body.style.maxHeight = '200px'; body.style.opacity = '1';
-    chevron.style.transform = 'rotate(180deg)';
-  }
-}
-
 function cpResetFilters() {
   ['fRep','fMicro','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => document.getElementById(id).value='');
   ['fDataIni','fDataFim'].forEach(id => document.getElementById(id).value='');
@@ -2053,7 +2026,7 @@ function cpRenderKPIs() {
   ];
   document.getElementById('cpKpiGrid').innerHTML = kpis.map(k=>`
     <div class="cp-kpi${k.highlight?' cp-kpi--highlight':''}" style="--k-color:${k.color}${k.highlight?';background:rgba(0,229,204,0.07);border-color:rgba(0,229,204,0.25)':''}">
-      ${k.highlight?'':''}
+      ${k.highlight?`<div style="position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);opacity:0.8;font-weight:700">DESTAQUE</div>`:''}
       <div class="cp-kpi-label">${k.label}</div>
       <div class="cp-kpi-value" style="${k.highlight?'color:var(--teal)':''}">${k.value}</div>
       <div class="cp-kpi-sub">${k.sub}</div>
@@ -2252,7 +2225,7 @@ function cpRenderTableLogistica() {
   })).sort((a,b)=>b.emCarga+b.disponivel-(a.emCarga+a.disponivel));
   document.getElementById('tLogisticaBody').innerHTML = rows.map(r=>`
     <tr>
-      <td>${esc(r.micro)}</td>
+      <td>${r.micro}</td>
       <td class="num">${fmt(r.emCarga)}</td>
       <td class="num" style="color:var(--green)">${fmt(r.disponivel)}</td>
       <td class="num">${fmtPeso(r.pesoDisp)}</td>
@@ -2273,7 +2246,7 @@ function cpRenderTableRep() {
   })).sort((a,b)=>b.total-a.total);
   document.getElementById('tRepBody').innerHTML = rows.map(r=>`
     <tr>
-      <td>${esc(r.rep)}</td>
+      <td>${r.rep}</td>
       <td class="num">${fmt(r.emCarga)}</td>
       <td class="num" style="color:var(--green)">${fmt(r.disponivel)}</td>
       <td class="num" style="color:${r.bloqueado>0?'var(--red)':'inherit'}">${fmt(r.bloqueado)}</td>
@@ -2287,8 +2260,8 @@ function cpRenderTableBloqueios() {
     ? '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:24px">Nenhum pedido bloqueado</td></tr>'
     : blq.map(r=>`
     <tr>
-      <td>${esc(r.cliente)}</td>
-      <td>${esc(r.representante.split(' ').slice(0,2).join(' '))}</td>
+      <td>${r.cliente}</td>
+      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
       <td class="num">${fmt(r.valCarteira)}</td>
       <td class="num">
         <span class="badge badge-${r.semaforo==='red'?'red':r.semaforo==='orange'?'orange':'yellow'}">
@@ -2314,18 +2287,15 @@ function cpRenderDetPage() {
   const start = (cpDetPage-1)*CP_PAGE_SIZE;
   const page = cpDetAllFiltered.slice(start, start+CP_PAGE_SIZE);
   document.getElementById('tDetalhesBody').innerHTML = page.map(r=>`
-    <tr ${r.semaforo==='red'?'style="background:rgba(255,61,90,0.03)"':''}>
-      <td>
-        <span class="badge badge-blue">${esc(r.pedido)}</span>
-        ${r.semaforo==='red'?'<span class="badge-critical" style="margin-left:4px">CRÍTICO</span>':''}
-      </td>
-      <td>${esc(r.dataVendaStr)}</td>
-      <td>${esc(r.cliente)}</td>
-      <td>${esc(r.representante.split(' ').slice(0,2).join(' '))}</td>
-      <td>${esc(r.cidade)}</td>
+    <tr>
+      <td><span class="badge badge-blue">${r.pedido}</span></td>
+      <td>${r.dataVendaStr}</td>
+      <td>${r.cliente}</td>
+      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
+      <td>${r.cidade}</td>
       <td class="num">${fmtPeso(r.pesoBrt)}</td>
       <td class="num">${fmt(r.valCarteira)}</td>
-      <td><span class="badge ${r.tipoFrete==='Retira'?'badge-yellow':'badge-blue'}">${esc(r.tipoFrete)}</span></td>
+      <td><span class="badge ${r.tipoFrete==='Retira'?'badge-yellow':'badge-blue'}">${r.tipoFrete}</span></td>
       <td>
         ${r.statusCarga==='Em Carga'?'<span class="badge badge-purple">Em Carga</span>':'<span class="badge badge-green">Disponível</span>'}
         ${r.bloqueio==='BLQ'?'<span class="badge badge-red">BLQ</span>':''}
@@ -2422,11 +2392,11 @@ function cpRenderTipoTab() {
     ? '<tr><td colspan="10" style="text-align:center;color:var(--text2);padding:24px">Nenhuma assistência encontrada</td></tr>'
     : tRows.map(r=>`
     <tr>
-      <td><span class="badge badge-blue">${esc(r.pedido)}</span></td>
-      <td>${esc(r.dataVendaStr)}</td>
-      <td>${esc(r.cliente)}</td>
-      <td>${esc(r.representante.split(' ').slice(0,2).join(' '))}</td>
-      <td>${esc(r.micro)}</td>
+      <td><span class="badge badge-blue">${r.pedido}</span></td>
+      <td>${r.dataVendaStr}</td>
+      <td>${r.cliente}</td>
+      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
+      <td>${r.micro}</td>
       <td class="num">${fmtPeso(r.pesoBrt)}</td>
       <td class="num">${fmt(r.valCarteira)}</td>
       <td>${r.statusCarga==='Em Carga'?'<span class="badge badge-purple">Em Carga</span>':'<span class="badge badge-green">Disponível</span>'}
@@ -2526,14 +2496,9 @@ function cpSortTable(tableId, colIdx) {
   rows.forEach(r=>tbody.appendChild(r));
 }
 
-// ── FORMAT UTILS (compartilhado Carteira + Faturamento) ──
-function fmtBRL(n) { if(!n&&n!==0) return 'R$ 0'; return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
-function fmtBRLShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
-// Aliases para compatibilidade com código existente
-function fmt(n)      { return fmtBRL(n); }
-function fmtShort(n) { return fmtBRLShort(n); }
-function fatFmt(n)      { return fmtBRL(n); }
-function fatFmtShort(n) { return fmtBRLShort(n); }
+// ── FORMAT UTILS ──────────────────────────────
+function fmt(n) { if(!n&&n!==0) return 'R$ 0'; return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
+function fmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
 function fmtPeso(n) { return Math.round(n).toLocaleString('pt-BR'); }
 function fmtPesoShort(n) { if(n>=1e6) return (n/1e6).toFixed(1)+'M'; if(n>=1e3) return (n/1e3).toFixed(0)+'K'; return Math.round(n); }
 function cpPct(a,b) { return b===0?0:Math.round((a/b)*100); }
@@ -2556,6 +2521,7 @@ function switchTranspTab(tab) {
     const url = document.getElementById('fatUrlInput').value.trim();
     if (url) fatLoadData(false);
   }
+  if (tab === 'semanal') semOnOpen();
 }
 
 // Auto-load faturamento na abertura do módulo (é a primeira aba agora)
@@ -2569,8 +2535,8 @@ function onTranspOpen() {
 // ══════════════════════════════════════════════
 // TRANSPORTE SIMULATED DATA (Frota)
 // ══════════════════════════════════════════════
-function transpLoadData(el) {
-  const btn = el || event.currentTarget;
+function transpLoadData() {
+  const btn = event.currentTarget;
   btn.textContent = 'Importando...';
   setTimeout(() => {
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> ↻ Re-importar`;
@@ -2697,7 +2663,8 @@ async function fatLoadData(silent = false) {
   const url = document.getElementById('fatUrlInput').value.trim();
   if (!url) { fatSetStatus('⚠ Cole a URL CSV da planilha publicada.', 'var(--yellow)'); return; }
 
-  const btn = null; // botão de load removido (auto-load via URL fixa)
+  const btn = document.getElementById('fatLoadBtn');
+  if (btn) btn.disabled = true;
   fatSetStatus('Atualizando...', 'var(--neon)');
   fatHomeStatus('syncing');
 
@@ -2977,6 +2944,10 @@ function fatRenderAll() {
         <div class="fat-kpi-label">Faturamento Total</div>
         <div class="fat-kpi-value">${fatFmt(totalVlr)}</div>
         <div class="fat-kpi-sub">${totalCtes} CT-es</div>
+        <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--border)">
+          <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3)">Ticket Médio Geral</span><br>
+          <span style="font-size:13px;font-family:'Space Mono',monospace;color:var(--text2)">${fatFmt(ticketMed)}</span>
+        </div>
         <div class="fat-kpi-icon">💰</div>
       </div>
       <div class="fat-kpi" style="--fat-kpi-color:var(--neon)">
@@ -3003,11 +2974,11 @@ function fatRenderAll() {
     <div class="fat-charts-grid">
       <div class="fat-chart-card">
         <div class="fat-chart-title">Faturamento por Tipo de Frete</div>
-        <div class="fat-chart-container"><canvas id="fatChartPizza"></canvas></div>
+        <div class="fat-chart-container fat-chart-container-sm"><canvas id="fatChartPizza"></canvas></div>
       </div>
       <div class="fat-chart-card">
         <div class="fat-chart-title">Peso BRT por Tipo</div>
-        <div class="fat-chart-container"><canvas id="fatChartPeso"></canvas></div>
+        <div class="fat-chart-container fat-chart-container-sm"><canvas id="fatChartPeso"></canvas></div>
       </div>
       <div class="fat-chart-card full">
         <div class="fat-chart-title">Evolução Diária do Faturamento</div>
@@ -3130,7 +3101,20 @@ function fatRenderAll() {
   // ── EVOLUÇÃO DIÁRIA ──
   // Labels formatados dd/mm, ordenados cronologicamente
   const diasLabels = diasSort.map(d => fatFmtLabel(d));
-  fatCharts.dia = new Chart(document.getElementById('fatChartDia'), {
+
+  // Gradientes suaves (fade-out para o fundo escuro)
+  const canvasDia = document.getElementById('fatChartDia');
+  const ctxDia = canvasDia.getContext('2d');
+  const gradSaida   = ctxDia.createLinearGradient(0, 0, 0, 220);
+  gradSaida.addColorStop(0,   'rgba(0,212,255,0.72)');
+  gradSaida.addColorStop(0.6, 'rgba(0,212,255,0.28)');
+  gradSaida.addColorStop(1,   'rgba(0,212,255,0.04)');
+  const gradRetorno = ctxDia.createLinearGradient(0, 0, 0, 220);
+  gradRetorno.addColorStop(0,   'rgba(155,107,255,0.72)');
+  gradRetorno.addColorStop(0.6, 'rgba(155,107,255,0.28)');
+  gradRetorno.addColorStop(1,   'rgba(155,107,255,0.04)');
+
+  fatCharts.dia = new Chart(canvasDia, {
     type: 'bar',
     data: {
       labels: diasLabels,
@@ -3138,18 +3122,16 @@ function fatRenderAll() {
         {
           label: 'Saída',
           data: diasSort.map(d => porDia[d]?.saida || 0),
-          backgroundColor: 'rgba(0,212,255,0.55)',
-          borderColor: '#00d4ff',
-          borderWidth: 1,
-          borderRadius: 4,
+          backgroundColor: gradSaida,
+          borderWidth: 0,
+          borderRadius: 5,
         },
         {
           label: 'Retorno',
           data: diasSort.map(d => porDia[d]?.retorno || 0),
-          backgroundColor: 'rgba(155,107,255,0.55)',
-          borderColor: '#9b6bff',
-          borderWidth: 1,
-          borderRadius: 4,
+          backgroundColor: gradRetorno,
+          borderWidth: 0,
+          borderRadius: 5,
         },
       ]
     },
@@ -3173,17 +3155,20 @@ function fatRenderAll() {
   });
 }
 
+function fatFmt(n) { return 'R$ ' + Math.round(n||0).toLocaleString('pt-BR'); }
+function fatFmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
+
 function fatRenderTableRows(rows) {
   const tbody = document.getElementById('fatTbody');
   if (!tbody) return;
   const tagTipo = t => t==='SAIDA'?`<span class="fat-tag-saida">Saída</span>`:t==='RETORNO'?`<span class="fat-tag-retorno">Retorno</span>`:`<span class="fat-tag-outro">${t}</span>`;
   tbody.innerHTML = rows.map(r=>`<tr>
-    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${esc(r.cte)||'—'}</td>
-    <td>${esc(r.data)||'—'}</td>
-    <td>${esc(r.cliente)||'—'}</td>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte||'—'}</td>
+    <td style="color:var(--text2);font-size:11px">${r.data||'—'}</td>
+    <td style="color:var(--text2)">${r.cliente||'—'}</td>
     <td>${tagTipo(r.tipo)}</td>
     <td class="num" style="color:var(--green)">${fatFmt(r.vlr)}</td>
-    <td class="num">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
+    <td class="num" style="color:var(--text3)">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
   </tr>`).join('');
 }
 
@@ -3247,524 +3232,334 @@ function fatLoadFile(input) {
   input.value = '';
 }
 
+// ══════════════════════════════════════════════
+// CONTROLE SEMANAL
+// Semana = Dom → Sab. S01 começa em 01/Jan do ano
+// dos dados carregados (ou ano corrente).
+// ══════════════════════════════════════════════
+let semCharts = {};
+let semCurrentWeekIdx = 0; // índice 0-based na lista de semanas do ano
+
+// Retorna {start, end, label} para a semana de índice idx (0-based) do ano dado
+function semWeekBounds(year, idx) {
+  // Dia da semana de 01/Jan (0=dom, 6=sab)
+  const jan1 = new Date(year, 0, 1);
+  const jan1dow = jan1.getDay(); // 0=Sun
+  // S01 começa sempre em 01/Jan
+  // S01 end: primeiro sábado do ano
+  const s01end = new Date(year, 0, 1 + (6 - jan1dow));
+  // Cada semana seguinte começa no domingo seguinte
+  let start, end;
+  if (idx === 0) {
+    start = new Date(year, 0, 1);
+    end   = s01end;
+  } else {
+    const offset = (s01end.getDate() + 1) + (idx - 1) * 7; // dia do ano do início da semana idx
+    start = new Date(year, 0, offset);
+    end   = new Date(year, 0, offset + 6);
+  }
+  // Não ultrapassar 31/Dez do ano
+  const lastDay = new Date(year, 11, 31);
+  if (end > lastDay) end = lastDay;
+  const label = 'S' + String(idx + 1).padStart(2, '0');
+  return { start, end, label, idx };
+}
+
+// Constrói todas as semanas de um ano baseado nos dados
+function semBuildWeeks(year) {
+  const weeks = [];
+  let idx = 0;
+  while (true) {
+    const w = semWeekBounds(year, idx);
+    if (w.start.getFullYear() > year) break;
+    weeks.push(w);
+    if (w.end >= new Date(year, 11, 31)) break;
+    idx++;
+    if (idx > 60) break; // safety
+  }
+  return weeks;
+}
+
+function semFmt(n)      { return 'R$ ' + Math.round(n||0).toLocaleString('pt-BR'); }
+function semFmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
+function semFmtDate(d)  { if(!d) return '—'; return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
+
+function semDayLabel(d) {
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  return dias[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
+}
+
+function semFilterByWeek(week) {
+  return fatRawData.filter(r => {
+    const d = fatParseDate(r.data);
+    if (!d) return false;
+    d.setHours(0,0,0,0);
+    const s = new Date(week.start); s.setHours(0,0,0,0);
+    const e = new Date(week.end);   e.setHours(23,59,59,999);
+    return d >= s && d <= e;
+  });
+}
+
+function semAggregateWeek(rows) {
+  const total  = rows.reduce((s,r) => s + r.vlr, 0);
+  const peso   = rows.reduce((s,r) => s + r.peso, 0);
+  const saida  = rows.filter(r => r.tipo === 'SAIDA').reduce((s,r) => s + r.vlr, 0);
+  const retorno= rows.filter(r => r.tipo === 'RETORNO').reduce((s,r) => s + r.vlr, 0);
+  const ticket = rows.length > 0 ? total / rows.length : 0;
+  return { total, peso, saida, retorno, ticket, ctes: rows.length };
+}
+
+function semDeltaHtml(cur, prev) {
+  if (!prev || prev === 0) return '';
+  const pct = ((cur - prev) / prev * 100);
+  const cls = pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
+  const sign = pct > 0 ? '▲ +' : '▼ ';
+  return `<div class="sem-delta ${cls}">${sign}${Math.abs(pct).toFixed(1)}%</div>`;
+}
+
+let semWeeks = [];
+let semYear  = new Date().getFullYear();
+
+function semInit() {
+  if (!fatRawData || fatRawData.length === 0) {
+    document.getElementById('semEmpty').style.display = 'block';
+    document.getElementById('semContent').style.display = 'none';
+    return;
+  }
+  document.getElementById('semEmpty').style.display = 'none';
+  document.getElementById('semContent').style.display = 'block';
+
+  // Detecta o ano dos dados
+  const anos = fatRawData.map(r => { const d = fatParseDate(r.data); return d ? d.getFullYear() : null; }).filter(Boolean);
+  semYear = anos.length > 0 ? Math.max(...anos) : new Date().getFullYear();
+  semWeeks = semBuildWeeks(semYear);
+
+  // Popula select
+  const sel = document.getElementById('semWeekSelect');
+  sel.innerHTML = '';
+  semWeeks.forEach((w, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = w.label + ' — ' + semFmtDate(w.start) + ' a ' + semFmtDate(w.end);
+    sel.appendChild(opt);
+  });
+
+  // Semana atual: aquela que contém hoje, ou a última com dados
+  const today = new Date(); today.setHours(0,0,0,0);
+  let defaultIdx = semWeeks.findIndex(w => {
+    const s = new Date(w.start); s.setHours(0,0,0,0);
+    const e = new Date(w.end);   e.setHours(23,59,59,999);
+    return today >= s && today <= e;
+  });
+  if (defaultIdx < 0) {
+    // Última semana com dados
+    for (let i = semWeeks.length - 1; i >= 0; i--) {
+      if (semFilterByWeek(semWeeks[i]).length > 0) { defaultIdx = i; break; }
+    }
+  }
+  if (defaultIdx < 0) defaultIdx = semWeeks.length - 1;
+  semCurrentWeekIdx = defaultIdx;
+  sel.value = defaultIdx;
+  semRenderWeek(defaultIdx);
+  semRenderHistoryGrid();
+}
+
+function semSelectWeek(idx) {
+  semCurrentWeekIdx = parseInt(idx);
+  semRenderWeek(semCurrentWeekIdx);
+  semRenderHistoryGrid();
+}
+
+function semNavWeek(dir) {
+  const next = semCurrentWeekIdx + dir;
+  if (next < 0 || next >= semWeeks.length) return;
+  semCurrentWeekIdx = next;
+  document.getElementById('semWeekSelect').value = semCurrentWeekIdx;
+  semRenderWeek(semCurrentWeekIdx);
+  semRenderHistoryGrid();
+}
+
+function semRenderWeek(idx) {
+  const week = semWeeks[idx];
+  const rows = semFilterByWeek(week);
+  const agg  = semAggregateWeek(rows);
+  const prevWeek = idx > 0 ? semWeeks[idx-1] : null;
+  const prevRows = prevWeek ? semFilterByWeek(prevWeek) : [];
+  const prevAgg  = prevRows.length > 0 ? semAggregateWeek(prevRows) : null;
+
+  // Period label
+  document.getElementById('semPeriodLabel').textContent =
+    semFmtDate(week.start) + ' → ' + semFmtDate(week.end);
+
+  // KPIs
+  const kpis = [
+    { label:'Faturamento Total', val: semFmt(agg.total), sub: agg.ctes + ' CT-es', color:'var(--green)', delta: prevAgg ? semDeltaHtml(agg.total, prevAgg.total) : '' },
+    { label:'Frete Saída',       val: semFmt(agg.saida),   sub: agg.total > 0 ? Math.round(agg.saida/agg.total*100)+'% do total' : '—', color:'var(--neon)', delta: prevAgg ? semDeltaHtml(agg.saida, prevAgg.saida) : '' },
+    { label:'Frete Retorno',     val: semFmt(agg.retorno), sub: agg.total > 0 ? Math.round(agg.retorno/agg.total*100)+'% do total' : '—', color:'var(--purple)', delta: prevAgg ? semDeltaHtml(agg.retorno, prevAgg.retorno) : '' },
+    { label:'Ticket Médio',      val: semFmt(agg.ticket),  sub: 'por CT-e', color:'var(--yellow)', delta: prevAgg ? semDeltaHtml(agg.ticket, prevAgg.ticket) : '' },
+    { label:'Peso BRT Total',    val: Math.round(agg.peso).toLocaleString('pt-BR') + ' kg', sub: agg.ctes > 0 ? Math.round(agg.peso/agg.ctes).toLocaleString('pt-BR')+' kg/CT-e' : '—', color:'var(--teal)', delta: prevAgg ? semDeltaHtml(agg.peso, prevAgg.peso) : '' },
+  ];
+  document.getElementById('semKpiGrid').innerHTML = kpis.map(k => `
+    <div class="sem-kpi" style="--sem-color:${k.color}">
+      <div class="sem-kpi-label">${k.label}</div>
+      <div class="sem-kpi-value" style="color:${k.color}">${k.val}</div>
+      <div class="sem-kpi-sub">${k.sub}</div>
+      ${k.delta}
+    </div>`).join('');
+
+  // Destroy old charts
+  Object.values(semCharts).forEach(c => { try { c.destroy(); } catch{} });
+  semCharts = {};
+
+  // ── Pizza chart ──
+  const saida = rows.filter(r => r.tipo==='SAIDA').reduce((s,r) => s+r.vlr, 0);
+  const ret   = rows.filter(r => r.tipo==='RETORNO').reduce((s,r) => s+r.vlr, 0);
+  const outro = agg.total - saida - ret;
+  const pLabels = [], pData = [], pColors = [];
+  if (saida > 0)  { pLabels.push('Saída');   pData.push(saida);  pColors.push('#00d4ff'); }
+  if (ret > 0)    { pLabels.push('Retorno'); pData.push(ret);    pColors.push('#9b6bff'); }
+  if (outro > 0)  { pLabels.push('Outro');   pData.push(outro);  pColors.push('#f5c518'); }
+  if (pData.length > 0) {
+    semCharts.pizza = new Chart(document.getElementById('semChartPizza'), {
+      type: 'doughnut',
+      data: { labels: pLabels, datasets: [{ data: pData, backgroundColor: pColors, borderWidth: 0, hoverOffset: 6 }] },
+      options: { responsive: true, cutout: '64%',
+        plugins: { legend: { position: 'bottom' },
+          tooltip: { callbacks: { label: c => ' ' + semFmt(c.raw) + ' (' + Math.round(c.raw/agg.total*100) + '%)' } } } }
+    });
+  }
+
+  // ── Dia chart (Dom a Sab) ──
+  const diasSemana = [];
+  for (let d = new Date(week.start); d <= week.end; d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+1)) {
+    diasSemana.push(new Date(d));
+  }
+  const porDiaSem = {};
+  rows.forEach(r => {
+    const d = fatParseDate(r.data);
+    if (!d) return;
+    const k = d.toISOString().slice(0,10);
+    if (!porDiaSem[k]) porDiaSem[k] = { saida:0, retorno:0 };
+    if (r.tipo === 'SAIDA')   porDiaSem[k].saida   += r.vlr;
+    if (r.tipo === 'RETORNO') porDiaSem[k].retorno += r.vlr;
+  });
+
+  const diaCtx = document.getElementById('semChartDia').getContext('2d');
+  const gradS  = diaCtx.createLinearGradient(0, 0, 0, 180);
+  gradS.addColorStop(0, 'rgba(0,212,255,0.75)');
+  gradS.addColorStop(1, 'rgba(0,212,255,0.06)');
+  const gradR  = diaCtx.createLinearGradient(0, 0, 0, 180);
+  gradR.addColorStop(0, 'rgba(155,107,255,0.75)');
+  gradR.addColorStop(1, 'rgba(155,107,255,0.06)');
+
+  semCharts.dia = new Chart(document.getElementById('semChartDia'), {
+    type: 'bar',
+    data: {
+      labels: diasSemana.map(d => semDayLabel(d)),
+      datasets: [
+        { label:'Saída',   data: diasSemana.map(d => porDiaSem[d.toISOString().slice(0,10)]?.saida   || 0), backgroundColor: gradS, borderWidth: 0, borderRadius: 4 },
+        { label:'Retorno', data: diasSemana.map(d => porDiaSem[d.toISOString().slice(0,10)]?.retorno || 0), backgroundColor: gradR, borderWidth: 0, borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position:'bottom' }, tooltip: { callbacks: { label: c => ' '+c.dataset.label+': '+semFmt(c.raw) } } },
+      scales: {
+        x: { stacked: true, grid: { display: false } },
+        y: { stacked: true, beginAtZero: true, ticks: { callback: v => semFmtShort(v) } }
+      }
+    }
+  });
+
+  // ── Histórico semanal (linha) ──
+  const allWeeksAgg = semWeeks.map(w => {
+    const wr = semFilterByWeek(w);
+    return { label: w.label, total: wr.reduce((s,r) => s+r.vlr, 0) };
+  }).filter(w => w.total > 0);
+
+  if (allWeeksAgg.length > 1) {
+    semCharts.hist = new Chart(document.getElementById('semChartHistorico'), {
+      type: 'line',
+      data: {
+        labels: allWeeksAgg.map(w => w.label),
+        datasets: [{
+          label: 'Faturamento por Semana',
+          data: allWeeksAgg.map(w => w.total),
+          borderColor: '#00ff88',
+          backgroundColor: 'rgba(0,255,136,0.07)',
+          borderWidth: 2,
+          pointBackgroundColor: allWeeksAgg.map((w,i) => i === idx ? '#fff' : '#00ff88'),
+          pointRadius: allWeeksAgg.map((w,i) => i === idx ? 5 : 3),
+          fill: true,
+          tension: 0.35,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false },
+          tooltip: { callbacks: { label: c => ' ' + semFmt(c.raw) } } },
+        scales: {
+          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
+          y: { beginAtZero: true, ticks: { callback: v => semFmtShort(v) } }
+        }
+      }
+    });
+  }
+
+  // ── Tabela ──
+  const tbody = document.getElementById('semTbody');
+  const tagTipo = t => t==='SAIDA'?`<span class="fat-tag-saida">Saída</span>`:t==='RETORNO'?`<span class="fat-tag-retorno">Retorno</span>`:`<span class="fat-tag-outro">${t}</span>`;
+  document.getElementById('semTblCount').textContent = rows.length + ' registros';
+  tbody.innerHTML = rows.map(r => `<tr>
+    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte||'—'}</td>
+    <td style="color:var(--text2);font-size:11px">${r.data||'—'}</td>
+    <td style="color:var(--text2)">${r.cliente||'—'}</td>
+    <td>${tagTipo(r.tipo)}</td>
+    <td class="num" style="color:var(--green)">${semFmt(r.vlr)}</td>
+    <td class="num" style="color:var(--text3)">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
+  </tr>`).join('');
+}
+
+function semRenderHistoryGrid() {
+  const grid = document.getElementById('semHistoryGrid');
+  if (!grid) return;
+  grid.innerHTML = semWeeks.map((w, i) => {
+    const rows = semFilterByWeek(w);
+    const total = rows.reduce((s,r) => s+r.vlr, 0);
+    const isActive = i === semCurrentWeekIdx;
+    const hasData  = total > 0;
+    if (!hasData) return `<div class="sem-hist-card" style="opacity:0.3;cursor:default">
+      <div class="sem-hist-label">${w.label}</div>
+      <div class="sem-hist-value" style="color:var(--text3)">—</div>
+      <div class="sem-hist-period">${semFmtDate(w.start).slice(0,5)} a ${semFmtDate(w.end).slice(0,5)}</div>
+    </div>`;
+    return `<div class="sem-hist-card ${isActive ? 'active' : ''}" onclick="semSelectWeek(${i});document.getElementById('semWeekSelect').value=${i}">
+      <div class="sem-hist-label">${w.label}</div>
+      <div class="sem-hist-value">${semFmtShort(total)}</div>
+      <div class="sem-hist-period">${semFmtDate(w.start).slice(0,5)} → ${semFmtDate(w.end).slice(0,5)}</div>
+    </div>`;
+  }).join('');
+}
+
+// Chamado quando a aba Semanal é aberta
+function semOnOpen() {
+  semInit();
+}
+
 // ── INIT ──────────────────────────────────────
 cpRenderHistory();
+// Inicia carregamento da Carteira ao abrir a página
 // Carrega Carteira automaticamente ao abrir a página
 setTimeout(() => cpLoadSheet(false), 500);
 
-// Sincroniza intervalo de refresh do Faturamento com o seletor da Home
+// Inicia auto-refresh do Faturamento assim que a página carrega
+// (primeiro carregamento acontece quando o usuário abre a aba Faturamento)
 (function initFatRefresh() {
   const sel = document.getElementById('homeRefreshInterval');
   if (sel) {
     fatRefreshSeconds = parseInt(sel.value) * 60;
   }
 })();
-
-// ══════════════════════════════════════════════
-// FATURAMENTO — ANALYTICS PANEL
-// ══════════════════════════════════════════════
-
-// ── Estado global ─────────────────────────────
-let fvAllRows    = [];   // todas as linhas do CSV parsed
-let fvFiltered   = [];   // linhas após filtro de data
-let fvInited     = false;
-let fvChartDia   = null;
-let fvChartCla   = null;
-let fvChartPeso  = null;
-let fvChartFrete = null;
-let fvRefTimer   = null;
-let fvCdTimer    = null;
-let fvRefSecs    = 600;
-let fvNextAt     = null;
-
-// ── CSV parser (mesmo padrão do sistema) ──────
-function fvParseCSVLine(line) {
-  const r = []; let c = ''; let q = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') { q = !q; }
-    else if (ch === ',' && !q) { r.push(c.trim()); c = ''; }
-    else c += ch;
-  }
-  r.push(c.trim()); return r;
-}
-
-function fvParseBRL(s) {
-  s = String(s).replace(/"/g, '').trim();
-  if (!s || s === '-') return 0;
-  if (/[.,]/.test(s)) {
-    const lc = s.lastIndexOf(','), ld = s.lastIndexOf('.');
-    if (lc > ld) return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
-    return parseFloat(s.replace(/,/g, '')) || 0;
-  }
-  return parseFloat(s) || 0;
-}
-
-function fvParseData(s) {
-  if (!s) return null;
-  s = String(s).replace(/"/g, '').trim();
-  // Formatos: dd/mm/yyyy, mm/dd/yyyy hh:mm, yyyy-mm-dd
-  let m;
-  if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/))) {
-    // Detectar se é dd/mm ou mm/dd: se dia > 12 então é dd/mm
-    const a = parseInt(m[1]), b = parseInt(m[2]);
-    if (a > 12) return new Date(parseInt(m[3]), b - 1, a);
-    return new Date(parseInt(m[3]), b - 1, a); // assume dd/mm
-  }
-  if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/)))
-    return new Date(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]));
-  return null;
-}
-
-function fvFmtData(d) {
-  if (!d) return '—';
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
-}
-
-// ── Status bar ────────────────────────────────
-function fvSetStatus(state, msg) {
-  const dot = document.getElementById('fvDot');
-  const inf = document.getElementById('fvInfo');
-  if (!dot || !inf) return;
-  const styles = {
-    ok:      'background:var(--green);box-shadow:0 0 6px var(--green)',
-    syncing: 'background:var(--neon);box-shadow:0 0 6px var(--neon)',
-    error:   'background:var(--red)'
-  };
-  dot.style.cssText = `width:8px;height:8px;border-radius:50%;flex-shrink:0;${styles[state]||styles.ok}`;
-  inf.style.color   = state === 'syncing' ? 'var(--neon)' : state === 'error' ? 'var(--red)' : 'var(--text2)';
-  if (state === 'syncing') inf.textContent = 'Sincronizando com Google Sheets...';
-  else inf.innerHTML = msg || '';
-}
-
-// ── Auto-refresh ──────────────────────────────
-function fvSetRefresh(min) {
-  fvRefSecs = parseInt(min) * 60;
-  clearTimeout(fvRefTimer); clearInterval(fvCdTimer);
-  fvNextAt = null;
-  const el = document.getElementById('fvNextRefresh');
-  if (el) el.style.display = 'none';
-  if (fvRefSecs > 0 && fvInited) fvScheduleNext();
-}
-
-function fvScheduleNext() {
-  clearTimeout(fvRefTimer); clearInterval(fvCdTimer);
-  fvNextAt = new Date(Date.now() + fvRefSecs * 1000);
-  const el = document.getElementById('fvNextRefresh');
-  if (el) el.style.display = '';
-  fvUpdateCd();
-  fvCdTimer  = setInterval(fvUpdateCd, 10000);
-  fvRefTimer = setTimeout(fvCarregar, fvRefSecs * 1000);
-}
-
-function fvUpdateCd() {
-  if (!fvNextAt) return;
-  const d = Math.max(0, Math.round((fvNextAt - Date.now()) / 1000));
-  const m = Math.floor(d / 60), s = d % 60;
-  const el = document.getElementById('fvNextRefresh');
-  if (el) el.textContent = 'Próx: ' + (m > 0 ? m + 'min ' + String(s).padStart(2,'0') + 's' : s + 's');
-}
-
-// ── Init ──────────────────────────────────────
-function fatMetasInit() {
-  fvCarregar();
-}
-
-// ── Filtro de data ────────────────────────────
-function fvAplicarFiltro() {
-  const ini = document.getElementById('fv-dt-ini').value;
-  const fim = document.getElementById('fv-dt-fim').value;
-  if (!ini && !fim) { fvFiltered = [...fvAllRows]; }
-  else {
-    const dIni = ini ? new Date(ini + 'T00:00:00') : null;
-    const dFim = fim ? new Date(fim + 'T23:59:59') : null;
-    fvFiltered = fvAllRows.filter(r => {
-      if (!r._data) return true;
-      if (dIni && r._data < dIni) return false;
-      if (dFim && r._data > dFim) return false;
-      return true;
-    });
-  }
-  fvRender();
-}
-
-function fvLimparFiltro() {
-  document.getElementById('fv-dt-ini').value = '';
-  document.getElementById('fv-dt-fim').value = '';
-  fvFiltered = [...fvAllRows];
-  fvRender();
-}
-
-// ── Carregar CSV ──────────────────────────────
-function fvCarregar() {
-  const url = document.getElementById('fat-metas-csv-url').value.trim();
-  if (!url) return;
-  fvSetStatus('syncing');
-
-  fetch(url, { cache: 'no-store' })
-    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
-    .then(text => {
-      const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
-      if (lines.length < 2) throw new Error('CSV vazio');
-
-      const hdr = fvParseCSVLine(lines[0]).map(h => h.replace(/"/g,'').trim().toUpperCase());
-
-      // Índices das colunas necessárias
-      const idx = {
-        dtNota:   hdr.findIndex(h => h === 'DATA NOTA' || h.includes('DATA NOTA')),
-        dtPed:    hdr.findIndex(h => h === 'DT PEDIDO' || h === 'DATA PEDIDO'),
-        vlr:      hdr.findIndex(h => h === 'VLR LIQ' || h === 'VLR LIQ FATURADO' || h.includes('VLR LIQ')),
-        peso:     hdr.findIndex(h => h === 'PESO LIQ' || h.includes('PESO LIQ')),
-        classif:  hdr.findIndex(h => h === 'CLASSIFICACAO' || h.includes('CLASSIF')),
-        grupo:    hdr.findIndex(h => h === 'GRUPO' || h.includes('GRUPO')),
-        frete:    hdr.findIndex(h => h === 'TP FRETE' || h === 'FRETE' || h.includes('FRETE')),
-        qtdFat:   hdr.findIndex(h => h === 'QTDE FATURADO' || h === 'FATURADO'),
-        nf:       hdr.findIndex(h => h === 'NUM NF' || h === 'NF'),
-      };
-
-      fvAllRows = [];
-      for (let i = 1; i < lines.length; i++) {
-        const c = fvParseCSVLine(lines[i]);
-        const vlr  = fvParseBRL(c[idx.vlr]  ?? '0');
-        const peso = fvParseBRL(c[idx.peso]  ?? '0');
-        if (vlr === 0 && peso === 0) continue; // pula linhas vazias
-
-        const dtRaw = idx.dtNota >= 0 ? c[idx.dtNota] : (idx.dtPed >= 0 ? c[idx.dtPed] : '');
-        const dt    = fvParseData(dtRaw);
-
-        fvAllRows.push({
-          _data:   dt,
-          _dtStr:  dtRaw.replace(/"/g,'').trim(),
-          vlr,
-          peso,
-          classif: (c[idx.classif] ?? '').replace(/"/g,'').trim() || 'Sem classificação',
-          grupo:   (c[idx.grupo]   ?? '').replace(/"/g,'').trim() || 'Sem grupo',
-          frete:   (c[idx.frete]   ?? '').replace(/"/g,'').trim() || '—',
-        });
-      }
-
-      // Preset filtro: mínimo e máximo do CSV
-      const datas = fvAllRows.map(r => r._data).filter(Boolean);
-      if (datas.length) {
-        const min = new Date(Math.min(...datas)), max = new Date(Math.max(...datas));
-        const fmt = d => d.toISOString().slice(0,10);
-        const ini = document.getElementById('fv-dt-ini');
-        const fim = document.getElementById('fv-dt-fim');
-        if (!ini.value) ini.value = fmt(min);
-        if (!fim.value) fim.value = fmt(max);
-      }
-
-      fvFiltered = [...fvAllRows];
-      fvInited   = true;
-
-      const ts = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-      fvSetStatus('ok', `<strong>${fvAllRows.length.toLocaleString('pt-BR')} linhas</strong> carregadas &middot; Atualizado ${ts}`);
-
-      if (fvRefSecs > 0) fvScheduleNext();
-      fvRender();
-    })
-    .catch(e => fvSetStatus('error', '❌ ' + esc(e.message)));
-}
-
-// ── Render principal ──────────────────────────
-function fvRender() {
-  const rows = fvFiltered;
-  const totalVlr  = rows.reduce((s, r) => s + r.vlr,  0);
-  const totalPeso = rows.reduce((s, r) => s + r.peso, 0);
-
-  const hoje   = new Date(); hoje.setHours(0,0,0,0);
-
-  // ── KPIs com glassmorphism + zero-state ───────
-  // Dias distintos com faturamento para calcular médias
-  const diasComDados = new Set(rows.filter(r=>r._data).map(r=>r._data.toDateString())).size || 1;
-
-  const kpisData = [
-    { label:'Faturado Total',  val: totalVlr,                      fmt: v => fmtBRL(v),               color:'var(--green)',  zero:'Sem dados no período' },
-    { label:'Média por Dia',   val: totalVlr / diasComDados,        fmt: v => fmtBRL(v),               color:'var(--neon)',   zero:'Aguardando dados' },
-    { label:'Peso Total (t)',  val: totalPeso / 1000,               fmt: v => v.toFixed(1)+' t',        color:'var(--teal)',   zero:'Sem dados' },
-    { label:'Peso Médio/Dia',  val: totalPeso / diasComDados / 1000, fmt: v => v.toFixed(2)+' t/dia',  color:'var(--purple)', zero:'Aguardando dados' },
-  ];
-  document.getElementById('fv-kpis').innerHTML = kpisData.map(k => {
-    const isZero = k.val === 0;
-    return `
-    <div class="cp-kpi" style="--k-color:${k.color}">
-      <div class="cp-kpi-label">${k.label}</div>
-      <div class="cp-kpi-value ${isZero?'kpi-zero':''}" style="color:${isZero?'var(--text3)':k.color};font-size:15px">${k.fmt(k.val)}</div>
-      ${isZero ? `<div class="kpi-zero-hint">${k.zero}</div>` : ''}
-    </div>`;
-  }).join('');
-
-  // ── Animação das sparklines ───────────────────
-  ['sparkline-painel','sparkline-carteira','sparkline-fat'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.querySelectorAll('span').forEach(s => {
-      const h = 3 + Math.random() * 11;
-      s.style.height = h + 'px';
-    });
-  });
-
-  // ── Plugin: gradiente vertical nas barras ────
-  const gradientPlugin = {
-    id: 'fvGradient',
-    beforeDatasetsDraw(chart) {
-      const {ctx, chartArea, data} = chart;
-      if (!chartArea || chart.config.type !== 'bar') return;
-      chart.data.datasets.forEach((ds, i) => {
-        const meta = chart.getDatasetMeta(i);
-        if (!meta.data.length) return;
-        const color = Array.isArray(ds.borderColor) ? ds.borderColor[0] : ds.borderColor;
-        const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-        gradient.addColorStop(0,   color.replace(/[\d.]+\)$/, '0.6)').replace('rgb(','rgba('));
-        gradient.addColorStop(0.6, color.replace(/[\d.]+\)$/, '0.25)').replace('rgb(','rgba('));
-        gradient.addColorStop(1,   color.replace(/[\d.]+\)$/, '0.05)').replace('rgb(','rgba('));
-        ds.backgroundColor = gradient;
-      });
-    }
-  };
-
-  // ── Gráfico Diário ───────────────────────────
-  const diaMap = {};
-  rows.forEach(r => {
-    if (!r._data) return;
-    const k = fvFmtData(r._data);
-    diaMap[k] = (diaMap[k] || 0) + r.vlr;
-  });
-  const diasSorted = Object.keys(diaMap).sort((a,b) => {
-    const [da,ma] = a.split('/').map(Number);
-    const [db,mb] = b.split('/').map(Number);
-    return (ma*100+da) - (mb*100+db);
-  });
-
-  if (fvChartDia) fvChartDia.destroy();
-  const ctxDia = document.getElementById('fv-chart-diario');
-  if (ctxDia) fvChartDia = new Chart(ctxDia, {
-    type: 'bar',
-    plugins: [gradientPlugin],
-    data: {
-      labels: diasSorted,
-      datasets: [{
-        data: diasSorted.map(d => diaMap[d]),
-        backgroundColor: 'rgba(0,255,136,0.3)',
-        borderColor: '#00ff88',
-        borderWidth: 1.5,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          borderColor: '#00ff88', borderWidth: 1,
-          callbacks: { label: ctx => ' ' + fmtBRL(ctx.raw) }
-        }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
-        y: { grid: { color: 'rgba(255,255,255,0.05)' },
-          ticks: { font: { size: 10 }, callback: v => fmtBRLShort(v) } }
-      }
-    }
-  });
-
-  // ── Gráfico Classificação (legenda abaixo) ───
-  const claMap = {};
-  rows.forEach(r => { claMap[r.classif] = (claMap[r.classif]||0) + r.vlr; });
-  const claSorted = Object.entries(claMap).sort((a,b) => b[1]-a[1]);
-  const claCores = ['#00ff88','#00d4ff','#a855f7','#f5c518','#ff3d5a','#00bcd4','#ff9800','#4caf50','#e91e63','#9c27b0'];
-
-  if (fvChartCla) fvChartCla.destroy();
-  const ctxCla = document.getElementById('fv-chart-classif');
-  // Plugin: % labels on slices
-  const doughnutLabelPlugin = {
-    id: 'fvDoughnutLabels',
-    afterDatasetsDraw(chart) {
-      const {ctx, data} = chart;
-      const total = data.datasets[0].data.reduce((s,v)=>s+v,0);
-      chart.getDatasetMeta(0).data.forEach((arc, i) => {
-        const val = data.datasets[0].data[i];
-        const pct = total > 0 ? (val/total*100) : 0;
-        if (pct < 4) return; // não desenhar se fatia muito pequena
-        const angle = (arc.startAngle + arc.endAngle) / 2;
-        const r = (arc.innerRadius + arc.outerRadius) / 2;
-        const x = arc.x + Math.cos(angle) * r;
-        const y = arc.y + Math.sin(angle) * r;
-        ctx.save();
-        ctx.fillStyle = 'rgba(0,0,0,0.75)';
-        ctx.font = 'bold 10px Barlow, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(pct.toFixed(0)+'%', x, y);
-        ctx.restore();
-      });
-    }
-  };
-  if (ctxCla) fvChartCla = new Chart(ctxCla, {
-    type: 'doughnut',
-    plugins: [doughnutLabelPlugin],
-    data: {
-      labels: claSorted.map(([k]) => k.length > 22 ? k.slice(0,20)+'…' : k),
-      datasets: [{ data: claSorted.map(([,v])=>v), backgroundColor: claCores, borderWidth: 0, hoverOffset: 10 }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: { font: { size: 10 }, boxWidth: 9, padding: 7, color: '#7a8599' }
-        },
-        tooltip: {
-          borderColor: ctx => claCores[ctx.dataIndex] || '#00ff88',
-          borderWidth: 1,
-          callbacks: {
-            label: ctx => {
-              const pct = totalVlr > 0 ? (ctx.raw/totalVlr*100).toFixed(1)+'%' : '';
-              return ` ${fmtBRL(ctx.raw)}  (${pct})`;
-            }
-          }
-        }
-      },
-      cutout: '55%',
-    }
-  });
-
-  // ── Top 10 Grupos ─────────────────────────────
-  const grupoMap = {};
-  rows.forEach(r => { grupoMap[r.grupo] = (grupoMap[r.grupo]||0) + r.vlr; });
-  const top10 = Object.entries(grupoMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const maxG  = top10[0]?.[1] || 1;
-
-  document.getElementById('fv-top10').innerHTML = top10.map(([nome, val], i) => {
-    const pct    = totalVlr > 0 ? (val/totalVlr*100).toFixed(1) : '0.0';
-    const barPct = (val/maxG*100).toFixed(1);
-    const cor    = i < 3 ? 'var(--green)' : i < 6 ? 'var(--neon)' : 'var(--teal)';
-    return `
-    <div style="display:grid;grid-template-columns:20px 1fr 90px 60px;align-items:center;gap:10px;padding:5px 8px;border-radius:6px;margin-bottom:2px;background:${i%2===0?'rgba(255,255,255,0.02)':'transparent'}">
-      <div style="font-size:10px;color:var(--text3);font-family:'Space Mono',monospace;text-align:right">${i+1}</div>
-      <div>
-        <div style="font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(nome)}">${esc(nome)}</div>
-        <div style="height:3px;background:rgba(255,255,255,0.07);border-radius:3px;margin-top:4px">
-          <div style="height:100%;width:${barPct}%;background:${cor};border-radius:3px;box-shadow:0 0 4px ${cor}40;transition:width 0.6s ease"></div>
-        </div>
-      </div>
-      <div style="font-size:11px;color:${cor};font-family:'Space Mono',monospace;text-align:right">${fmtBRL(val)}</div>
-      <div style="font-size:11px;color:var(--text3);text-align:right">${pct}%</div>
-    </div>`;
-  }).join('') || '<div style="padding:20px;text-align:center;color:var(--text3);font-size:12px">Sem dados no período</div>';
-
-  // ── Gráfico Peso Diário (em toneladas) ────────
-  const pesoMap = {};
-  rows.forEach(r => {
-    if (!r._data) return;
-    const k = fvFmtData(r._data);
-    pesoMap[k] = (pesoMap[k] || 0) + r.peso;
-  });
-  const pesoDias = Object.keys(pesoMap).sort((a,b) => {
-    const [da,ma] = a.split('/').map(Number);
-    const [db,mb] = b.split('/').map(Number);
-    return (ma*100+da) - (mb*100+db);
-  });
-
-  if (fvChartPeso) fvChartPeso.destroy();
-  const ctxPeso = document.getElementById('fv-chart-peso');
-  const META_PESO_T = 330; // meta diária em toneladas
-  if (ctxPeso) fvChartPeso = new Chart(ctxPeso, {
-    type: 'line',
-    data: {
-      labels: pesoDias,
-      datasets: [
-        {
-          label: 'Peso (t)',
-          data: pesoDias.map(d => +(pesoMap[d]/1000).toFixed(2)),
-          borderColor: '#00d4ff', backgroundColor: 'rgba(0,212,255,0.08)',
-          borderWidth: 2, pointRadius: 3, tension: 0.3, fill: true,
-          order: 1,
-        },
-        {
-          label: 'Meta 330 t',
-          data: pesoDias.map(() => META_PESO_T),
-          borderColor: '#f5c518',
-          borderWidth: 1.5,
-          borderDash: [6, 4],
-          pointRadius: 0,
-          backgroundColor: 'transparent',
-          fill: false,
-          order: 0,
-          tension: 0,
-        }
-      ]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          display: true,
-          labels: {
-            font: { size: 10 }, boxWidth: 12, padding: 10, color: '#7a8599',
-            filter: item => item.text !== 'Meta 330 t' || true
-          }
-        },
-        tooltip: {
-          borderColor: '#00d4ff', borderWidth: 1,
-          callbacks: {
-            label: ctx => ctx.dataset.label === 'Meta 330 t'
-              ? ' Meta: 330 t'
-              : ' ' + ctx.raw.toFixed(2) + ' t'
-          }
-        }
-      },
-      scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
-        y: { grid: { color: 'rgba(255,255,255,0.05)' },
-          ticks: { font: { size: 10 }, callback: v => v + ' t' } }
-      }
-    }
-  });
-
-  // ── Gráfico Frete ─────────────────────────────
-  const freteMap = {};
-  rows.forEach(r => {
-    const k = r.frete === 'R' ? 'Retira' : r.frete === 'C' ? 'CIF' : r.frete === 'F' ? 'FOB' : r.frete || 'Outros';
-    freteMap[k] = (freteMap[k] || 0) + r.vlr;
-  });
-  const freteSorted = Object.entries(freteMap).sort((a,b)=>b[1]-a[1]);
-  const freteCores  = ['#00d4ff','#a855f7','#f5c518','#ff3d5a','#00ff88'];
-
-  if (fvChartFrete) fvChartFrete.destroy();
-  const ctxFrete = document.getElementById('fv-chart-frete');
-  if (ctxFrete) fvChartFrete = new Chart(ctxFrete, {
-    type: 'bar',
-    plugins: [gradientPlugin],
-    data: {
-      labels: freteSorted.map(([k])=>k),
-      datasets: [{
-        data: freteSorted.map(([,v])=>v),
-        backgroundColor: freteCores.map(c => c.replace(/^#/, 'rgba(').replace(/(.{2})(.{2})(.{2})/, (m,r,g,b) =>
-          parseInt(r,16)+','+parseInt(g,16)+','+parseInt(b,16)+',')),
-        borderColor: freteCores,
-        borderWidth: 1.5, borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            labelColor: ctx => ({ borderColor: freteCores[ctx.dataIndex]||'#00d4ff', backgroundColor: freteCores[ctx.dataIndex]||'#00d4ff' }),
-            label: ctx => ' ' + fmtBRL(ctx.raw) + ' (' + (totalVlr>0?(ctx.raw/totalVlr*100).toFixed(1):'0.0') + '%)'
-          }
-        }
-      },
-      scales: {
-        x: { grid: { color: 'rgba(255,255,255,0.05)' },
-          ticks: { font: { size: 10 }, callback: v => fmtBRLShort(v) } },
-        y: { grid: { display: false }, ticks: { font: { size: 11 } } }
-      }
-    }
-  });
-}
 </script>
 </body>
 </html>
