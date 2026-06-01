@@ -310,7 +310,7 @@ body::after {
    LOGÍSTICA VIEW — SUB-MODULES SELECTOR
 ══════════════════════════════════════════════ */
 .submod-grid {
-  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
   margin-bottom: 32px;
 }
 .submod-card {
@@ -362,7 +362,7 @@ body::after {
 .cp-topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px; height: 52px;
-  background: var(--bg3);
+  background: var(--bg2);
   border-bottom: 1px solid var(--border);
 }
 .cp-logo {
@@ -378,17 +378,18 @@ body::after {
 .cp-logo-accent { color: var(--neon); }
 .cp-update { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; }
 
-/* CARTEIRA TABS */
+/* CARTEIRA TABS — same style as transp-tabs */
 .cp-tabs {
   display: flex; gap: 0; padding: 0 20px;
-  background: var(--bg3); border-bottom: 1px solid var(--border);
+  background: var(--bg2); border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 .cp-tab {
-  padding: 10px 18px; font-size: 12px; font-weight: 500;
+  padding: 11px 20px; font-size: 12px; font-weight: 600;
   color: var(--text3); cursor: pointer; white-space: nowrap;
   border-bottom: 2px solid transparent; transition: var(--trans);
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Barlow', sans-serif; letter-spacing: 0.3px;
+  display: flex; align-items: center; gap: 7px;
 }
 .cp-tab:hover { color: var(--text2); }
 .cp-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
@@ -418,7 +419,7 @@ body::after {
 .cp-filters {
   display: flex; flex-wrap: wrap; gap: 8px;
   padding: 12px 20px; border-bottom: 1px solid var(--border);
-  background: var(--bg3); align-items: flex-end;
+  background: var(--bg2); align-items: flex-end;
 }
 .cp-filter-group { display: flex; flex-direction: column; gap: 3px; }
 .cp-filter-group label {
@@ -793,96 +794,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   display: flex; justify-content: space-between; align-items: center;
 }
 .fat-chart-container canvas { max-height: 240px; }
-.fat-chart-container-sm canvas { max-height: 160px; }
-
-/* ── CONTROLE SEMANAL ── */
-.sem-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 22px; flex-wrap: wrap; gap: 12px;
-}
-.sem-selector {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-}
-.sem-btn {
-  padding: 6px 14px; background: transparent;
-  border: 1px solid var(--border); border-radius: 7px;
-  color: var(--text2); cursor: pointer; font-family: 'Barlow', sans-serif;
-  font-size: 12px; font-weight: 600; transition: var(--trans);
-}
-.sem-btn:hover { border-color: var(--green); color: var(--green); }
-.sem-btn.active { background: rgba(0,255,136,0.12); border-color: rgba(0,255,136,0.35); color: var(--green); }
-.sem-select {
-  padding: 6px 12px; background: var(--bg4);
-  border: 1px solid var(--border); border-radius: 7px;
-  color: var(--text); font-family: 'Barlow', sans-serif; font-size: 12px; cursor: pointer;
-}
-.sem-select:focus { outline: none; border-color: var(--green); }
-.sem-period-label {
-  font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace;
-}
-.sem-kpi-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  gap: 12px; margin-bottom: 20px;
-}
-.sem-kpi {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border); border-radius: 12px;
-  padding: 16px 14px; position: relative; overflow: hidden;
-  border-top: 2px solid var(--sem-color, var(--green));
-}
-.sem-kpi-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-.sem-kpi-value { font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-.sem-kpi-sub { font-size: 10px; color: var(--text3); }
-.sem-delta {
-  display: inline-flex; align-items: center; gap: 3px;
-  font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-top: 4px;
-}
-.sem-delta.up   { background: rgba(0,255,136,0.1); color: var(--green); }
-.sem-delta.down { background: rgba(255,61,90,0.1);  color: var(--red); }
-.sem-delta.flat { background: rgba(122,133,153,0.1); color: var(--text2); }
-
-.sem-charts-row {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px;
-}
-.sem-chart-card {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px; padding: 16px;
-}
-.sem-chart-title {
-  font-size: 11px; font-weight: 700; color: var(--text2);
-  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
-}
-.sem-chart-card canvas { max-height: 200px; }
-.sem-full { grid-column: 1 / -1; }
-
-.sem-table-wrap {
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px; overflow: hidden; margin-bottom: 14px;
-}
-.sem-table-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 16px; border-bottom: 1px solid var(--border);
-}
-.sem-table-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); }
-.sem-tbl-scroll { overflow-x: auto; max-height: 300px; overflow-y: auto; }
-
-.sem-history-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px; margin-bottom: 20px;
-}
-.sem-hist-card {
-  background: rgba(255,255,255,0.025); border: 1px solid var(--border);
-  border-radius: 10px; padding: 12px 14px; cursor: pointer; transition: var(--trans);
-}
-.sem-hist-card:hover { background: rgba(0,255,136,0.05); border-color: rgba(0,255,136,0.2); }
-.sem-hist-card.active { background: rgba(0,255,136,0.1); border-color: rgba(0,255,136,0.3); }
-.sem-hist-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-.sem-hist-value { font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: var(--green); }
-.sem-hist-period { font-size: 10px; color: var(--text3); margin-top: 3px; }
-
-.sem-empty { text-align: center; padding: 60px 20px; }
-.sem-empty h3 { font-size: 15px; margin-bottom: 8px; color: var(--text); }
-.sem-empty p { font-size: 12px; color: var(--text2); }
 
 /* FATURAMENTO TABLE */
 .fat-table-wrap {
@@ -1177,17 +1088,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="submod-tag">Excel / ERP</div>
       </div>
 
-      <div class="submod-card" id="submod-roteirizacao" style="--submod-color:#9b6bff;opacity:0.5;cursor:default">
-        <div class="submod-icon" style="color:var(--purple)">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/>
-            <path d="M7 11.5l10-5M7 12.5l10 5"/>
-          </svg>
-        </div>
-        <div class="submod-name">Roteirização</div>
-        <div class="submod-desc">Montagem e otimização de rotas por região, peso e janela de entrega.</div>
-        <div class="submod-tag" style="background:rgba(155,107,255,0.1);color:var(--purple);border-color:rgba(155,107,255,0.2)">Em breve</div>
-      </div>
 
       <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88;opacity:0.5;cursor:default">
         <div class="submod-icon" style="color:var(--green)">
@@ -1509,107 +1409,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         Faturamento
       </div>
-      <div class="transp-tab" data-transp-tab="frota" onclick="switchTranspTab('frota')">
-        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        Frota & Rotas
-      </div>
-      <div class="transp-tab" data-transp-tab="semanal" onclick="switchTranspTab('semanal')">
-        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Controle Semanal
-      </div>
-    </div>
-  </div>
 
-  <!-- ABA: FROTA & ROTAS -->
-  <div class="transp-tab-panel" id="transp-panel-frota">
-    <div class="transp-inner" id="transpContent">
-      <div style="text-align:center;padding:80px 0">
-        <div style="width:80px;height:80px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green)">
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
-        </div>
-        <div style="font-size:18px;font-weight:500;margin-bottom:8px">Nenhum dado carregado</div>
-        <p style="color:var(--text2);font-size:13px">Clique em "Simular Import ERP" para popular o painel de frota</p>
-        <button class="transp-import-btn" onclick="transpLoadData()" style="margin:20px auto 0;display:inline-flex">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Simular Import ERP
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ABA: CONTROLE SEMANAL -->
-  <div class="transp-tab-panel" id="transp-panel-semanal">
-    <div id="sem-panel" style="max-width:1140px;margin:0 auto;padding:28px 28px 60px;animation:fadeIn 0.3s ease">
-
-      <div class="sem-empty" id="semEmpty">
-        <div style="width:72px;height:72px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;color:var(--green)">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <h3>Faturamento não carregado</h3>
-        <p>Carregue os dados de faturamento na aba <strong style="color:var(--green)">Faturamento</strong> para visualizar o Controle Semanal.</p>
-      </div>
-
-      <div id="semContent" style="display:none">
-        <!-- HEADER -->
-        <div class="sem-header">
-          <div>
-            <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:4px">Módulo 02 — Transporte</div>
-            <div style="font-size:20px;font-weight:700;letter-spacing:-0.3px">Controle Semanal</div>
-          </div>
-          <div class="sem-selector">
-            <button class="sem-btn" onclick="semNavWeek(-1)">← Anterior</button>
-            <select class="sem-select" id="semWeekSelect" onchange="semSelectWeek(this.value)"></select>
-            <button class="sem-btn" onclick="semNavWeek(1)">Próxima →</button>
-            <span class="sem-period-label" id="semPeriodLabel"></span>
-          </div>
-        </div>
-
-        <!-- KPIs DA SEMANA -->
-        <div class="sem-kpi-grid" id="semKpiGrid"></div>
-
-        <!-- GRÁFICOS -->
-        <div class="sem-charts-row" id="semChartsRow">
-          <div class="sem-chart-card">
-            <div class="sem-chart-title">Distribuição da Semana por Tipo</div>
-            <canvas id="semChartPizza"></canvas>
-          </div>
-          <div class="sem-chart-card">
-            <div class="sem-chart-title">Faturamento por Dia da Semana</div>
-            <canvas id="semChartDia"></canvas>
-          </div>
-          <div class="sem-chart-card sem-full">
-            <div class="sem-chart-title">Histórico Semanal — Faturamento Acumulado (últimas semanas)</div>
-            <canvas id="semChartHistorico" style="max-height:180px"></canvas>
-          </div>
-        </div>
-
-        <!-- HISTÓRICO DE SEMANAS (mini cards) -->
-        <div style="margin-bottom:16px">
-          <div style="font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">Todas as Semanas do Ano</div>
-          <div class="sem-history-grid" id="semHistoryGrid"></div>
-        </div>
-
-        <!-- TABELA DETALHAMENTO -->
-        <div class="sem-table-wrap">
-          <div class="sem-table-header">
-            <span class="sem-table-title">CT-es da Semana Selecionada</span>
-            <span id="semTblCount" style="font-size:11px;color:var(--text3);font-family:'Space Mono',monospace"></span>
-          </div>
-          <div class="sem-tbl-scroll">
-            <table id="semTable">
-              <thead><tr>
-                <th>CT-e</th>
-                <th>Data</th>
-                <th>Cliente</th>
-                <th>Tipo Frete</th>
-                <th>Vlr CT-e (R$)</th>
-                <th>Peso BRT (kg)</th>
-              </tr></thead>
-              <tbody id="semTbody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -2521,7 +2321,6 @@ function switchTranspTab(tab) {
     const url = document.getElementById('fatUrlInput').value.trim();
     if (url) fatLoadData(false);
   }
-  if (tab === 'semanal') semOnOpen();
 }
 
 // Auto-load faturamento na abertura do módulo (é a primeira aba agora)
@@ -2937,48 +2736,66 @@ function fatRenderAll() {
   fatCharts = {};
 
   const content = document.getElementById('fatContent');
+  // ── por mês ───────────────────────────────────
+  const porMes = {};
+  fatFiltered.forEach(r => {
+    const d = fatParseDate(r.data);
+    if (!d) return;
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    if (!porMes[key]) porMes[key] = { total: 0, saida: 0, retorno: 0 };
+    porMes[key].total   += r.vlr;
+    if (r.tipo === 'SAIDA')   porMes[key].saida   += r.vlr;
+    if (r.tipo === 'RETORNO') porMes[key].retorno += r.vlr;
+  });
+  const mesesSort = Object.keys(porMes).sort();
+  const mesesLabels = mesesSort.map(k => {
+    const [y, m] = k.split('-');
+    const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+    return nomes[+m-1] + '/' + y.slice(2);
+  });
+
   content.innerHTML = `
     <!-- KPIs -->
     <div class="fat-kpi-row">
       <div class="fat-kpi" style="--fat-kpi-color:var(--green)">
         <div class="fat-kpi-label">Faturamento Total</div>
         <div class="fat-kpi-value">${fatFmt(totalVlr)}</div>
-        <div class="fat-kpi-sub">${totalCtes} CT-es</div>
-        <div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--border)">
-          <span style="font-size:9px;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3)">Ticket Médio Geral</span><br>
-          <span style="font-size:13px;font-family:'Space Mono',monospace;color:var(--text2)">${fatFmt(ticketMed)}</span>
-        </div>
+        <div class="fat-kpi-sub">Faturamento bruto do período</div>
         <div class="fat-kpi-icon">💰</div>
       </div>
       <div class="fat-kpi" style="--fat-kpi-color:var(--neon)">
         <div class="fat-kpi-label">Frete Saída</div>
         <div class="fat-kpi-value" style="color:var(--neon)">${fatFmt(vlrSaida)}</div>
-        <div class="fat-kpi-sub">${saida.length} CT-es · ${totalVlr>0?Math.round(vlrSaida/totalVlr*100):0}%</div>
+        <div class="fat-kpi-sub">${totalVlr>0?Math.round(vlrSaida/totalVlr*100):0}% do total</div>
         <div class="fat-kpi-icon">🚛</div>
       </div>
       <div class="fat-kpi" style="--fat-kpi-color:var(--purple)">
         <div class="fat-kpi-label">Frete Retorno</div>
         <div class="fat-kpi-value" style="color:var(--purple)">${fatFmt(vlrRetorno)}</div>
-        <div class="fat-kpi-sub">${retorno.length} CT-es · ${totalVlr>0?Math.round(vlrRetorno/totalVlr*100):0}%</div>
+        <div class="fat-kpi-sub">${totalVlr>0?Math.round(vlrRetorno/totalVlr*100):0}% do total</div>
         <div class="fat-kpi-icon">↩️</div>
       </div>
       <div class="fat-kpi" style="--fat-kpi-color:var(--yellow)">
         <div class="fat-kpi-label">Peso BRT Total</div>
         <div class="fat-kpi-value" style="color:var(--yellow)">${Math.round(totalPeso).toLocaleString('pt-BR')} kg</div>
-        <div class="fat-kpi-sub">Ticket médio: ${fatFmt(ticketMed)}</div>
+        <div class="fat-kpi-sub">Peso bruto transportado</div>
         <div class="fat-kpi-icon">⚖️</div>
       </div>
     </div>
 
     <!-- CHARTS -->
     <div class="fat-charts-grid">
+      <div class="fat-chart-card full">
+        <div class="fat-chart-title">Faturamento Bruto Mensal <span style="font-size:10px;color:var(--text3);font-weight:400">(Saída + Retorno)</span></div>
+        <div class="fat-chart-container"><canvas id="fatChartMensal" style="max-height:260px"></canvas></div>
+      </div>
       <div class="fat-chart-card">
         <div class="fat-chart-title">Faturamento por Tipo de Frete</div>
-        <div class="fat-chart-container fat-chart-container-sm"><canvas id="fatChartPizza"></canvas></div>
+        <div class="fat-chart-container"><canvas id="fatChartPizza"></canvas></div>
       </div>
       <div class="fat-chart-card">
         <div class="fat-chart-title">Peso BRT por Tipo</div>
-        <div class="fat-chart-container fat-chart-container-sm"><canvas id="fatChartPeso"></canvas></div>
+        <div class="fat-chart-container"><canvas id="fatChartPeso"></canvas></div>
       </div>
       <div class="fat-chart-card full">
         <div class="fat-chart-title">Evolução Diária do Faturamento</div>
@@ -2988,34 +2805,55 @@ function fatRenderAll() {
         <div class="fat-chart-title">Top 5 Clientes — Frete Retorno <span style="font-size:10px;color:var(--text3);font-weight:400">(por valor faturado)</span></div>
         <div class="fat-chart-container"><canvas id="fatChartTop5" style="max-height:220px"></canvas></div>
       </div>
-    </div>
-
-    <!-- TABELA -->
-    <div class="fat-table-wrap">
-      <div class="fat-table-header">
-        <div style="display:flex;align-items:center;gap:14px">
-          <span class="fat-table-title">Detalhamento CT-es</span>
-          <span class="fat-table-count" id="fatTblCount">${fatFiltered.length} registros</span>
-        </div>
-        <input type="text" class="fat-table-search" placeholder="Buscar CTE, remetente..." oninput="fatSearchTable(this.value)">
-      </div>
-      <div class="fat-tbl-scroll">
-        <table id="fatTable">
-          <thead><tr>
-            <th onclick="fatSortTable(0)">CT-e ↕</th>
-            <th onclick="fatSortTable(1)">Data ↕</th>
-            <th onclick="fatSortTable(2)">Cliente ↕</th>
-            <th onclick="fatSortTable(3)">Tipo Frete ↕</th>
-            <th onclick="fatSortTable(4)">Vlr CT-e (R$) ↕</th>
-            <th onclick="fatSortTable(5)">Peso BRT (kg) ↕</th>
-          </tr></thead>
-          <tbody id="fatTbody"></tbody>
-        </table>
-      </div>
     </div>`;
 
-  // render table rows
-  fatRenderTableRows(fatFiltered);
+  // render table rows (removed - tabela de detalhamento removida)
+
+  // ── MENSAL ──
+  if (mesesSort.length > 0) {
+    fatCharts.mensal = new Chart(document.getElementById('fatChartMensal'), {
+      type: 'bar',
+      data: {
+        labels: mesesLabels,
+        datasets: [
+          {
+            label: 'Saída',
+            data: mesesSort.map(k => porMes[k]?.saida || 0),
+            backgroundColor: 'rgba(0,212,255,0.6)',
+            borderColor: '#00d4ff',
+            borderWidth: 1,
+            borderRadius: 6,
+          },
+          {
+            label: 'Retorno',
+            data: mesesSort.map(k => porMes[k]?.retorno || 0),
+            backgroundColor: 'rgba(155,107,255,0.6)',
+            borderColor: '#9b6bff',
+            borderWidth: 1,
+            borderRadius: 6,
+          },
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        plugins: {
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
+              footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
+            }
+          }
+        },
+        scales: {
+          x: { stacked: true, ticks: { font: { size: 11 } } },
+          y: { stacked: true, ticks: { callback: v => fatFmtShort(v) }, beginAtZero: true,
+            grid: { color: 'rgba(255,255,255,0.04)' } }
+        }
+      }
+    });
+  }
 
   // ── PIZZA ──
   const tiposGrp = {};
@@ -3101,20 +2939,7 @@ function fatRenderAll() {
   // ── EVOLUÇÃO DIÁRIA ──
   // Labels formatados dd/mm, ordenados cronologicamente
   const diasLabels = diasSort.map(d => fatFmtLabel(d));
-
-  // Gradientes suaves (fade-out para o fundo escuro)
-  const canvasDia = document.getElementById('fatChartDia');
-  const ctxDia = canvasDia.getContext('2d');
-  const gradSaida   = ctxDia.createLinearGradient(0, 0, 0, 220);
-  gradSaida.addColorStop(0,   'rgba(0,212,255,0.72)');
-  gradSaida.addColorStop(0.6, 'rgba(0,212,255,0.28)');
-  gradSaida.addColorStop(1,   'rgba(0,212,255,0.04)');
-  const gradRetorno = ctxDia.createLinearGradient(0, 0, 0, 220);
-  gradRetorno.addColorStop(0,   'rgba(155,107,255,0.72)');
-  gradRetorno.addColorStop(0.6, 'rgba(155,107,255,0.28)');
-  gradRetorno.addColorStop(1,   'rgba(155,107,255,0.04)');
-
-  fatCharts.dia = new Chart(canvasDia, {
+  fatCharts.dia = new Chart(document.getElementById('fatChartDia'), {
     type: 'bar',
     data: {
       labels: diasLabels,
@@ -3122,16 +2947,18 @@ function fatRenderAll() {
         {
           label: 'Saída',
           data: diasSort.map(d => porDia[d]?.saida || 0),
-          backgroundColor: gradSaida,
-          borderWidth: 0,
-          borderRadius: 5,
+          backgroundColor: 'rgba(0,212,255,0.55)',
+          borderColor: '#00d4ff',
+          borderWidth: 1,
+          borderRadius: 4,
         },
         {
           label: 'Retorno',
           data: diasSort.map(d => porDia[d]?.retorno || 0),
-          backgroundColor: gradRetorno,
-          borderWidth: 0,
-          borderRadius: 5,
+          backgroundColor: 'rgba(155,107,255,0.55)',
+          borderColor: '#9b6bff',
+          borderWidth: 1,
+          borderRadius: 4,
         },
       ]
     },
@@ -3164,11 +2991,11 @@ function fatRenderTableRows(rows) {
   const tagTipo = t => t==='SAIDA'?`<span class="fat-tag-saida">Saída</span>`:t==='RETORNO'?`<span class="fat-tag-retorno">Retorno</span>`:`<span class="fat-tag-outro">${t}</span>`;
   tbody.innerHTML = rows.map(r=>`<tr>
     <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte||'—'}</td>
-    <td style="color:var(--text2);font-size:11px">${r.data||'—'}</td>
-    <td style="color:var(--text2)">${r.cliente||'—'}</td>
+    <td>${r.data||'—'}</td>
+    <td>${r.cliente||'—'}</td>
     <td>${tagTipo(r.tipo)}</td>
     <td class="num" style="color:var(--green)">${fatFmt(r.vlr)}</td>
-    <td class="num" style="color:var(--text3)">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
+    <td class="num">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
   </tr>`).join('');
 }
 
@@ -3230,320 +3057,6 @@ function fatLoadFile(input) {
   reader.onerror = () => { if (el) { el.textContent = '\u274c Falha na leitura'; el.style.color = 'var(--red)'; } };
   reader.readAsText(file, 'UTF-8');
   input.value = '';
-}
-
-// ══════════════════════════════════════════════
-// CONTROLE SEMANAL
-// Semana = Dom → Sab. S01 começa em 01/Jan do ano
-// dos dados carregados (ou ano corrente).
-// ══════════════════════════════════════════════
-let semCharts = {};
-let semCurrentWeekIdx = 0; // índice 0-based na lista de semanas do ano
-
-// Retorna {start, end, label} para a semana de índice idx (0-based) do ano dado
-function semWeekBounds(year, idx) {
-  // Dia da semana de 01/Jan (0=dom, 6=sab)
-  const jan1 = new Date(year, 0, 1);
-  const jan1dow = jan1.getDay(); // 0=Sun
-  // S01 começa sempre em 01/Jan
-  // S01 end: primeiro sábado do ano
-  const s01end = new Date(year, 0, 1 + (6 - jan1dow));
-  // Cada semana seguinte começa no domingo seguinte
-  let start, end;
-  if (idx === 0) {
-    start = new Date(year, 0, 1);
-    end   = s01end;
-  } else {
-    const offset = (s01end.getDate() + 1) + (idx - 1) * 7; // dia do ano do início da semana idx
-    start = new Date(year, 0, offset);
-    end   = new Date(year, 0, offset + 6);
-  }
-  // Não ultrapassar 31/Dez do ano
-  const lastDay = new Date(year, 11, 31);
-  if (end > lastDay) end = lastDay;
-  const label = 'S' + String(idx + 1).padStart(2, '0');
-  return { start, end, label, idx };
-}
-
-// Constrói todas as semanas de um ano baseado nos dados
-function semBuildWeeks(year) {
-  const weeks = [];
-  let idx = 0;
-  while (true) {
-    const w = semWeekBounds(year, idx);
-    if (w.start.getFullYear() > year) break;
-    weeks.push(w);
-    if (w.end >= new Date(year, 11, 31)) break;
-    idx++;
-    if (idx > 60) break; // safety
-  }
-  return weeks;
-}
-
-function semFmt(n)      { return 'R$ ' + Math.round(n||0).toLocaleString('pt-BR'); }
-function semFmtShort(n) { if(n>=1e6) return 'R$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return 'R$'+(n/1e3).toFixed(0)+'K'; return 'R$'+Math.round(n); }
-function semFmtDate(d)  { if(!d) return '—'; return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear(); }
-
-function semDayLabel(d) {
-  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  return dias[d.getDay()] + ' ' + String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');
-}
-
-function semFilterByWeek(week) {
-  return fatRawData.filter(r => {
-    const d = fatParseDate(r.data);
-    if (!d) return false;
-    d.setHours(0,0,0,0);
-    const s = new Date(week.start); s.setHours(0,0,0,0);
-    const e = new Date(week.end);   e.setHours(23,59,59,999);
-    return d >= s && d <= e;
-  });
-}
-
-function semAggregateWeek(rows) {
-  const total  = rows.reduce((s,r) => s + r.vlr, 0);
-  const peso   = rows.reduce((s,r) => s + r.peso, 0);
-  const saida  = rows.filter(r => r.tipo === 'SAIDA').reduce((s,r) => s + r.vlr, 0);
-  const retorno= rows.filter(r => r.tipo === 'RETORNO').reduce((s,r) => s + r.vlr, 0);
-  const ticket = rows.length > 0 ? total / rows.length : 0;
-  return { total, peso, saida, retorno, ticket, ctes: rows.length };
-}
-
-function semDeltaHtml(cur, prev) {
-  if (!prev || prev === 0) return '';
-  const pct = ((cur - prev) / prev * 100);
-  const cls = pct > 0 ? 'up' : pct < 0 ? 'down' : 'flat';
-  const sign = pct > 0 ? '▲ +' : '▼ ';
-  return `<div class="sem-delta ${cls}">${sign}${Math.abs(pct).toFixed(1)}%</div>`;
-}
-
-let semWeeks = [];
-let semYear  = new Date().getFullYear();
-
-function semInit() {
-  if (!fatRawData || fatRawData.length === 0) {
-    document.getElementById('semEmpty').style.display = 'block';
-    document.getElementById('semContent').style.display = 'none';
-    return;
-  }
-  document.getElementById('semEmpty').style.display = 'none';
-  document.getElementById('semContent').style.display = 'block';
-
-  // Detecta o ano dos dados
-  const anos = fatRawData.map(r => { const d = fatParseDate(r.data); return d ? d.getFullYear() : null; }).filter(Boolean);
-  semYear = anos.length > 0 ? Math.max(...anos) : new Date().getFullYear();
-  semWeeks = semBuildWeeks(semYear);
-
-  // Popula select
-  const sel = document.getElementById('semWeekSelect');
-  sel.innerHTML = '';
-  semWeeks.forEach((w, i) => {
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = w.label + ' — ' + semFmtDate(w.start) + ' a ' + semFmtDate(w.end);
-    sel.appendChild(opt);
-  });
-
-  // Semana atual: aquela que contém hoje, ou a última com dados
-  const today = new Date(); today.setHours(0,0,0,0);
-  let defaultIdx = semWeeks.findIndex(w => {
-    const s = new Date(w.start); s.setHours(0,0,0,0);
-    const e = new Date(w.end);   e.setHours(23,59,59,999);
-    return today >= s && today <= e;
-  });
-  if (defaultIdx < 0) {
-    // Última semana com dados
-    for (let i = semWeeks.length - 1; i >= 0; i--) {
-      if (semFilterByWeek(semWeeks[i]).length > 0) { defaultIdx = i; break; }
-    }
-  }
-  if (defaultIdx < 0) defaultIdx = semWeeks.length - 1;
-  semCurrentWeekIdx = defaultIdx;
-  sel.value = defaultIdx;
-  semRenderWeek(defaultIdx);
-  semRenderHistoryGrid();
-}
-
-function semSelectWeek(idx) {
-  semCurrentWeekIdx = parseInt(idx);
-  semRenderWeek(semCurrentWeekIdx);
-  semRenderHistoryGrid();
-}
-
-function semNavWeek(dir) {
-  const next = semCurrentWeekIdx + dir;
-  if (next < 0 || next >= semWeeks.length) return;
-  semCurrentWeekIdx = next;
-  document.getElementById('semWeekSelect').value = semCurrentWeekIdx;
-  semRenderWeek(semCurrentWeekIdx);
-  semRenderHistoryGrid();
-}
-
-function semRenderWeek(idx) {
-  const week = semWeeks[idx];
-  const rows = semFilterByWeek(week);
-  const agg  = semAggregateWeek(rows);
-  const prevWeek = idx > 0 ? semWeeks[idx-1] : null;
-  const prevRows = prevWeek ? semFilterByWeek(prevWeek) : [];
-  const prevAgg  = prevRows.length > 0 ? semAggregateWeek(prevRows) : null;
-
-  // Period label
-  document.getElementById('semPeriodLabel').textContent =
-    semFmtDate(week.start) + ' → ' + semFmtDate(week.end);
-
-  // KPIs
-  const kpis = [
-    { label:'Faturamento Total', val: semFmt(agg.total), sub: agg.ctes + ' CT-es', color:'var(--green)', delta: prevAgg ? semDeltaHtml(agg.total, prevAgg.total) : '' },
-    { label:'Frete Saída',       val: semFmt(agg.saida),   sub: agg.total > 0 ? Math.round(agg.saida/agg.total*100)+'% do total' : '—', color:'var(--neon)', delta: prevAgg ? semDeltaHtml(agg.saida, prevAgg.saida) : '' },
-    { label:'Frete Retorno',     val: semFmt(agg.retorno), sub: agg.total > 0 ? Math.round(agg.retorno/agg.total*100)+'% do total' : '—', color:'var(--purple)', delta: prevAgg ? semDeltaHtml(agg.retorno, prevAgg.retorno) : '' },
-    { label:'Ticket Médio',      val: semFmt(agg.ticket),  sub: 'por CT-e', color:'var(--yellow)', delta: prevAgg ? semDeltaHtml(agg.ticket, prevAgg.ticket) : '' },
-    { label:'Peso BRT Total',    val: Math.round(agg.peso).toLocaleString('pt-BR') + ' kg', sub: agg.ctes > 0 ? Math.round(agg.peso/agg.ctes).toLocaleString('pt-BR')+' kg/CT-e' : '—', color:'var(--teal)', delta: prevAgg ? semDeltaHtml(agg.peso, prevAgg.peso) : '' },
-  ];
-  document.getElementById('semKpiGrid').innerHTML = kpis.map(k => `
-    <div class="sem-kpi" style="--sem-color:${k.color}">
-      <div class="sem-kpi-label">${k.label}</div>
-      <div class="sem-kpi-value" style="color:${k.color}">${k.val}</div>
-      <div class="sem-kpi-sub">${k.sub}</div>
-      ${k.delta}
-    </div>`).join('');
-
-  // Destroy old charts
-  Object.values(semCharts).forEach(c => { try { c.destroy(); } catch{} });
-  semCharts = {};
-
-  // ── Pizza chart ──
-  const saida = rows.filter(r => r.tipo==='SAIDA').reduce((s,r) => s+r.vlr, 0);
-  const ret   = rows.filter(r => r.tipo==='RETORNO').reduce((s,r) => s+r.vlr, 0);
-  const outro = agg.total - saida - ret;
-  const pLabels = [], pData = [], pColors = [];
-  if (saida > 0)  { pLabels.push('Saída');   pData.push(saida);  pColors.push('#00d4ff'); }
-  if (ret > 0)    { pLabels.push('Retorno'); pData.push(ret);    pColors.push('#9b6bff'); }
-  if (outro > 0)  { pLabels.push('Outro');   pData.push(outro);  pColors.push('#f5c518'); }
-  if (pData.length > 0) {
-    semCharts.pizza = new Chart(document.getElementById('semChartPizza'), {
-      type: 'doughnut',
-      data: { labels: pLabels, datasets: [{ data: pData, backgroundColor: pColors, borderWidth: 0, hoverOffset: 6 }] },
-      options: { responsive: true, cutout: '64%',
-        plugins: { legend: { position: 'bottom' },
-          tooltip: { callbacks: { label: c => ' ' + semFmt(c.raw) + ' (' + Math.round(c.raw/agg.total*100) + '%)' } } } }
-    });
-  }
-
-  // ── Dia chart (Dom a Sab) ──
-  const diasSemana = [];
-  for (let d = new Date(week.start); d <= week.end; d = new Date(d.getFullYear(), d.getMonth(), d.getDate()+1)) {
-    diasSemana.push(new Date(d));
-  }
-  const porDiaSem = {};
-  rows.forEach(r => {
-    const d = fatParseDate(r.data);
-    if (!d) return;
-    const k = d.toISOString().slice(0,10);
-    if (!porDiaSem[k]) porDiaSem[k] = { saida:0, retorno:0 };
-    if (r.tipo === 'SAIDA')   porDiaSem[k].saida   += r.vlr;
-    if (r.tipo === 'RETORNO') porDiaSem[k].retorno += r.vlr;
-  });
-
-  const diaCtx = document.getElementById('semChartDia').getContext('2d');
-  const gradS  = diaCtx.createLinearGradient(0, 0, 0, 180);
-  gradS.addColorStop(0, 'rgba(0,212,255,0.75)');
-  gradS.addColorStop(1, 'rgba(0,212,255,0.06)');
-  const gradR  = diaCtx.createLinearGradient(0, 0, 0, 180);
-  gradR.addColorStop(0, 'rgba(155,107,255,0.75)');
-  gradR.addColorStop(1, 'rgba(155,107,255,0.06)');
-
-  semCharts.dia = new Chart(document.getElementById('semChartDia'), {
-    type: 'bar',
-    data: {
-      labels: diasSemana.map(d => semDayLabel(d)),
-      datasets: [
-        { label:'Saída',   data: diasSemana.map(d => porDiaSem[d.toISOString().slice(0,10)]?.saida   || 0), backgroundColor: gradS, borderWidth: 0, borderRadius: 4 },
-        { label:'Retorno', data: diasSemana.map(d => porDiaSem[d.toISOString().slice(0,10)]?.retorno || 0), backgroundColor: gradR, borderWidth: 0, borderRadius: 4 },
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { position:'bottom' }, tooltip: { callbacks: { label: c => ' '+c.dataset.label+': '+semFmt(c.raw) } } },
-      scales: {
-        x: { stacked: true, grid: { display: false } },
-        y: { stacked: true, beginAtZero: true, ticks: { callback: v => semFmtShort(v) } }
-      }
-    }
-  });
-
-  // ── Histórico semanal (linha) ──
-  const allWeeksAgg = semWeeks.map(w => {
-    const wr = semFilterByWeek(w);
-    return { label: w.label, total: wr.reduce((s,r) => s+r.vlr, 0) };
-  }).filter(w => w.total > 0);
-
-  if (allWeeksAgg.length > 1) {
-    semCharts.hist = new Chart(document.getElementById('semChartHistorico'), {
-      type: 'line',
-      data: {
-        labels: allWeeksAgg.map(w => w.label),
-        datasets: [{
-          label: 'Faturamento por Semana',
-          data: allWeeksAgg.map(w => w.total),
-          borderColor: '#00ff88',
-          backgroundColor: 'rgba(0,255,136,0.07)',
-          borderWidth: 2,
-          pointBackgroundColor: allWeeksAgg.map((w,i) => i === idx ? '#fff' : '#00ff88'),
-          pointRadius: allWeeksAgg.map((w,i) => i === idx ? 5 : 3),
-          fill: true,
-          tension: 0.35,
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false },
-          tooltip: { callbacks: { label: c => ' ' + semFmt(c.raw) } } },
-        scales: {
-          x: { ticks: { font: { size: 10 } }, grid: { display: false } },
-          y: { beginAtZero: true, ticks: { callback: v => semFmtShort(v) } }
-        }
-      }
-    });
-  }
-
-  // ── Tabela ──
-  const tbody = document.getElementById('semTbody');
-  const tagTipo = t => t==='SAIDA'?`<span class="fat-tag-saida">Saída</span>`:t==='RETORNO'?`<span class="fat-tag-retorno">Retorno</span>`:`<span class="fat-tag-outro">${t}</span>`;
-  document.getElementById('semTblCount').textContent = rows.length + ' registros';
-  tbody.innerHTML = rows.map(r => `<tr>
-    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--neon)">${r.cte||'—'}</td>
-    <td style="color:var(--text2);font-size:11px">${r.data||'—'}</td>
-    <td style="color:var(--text2)">${r.cliente||'—'}</td>
-    <td>${tagTipo(r.tipo)}</td>
-    <td class="num" style="color:var(--green)">${semFmt(r.vlr)}</td>
-    <td class="num" style="color:var(--text3)">${Math.round(r.peso).toLocaleString('pt-BR')}</td>
-  </tr>`).join('');
-}
-
-function semRenderHistoryGrid() {
-  const grid = document.getElementById('semHistoryGrid');
-  if (!grid) return;
-  grid.innerHTML = semWeeks.map((w, i) => {
-    const rows = semFilterByWeek(w);
-    const total = rows.reduce((s,r) => s+r.vlr, 0);
-    const isActive = i === semCurrentWeekIdx;
-    const hasData  = total > 0;
-    if (!hasData) return `<div class="sem-hist-card" style="opacity:0.3;cursor:default">
-      <div class="sem-hist-label">${w.label}</div>
-      <div class="sem-hist-value" style="color:var(--text3)">—</div>
-      <div class="sem-hist-period">${semFmtDate(w.start).slice(0,5)} a ${semFmtDate(w.end).slice(0,5)}</div>
-    </div>`;
-    return `<div class="sem-hist-card ${isActive ? 'active' : ''}" onclick="semSelectWeek(${i});document.getElementById('semWeekSelect').value=${i}">
-      <div class="sem-hist-label">${w.label}</div>
-      <div class="sem-hist-value">${semFmtShort(total)}</div>
-      <div class="sem-hist-period">${semFmtDate(w.start).slice(0,5)} → ${semFmtDate(w.end).slice(0,5)}</div>
-    </div>`;
-  }).join('');
-}
-
-// Chamado quando a aba Semanal é aberta
-function semOnOpen() {
-  semInit();
 }
 
 // ── INIT ──────────────────────────────────────
