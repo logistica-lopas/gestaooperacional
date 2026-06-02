@@ -310,7 +310,7 @@ body::after {
    LOGÍSTICA VIEW — SUB-MODULES SELECTOR
 ══════════════════════════════════════════════ */
 .submod-grid {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
   margin-bottom: 32px;
 }
 .submod-card {
@@ -362,7 +362,7 @@ body::after {
 .cp-topbar {
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 20px; height: 52px;
-  background: var(--bg2);
+  background: var(--bg3);
   border-bottom: 1px solid var(--border);
 }
 .cp-logo {
@@ -378,18 +378,17 @@ body::after {
 .cp-logo-accent { color: var(--neon); }
 .cp-update { font-size: 11px; color: var(--text3); font-family: 'Space Mono', monospace; }
 
-/* CARTEIRA TABS — same style as transp-tabs */
+/* CARTEIRA TABS */
 .cp-tabs {
   display: flex; gap: 0; padding: 0 20px;
-  background: var(--bg2); border-bottom: 1px solid var(--border);
+  background: var(--bg3); border-bottom: 1px solid var(--border);
   overflow-x: auto;
 }
 .cp-tab {
-  padding: 11px 20px; font-size: 12px; font-weight: 600;
+  padding: 10px 18px; font-size: 12px; font-weight: 500;
   color: var(--text3); cursor: pointer; white-space: nowrap;
   border-bottom: 2px solid transparent; transition: var(--trans);
-  font-family: 'Barlow', sans-serif; letter-spacing: 0.3px;
-  display: flex; align-items: center; gap: 7px;
+  font-family: 'Barlow', sans-serif;
 }
 .cp-tab:hover { color: var(--text2); }
 .cp-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
@@ -419,7 +418,7 @@ body::after {
 .cp-filters {
   display: flex; flex-wrap: wrap; gap: 8px;
   padding: 12px 20px; border-bottom: 1px solid var(--border);
-  background: var(--bg2); align-items: flex-end;
+  background: var(--bg3); align-items: flex-end;
 }
 .cp-filter-group { display: flex; flex-direction: column; gap: 3px; }
 .cp-filter-group label {
@@ -1088,6 +1087,17 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="submod-tag">Excel / ERP</div>
       </div>
 
+      <div class="submod-card" id="submod-roteirizacao" style="--submod-color:#9b6bff;opacity:0.5;cursor:default">
+        <div class="submod-icon" style="color:var(--purple)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/>
+            <path d="M7 11.5l10-5M7 12.5l10 5"/>
+          </svg>
+        </div>
+        <div class="submod-name">Roteirização</div>
+        <div class="submod-desc">Montagem e otimização de rotas por região, peso e janela de entrega.</div>
+        <div class="submod-tag" style="background:rgba(155,107,255,0.1);color:var(--purple);border-color:rgba(155,107,255,0.2)">Em breve</div>
+      </div>
 
       <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88;opacity:0.5;cursor:default">
         <div class="submod-icon" style="color:var(--green)">
@@ -1409,7 +1419,27 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
         Faturamento
       </div>
+      <div class="transp-tab" data-transp-tab="frota" onclick="switchTranspTab('frota')">
+        <svg class="transp-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        Frota & Rotas
+      </div>
+    </div>
+  </div>
 
+  <!-- ABA: FROTA & ROTAS -->
+  <div class="transp-tab-panel" id="transp-panel-frota">
+    <div class="transp-inner" id="transpContent">
+      <div style="text-align:center;padding:80px 0">
+        <div style="width:80px;height:80px;border-radius:50%;background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:var(--green)">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 3h15v13H1z"/><path d="M16 8h4l3 3v5h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+        </div>
+        <div style="font-size:18px;font-weight:500;margin-bottom:8px">Nenhum dado carregado</div>
+        <p style="color:var(--text2);font-size:13px">Clique em "Simular Import ERP" para popular o painel de frota</p>
+        <button class="transp-import-btn" onclick="transpLoadData()" style="margin:20px auto 0;display:inline-flex">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Simular Import ERP
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2736,59 +2766,37 @@ function fatRenderAll() {
   fatCharts = {};
 
   const content = document.getElementById('fatContent');
-  // ── por mês ───────────────────────────────────
-  const porMes = {};
-  fatFiltered.forEach(r => {
-    const d = fatParseDate(r.data);
-    if (!d) return;
-    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-    if (!porMes[key]) porMes[key] = { total: 0, saida: 0, retorno: 0 };
-    porMes[key].total   += r.vlr;
-    if (r.tipo === 'SAIDA')   porMes[key].saida   += r.vlr;
-    if (r.tipo === 'RETORNO') porMes[key].retorno += r.vlr;
-  });
-  const mesesSort = Object.keys(porMes).sort();
-  const mesesLabels = mesesSort.map(k => {
-    const [y, m] = k.split('-');
-    const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-    return nomes[+m-1] + '/' + y.slice(2);
-  });
-
   content.innerHTML = `
     <!-- KPIs -->
     <div class="fat-kpi-row">
       <div class="fat-kpi" style="--fat-kpi-color:var(--green)">
         <div class="fat-kpi-label">Faturamento Total</div>
         <div class="fat-kpi-value">${fatFmt(totalVlr)}</div>
-        <div class="fat-kpi-sub">Faturamento bruto do período</div>
+        <div class="fat-kpi-sub">${totalCtes} CT-es</div>
         <div class="fat-kpi-icon">💰</div>
       </div>
       <div class="fat-kpi" style="--fat-kpi-color:var(--neon)">
         <div class="fat-kpi-label">Frete Saída</div>
         <div class="fat-kpi-value" style="color:var(--neon)">${fatFmt(vlrSaida)}</div>
-        <div class="fat-kpi-sub">${totalVlr>0?Math.round(vlrSaida/totalVlr*100):0}% do total</div>
+        <div class="fat-kpi-sub">${saida.length} CT-es · ${totalVlr>0?Math.round(vlrSaida/totalVlr*100):0}%</div>
         <div class="fat-kpi-icon">🚛</div>
       </div>
       <div class="fat-kpi" style="--fat-kpi-color:var(--purple)">
         <div class="fat-kpi-label">Frete Retorno</div>
         <div class="fat-kpi-value" style="color:var(--purple)">${fatFmt(vlrRetorno)}</div>
-        <div class="fat-kpi-sub">${totalVlr>0?Math.round(vlrRetorno/totalVlr*100):0}% do total</div>
+        <div class="fat-kpi-sub">${retorno.length} CT-es · ${totalVlr>0?Math.round(vlrRetorno/totalVlr*100):0}%</div>
         <div class="fat-kpi-icon">↩️</div>
       </div>
       <div class="fat-kpi" style="--fat-kpi-color:var(--yellow)">
         <div class="fat-kpi-label">Peso BRT Total</div>
         <div class="fat-kpi-value" style="color:var(--yellow)">${Math.round(totalPeso).toLocaleString('pt-BR')} kg</div>
-        <div class="fat-kpi-sub">Peso bruto transportado</div>
+        <div class="fat-kpi-sub">Ticket médio: ${fatFmt(ticketMed)}</div>
         <div class="fat-kpi-icon">⚖️</div>
       </div>
     </div>
 
     <!-- CHARTS -->
     <div class="fat-charts-grid">
-      <div class="fat-chart-card full">
-        <div class="fat-chart-title">Faturamento Bruto Mensal <span style="font-size:10px;color:var(--text3);font-weight:400">(Saída + Retorno)</span></div>
-        <div class="fat-chart-container"><canvas id="fatChartMensal" style="max-height:260px"></canvas></div>
-      </div>
       <div class="fat-chart-card">
         <div class="fat-chart-title">Faturamento por Tipo de Frete</div>
         <div class="fat-chart-container"><canvas id="fatChartPizza"></canvas></div>
@@ -2805,55 +2813,34 @@ function fatRenderAll() {
         <div class="fat-chart-title">Top 5 Clientes — Frete Retorno <span style="font-size:10px;color:var(--text3);font-weight:400">(por valor faturado)</span></div>
         <div class="fat-chart-container"><canvas id="fatChartTop5" style="max-height:220px"></canvas></div>
       </div>
+    </div>
+
+    <!-- TABELA -->
+    <div class="fat-table-wrap">
+      <div class="fat-table-header">
+        <div style="display:flex;align-items:center;gap:14px">
+          <span class="fat-table-title">Detalhamento CT-es</span>
+          <span class="fat-table-count" id="fatTblCount">${fatFiltered.length} registros</span>
+        </div>
+        <input type="text" class="fat-table-search" placeholder="Buscar CTE, remetente..." oninput="fatSearchTable(this.value)">
+      </div>
+      <div class="fat-tbl-scroll">
+        <table id="fatTable">
+          <thead><tr>
+            <th onclick="fatSortTable(0)">CT-e ↕</th>
+            <th onclick="fatSortTable(1)">Data ↕</th>
+            <th onclick="fatSortTable(2)">Cliente ↕</th>
+            <th onclick="fatSortTable(3)">Tipo Frete ↕</th>
+            <th onclick="fatSortTable(4)">Vlr CT-e (R$) ↕</th>
+            <th onclick="fatSortTable(5)">Peso BRT (kg) ↕</th>
+          </tr></thead>
+          <tbody id="fatTbody"></tbody>
+        </table>
+      </div>
     </div>`;
 
-  // render table rows (removed - tabela de detalhamento removida)
-
-  // ── MENSAL ──
-  if (mesesSort.length > 0) {
-    fatCharts.mensal = new Chart(document.getElementById('fatChartMensal'), {
-      type: 'bar',
-      data: {
-        labels: mesesLabels,
-        datasets: [
-          {
-            label: 'Saída',
-            data: mesesSort.map(k => porMes[k]?.saida || 0),
-            backgroundColor: 'rgba(0,212,255,0.6)',
-            borderColor: '#00d4ff',
-            borderWidth: 1,
-            borderRadius: 6,
-          },
-          {
-            label: 'Retorno',
-            data: mesesSort.map(k => porMes[k]?.retorno || 0),
-            backgroundColor: 'rgba(155,107,255,0.6)',
-            borderColor: '#9b6bff',
-            borderWidth: 1,
-            borderRadius: 6,
-          },
-        ]
-      },
-      options: {
-        responsive: true,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { position: 'bottom' },
-          tooltip: {
-            callbacks: {
-              label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
-              footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
-            }
-          }
-        },
-        scales: {
-          x: { stacked: true, ticks: { font: { size: 11 } } },
-          y: { stacked: true, ticks: { callback: v => fatFmtShort(v) }, beginAtZero: true,
-            grid: { color: 'rgba(255,255,255,0.04)' } }
-        }
-      }
-    });
-  }
+  // render table rows
+  fatRenderTableRows(fatFiltered);
 
   // ── PIZZA ──
   const tiposGrp = {};
