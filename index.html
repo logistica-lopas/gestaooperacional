@@ -684,7 +684,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 .transp-tab:hover { color: var(--text2); }
 .transp-tab.active { color: var(--green); border-bottom-color: var(--green); }
-.transp-tab.cp-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
 .transp-tab-icon { opacity: 0.7; }
 
 .transp-tab-panel { display: none; }
@@ -1073,26 +1072,40 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
       </div>
     </div>
-    <!-- ABAS DE NÍVEL SUPERIOR: sub-módulos -->
-    <div class="transp-tabs-bar">
-      <div class="transp-tab mod1-tab active" id="mod1-tab-carteira" data-mod="carteira" onclick="switchMod1Tab('carteira')" style="color:var(--neon);border-bottom-color:var(--neon)">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10M7 12h7"/></svg>
-        Carteira de Pedidos
-      </div>
-      <div class="transp-tab mod1-tab" id="mod1-tab-faturamento" data-mod="faturamento" onclick="switchMod1Tab('faturamento')" style="opacity:0.45;cursor:default;pointer-events:none">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-        Faturamento
-        <span style="font-size:9px;padding:1px 6px;border-radius:8px;background:rgba(0,255,136,0.1);color:var(--green);border:1px solid rgba(0,255,136,0.2);margin-left:4px">Em breve</span>
-      </div>
-    </div>
   </div>
 
   <div class="view-content">
 
-    <!-- CARTEIRA PANEL (embedded) -->
-    <div id="carteira-panel" style="border-radius:0;border-left:none;border-right:none;border-top:none">
+    <!-- SUB-MODULES -->
+    <div class="submod-grid">
+      <div class="submod-card" id="submod-carteira" style="--submod-color:#00d4ff" onclick="showSubmod('carteira')">
+        <div class="submod-icon" style="color:var(--neon)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/>
+          </svg>
+        </div>
+        <div class="submod-name">Carteira de Pedidos</div>
+        <div class="submod-desc">Dashboard completo com análise de carteira, bloqueios, faixas de idade e histórico.</div>
+        <div class="submod-tag">Excel / ERP</div>
+      </div>
 
-      <!-- LOGO + UPDATE (compacto, dentro do painel) -->
+
+      <div class="submod-card" id="submod-faturamento" style="--submod-color:#00ff88;opacity:0.5;cursor:default">
+        <div class="submod-icon" style="color:var(--green)">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+          </svg>
+        </div>
+        <div class="submod-name">Faturamento</div>
+        <div class="submod-desc">Análise de faturamento por período, meta vs realizado e projeção mensal.</div>
+        <div class="submod-tag" style="background:rgba(0,255,136,0.08);color:var(--green);border-color:rgba(0,255,136,0.2)">Em breve</div>
+      </div>
+    </div>
+
+    <!-- CARTEIRA PANEL (embedded) -->
+    <div id="carteira-panel">
+
+      <!-- TOP BAR -->
       <div class="cp-topbar">
         <div class="cp-logo">
           <div class="cp-logo-icon">
@@ -1106,15 +1119,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <span class="cp-update" id="cpLastUpdate" style="font-family:Space Mono,monospace;font-size:11px;color:var(--text3)">Sincronizando...</span>
       </div>
 
-      <!-- SUB-ABAS DA CARTEIRA -->
+      <!-- TABS -->
       <div class="cp-tabs">
-        <div class="cp-tab active" data-tab="dashboard" onclick="cpSwitchTab(this)">Dashboard</div>
-        <div class="cp-tab" data-tab="logistica-reg" onclick="cpSwitchTab(this)">Logística</div>
-        <div class="cp-tab" data-tab="representantes" onclick="cpSwitchTab(this)">Representantes</div>
-        <div class="cp-tab" data-tab="bloqueios" onclick="cpSwitchTab(this)">Bloqueios</div>
-        <div class="cp-tab" data-tab="detalhes" onclick="cpSwitchTab(this)">Detalhamento</div>
-        <div class="cp-tab" data-tab="historico" onclick="cpSwitchTab(this)">Histórico</div>
-        <div class="cp-tab" data-tab="assistencia" onclick="cpSwitchTab(this)">Assistência</div>
+        <div class="cp-tab active" data-tab="dashboard">Dashboard</div>
+        <div class="cp-tab" data-tab="logistica-reg">Logística</div>
+        <div class="cp-tab" data-tab="representantes">Representantes</div>
+        <div class="cp-tab" data-tab="bloqueios">Bloqueios</div>
+        <div class="cp-tab" data-tab="detalhes">Detalhamento</div>
+        <div class="cp-tab" data-tab="historico">Histórico</div>
+        <div class="cp-tab" data-tab="assistencia">Assistência</div>
       </div>
 
       <!-- URL oculta Google Sheets -->
@@ -1480,26 +1493,7 @@ function navigate(view) {
 }
 
 // ══════════════════════════════════════════════
-// MOD1 SUB-MODULE TAB SWITCHER
-// ══════════════════════════════════════════════
-function switchMod1Tab(mod) {
-  // Só Carteira de Pedidos está ativo por enquanto
-  if (mod !== 'carteira') return;
-  document.querySelectorAll('.mod1-tab').forEach(t => {
-    t.classList.remove('active');
-    t.style.color = '';
-    t.style.borderBottomColor = '';
-  });
-  const active = document.getElementById('mod1-tab-' + mod);
-  if (active) {
-    active.classList.add('active');
-    active.style.color = 'var(--neon)';
-    active.style.borderBottomColor = 'var(--neon)';
-  }
-  document.getElementById('carteira-panel').style.display = mod === 'carteira' ? '' : 'none';
-}
-
-
+// HOME CLOCK
 // ══════════════════════════════════════════════
 function updateClock() {
   const n = new Date();
@@ -1541,15 +1535,17 @@ let cpSortStates = {};
 let cpDetAllFiltered = [];
 
 // ── CARTEIRA TABS ─────────────────────────────
-function cpSwitchTab(tab) {
-  document.querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.cp-tab-content').forEach(c => c.classList.remove('active'));
-  tab.classList.add('active');
-  const target = document.getElementById('cptab-' + tab.dataset.tab);
-  if (target) target.classList.add('active');
-  if (tab.dataset.tab === 'historico') cpRenderHistory();
-  if (tab.dataset.tab === 'assistencia') cpRenderTipoTab();
-}
+document.querySelectorAll('.cp-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.cp-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.cp-tab-content').forEach(c => c.classList.remove('active'));
+    tab.classList.add('active');
+    const target = document.getElementById('cptab-' + tab.dataset.tab);
+    if (target) target.classList.add('active');
+    if (tab.dataset.tab === 'historico') cpRenderHistory();
+    if (tab.dataset.tab === 'assistencia') cpRenderTipoTab();
+  });
+});
 
 // ── FILE LOAD ─────────────────────────────────
 // ── CARTEIRA AUTO-REFRESH STATE ───────────────
