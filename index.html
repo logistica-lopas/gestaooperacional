@@ -452,7 +452,7 @@ body::after {
 
 /* KPI GRID */
 .cp-kpi-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  display: grid; grid-template-columns: repeat(5, 1fr);
   gap: 10px; margin-bottom: 20px;
 }
 .cp-kpi {
@@ -474,7 +474,8 @@ body::after {
 .cp-kpi-value {
   font-size: 20px; font-weight: 700; color: var(--text);
   letter-spacing: -0.5px; font-family: 'Space Mono', monospace;
-  margin-bottom: 3px;
+  margin-bottom: 3px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cp-kpi-sub { font-size: 11px; color: var(--text3); }
 
@@ -1811,24 +1812,17 @@ function cpRenderKPIs() {
   const disp     = d.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0);
   const blq      = d.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0);
   const peso     = d.reduce((s,r)=>s+r.pesoBrt,0);
-  const ate30    = d.filter(r=>r.dias<=30).reduce((s,r)=>s+r.valCarteira,0);
-  const mais30   = d.filter(r=>r.dias>30).reduce((s,r)=>s+r.valCarteira,0);
-  const mais60   = d.filter(r=>r.dias>60).reduce((s,r)=>s+r.valCarteira,0);
   const kpis = [
-    {label:'Carteira Total', value:fmt(total), sub:`${d.length} pedidos`, color:'#00d4ff'},
-    {label:'Em Carga', value:fmt(emCarga), sub:`${d.filter(r=>r.statusCarga==='Em Carga').length} pedidos`, color:'#9b6bff'},
-    {label:'Disponível', value:fmt(disp), sub:`${d.filter(r=>r.statusCarga==='Disponível'&&r.bloqueio!=='BLQ').length} pedidos`, color:'#00ff88'},
-    {label:'Bloqueado', value:fmt(blq), sub:`${d.filter(r=>r.bloqueio==='BLQ').length} pedidos`, color:'#ff3d5a'},
+    {label:'Carteira Total', value:fmt(total), sub:`100% da carteira`, color:'#00d4ff'},
+    {label:'Em Carga', value:fmt(emCarga), sub:`${cpPct(emCarga,total)}% da carteira`, color:'#9b6bff'},
+    {label:'Disponível', value:fmt(disp), sub:`${cpPct(disp,total)}% da carteira`, color:'#00ff88'},
+    {label:'Bloqueado', value:fmt(blq), sub:`${cpPct(blq,total)}% da carteira`, color:'#ff3d5a'},
     {label:'Peso Total', value:fmtPeso(peso)+' kg', sub:'bruto', color:'#00e5cc'},
-    {label:'Carteira ≤ 30 dias', value:fmt(ate30), sub:`${cpPct(ate30,total)}% da carteira · ${d.filter(r=>r.dias<=30).length} pedidos`, color:'#00e5cc', highlight:true},
-    {label:'Carteira > 30 dias', value:fmt(mais30), sub:`${cpPct(mais30,total)}% da carteira`, color:'#f5c518'},
-    {label:'Carteira > 60 dias', value:fmt(mais60), sub:`${cpPct(mais60,total)}% da carteira`, color:'#ff7b2e'},
   ];
   document.getElementById('cpKpiGrid').innerHTML = kpis.map(k=>`
-    <div class="cp-kpi${k.highlight?' cp-kpi--highlight':''}" style="--k-color:${k.color}${k.highlight?';background:rgba(0,229,204,0.07);border-color:rgba(0,229,204,0.25)':''}">
-      ${k.highlight?`<div style="position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);opacity:0.8;font-weight:700">DESTAQUE</div>`:''}
+    <div class="cp-kpi" style="--k-color:${k.color}">
       <div class="cp-kpi-label">${k.label}</div>
-      <div class="cp-kpi-value" style="${k.highlight?'color:var(--teal)':''}">${k.value}</div>
+      <div class="cp-kpi-value">${k.value}</div>
       <div class="cp-kpi-sub">${k.sub}</div>
     </div>
   `).join('');
