@@ -452,7 +452,7 @@ body::after {
 
 /* KPI GRID */
 .cp-kpi-grid {
-  display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  display: grid; grid-template-columns: repeat(5, 1fr);
   gap: 10px; margin-bottom: 20px;
 }
 .cp-kpi {
@@ -474,7 +474,8 @@ body::after {
 .cp-kpi-value {
   font-size: 20px; font-weight: 700; color: var(--text);
   letter-spacing: -0.5px; font-family: 'Space Mono', monospace;
-  margin-bottom: 3px;
+  margin-bottom: 3px; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cp-kpi-sub { font-size: 11px; color: var(--text3); }
 
@@ -905,21 +906,29 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
       <div class="status-item" id="homeStatCp">
         <div class="status-dot" id="homeStatCpDot" style="background:var(--text3)"></div>
-        <span class="status-label">Logística</span>
+        <span class="status-label">Carteira</span>
         <span class="status-val" id="homeStatCpVal" style="color:var(--text3)">Aguardando</span>
       </div>
       <div class="status-item" id="homeStatFat">
         <div class="status-dot" id="homeStatFatDot" style="background:var(--text3)"></div>
-        <span class="status-label">Transporte</span>
+        <span class="status-label">Faturamento</span>
         <span class="status-val" id="homeStatFatVal" style="color:var(--text3)">Aguardando</span>
       </div>
-      <div class="status-item" id="homeStatLastUpdate" style="display:none">
-        <div class="status-dot" style="background:var(--text2)"></div>
-        <span class="status-label">Última atualização</span>
-        <span class="status-val" id="homeStatLastUpdateVal" style="color:var(--text2)">—</span>
+      <div class="status-item" id="homeStatFatNext" style="display:none">
+        <div class="status-dot" style="background:var(--neon)"></div>
+        <span class="status-label">Próx. atualização</span>
+        <span class="status-val" id="homeStatFatNextVal" style="color:var(--neon)">—</span>
       </div>
       <div class="status-item" style="margin-left:auto">
-        <button onclick="homeForceRefresh()" style="display:flex;align-items:center;gap:6px;padding:5px 14px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);border-radius:7px;color:var(--neon);font-family:Barlow,sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s" onmouseover="this.style.background='rgba(0,212,255,0.2)'" onmouseout="this.style.background='rgba(0,212,255,0.1)'">↻ Atualizar</button>
+        <span class="status-label" style="font-size:10px;color:var(--text3)">Auto-refresh:</span>
+        <select id="homeRefreshInterval" onchange="fatSetRefreshInterval(this.value)"
+          style="background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;padding:2px 6px;font-family:Barlow,sans-serif;cursor:pointer">
+          <option value="0">Desativado</option>
+          <option value="5">5 min</option>
+          <option value="10" selected>10 min</option>
+          <option value="15">15 min</option>
+          <option value="30">30 min</option>
+        </select>
       </div>
     </div>
 
@@ -1129,6 +1138,21 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div style="display:flex;align-items:center;gap:8px">
           <div id="cpStatusDot" style="width:8px;height:8px;border-radius:50%;background:var(--text3);flex-shrink:0"></div>
           <span class="cp-upload-info" id="cpUploadInfo" style="margin:0">Carregando dados...</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-left:auto">
+          <span id="cpNextRefresh" style="font-size:11px;color:var(--text3);font-family:Space Mono,monospace;display:none"></span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:11px;color:var(--text3)">Auto-refresh:</span>
+            <select id="cpRefreshInterval" onchange="cpSetRefreshInterval(this.value)"
+              style="background:var(--bg4);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:11px;padding:2px 6px;font-family:Barlow,sans-serif;cursor:pointer">
+              <option value="0">Desativado</option>
+              <option value="5">5 min</option>
+              <option value="10" selected>10 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+            </select>
+          </div>
+          <button onclick="cpLoadSheet(false)" style="padding:4px 12px;background:rgba(0,212,255,0.1);border:1px solid rgba(0,212,255,0.25);border-radius:6px;color:var(--neon);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
         </div>
       </div>
 
@@ -1432,6 +1456,11 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           Última atualização: <span id="fatInlineTime" style="color:var(--green);font-family:Space Mono,monospace">—</span>
           &nbsp;·&nbsp; <span id="fatInlineCount" style="color:var(--text2)">0 registros</span>
         </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:11px;color:var(--text3)">Próxima atualização:</span>
+          <span id="fatInlineNext" style="font-size:11px;font-family:Space Mono,monospace;color:var(--neon)">—</span>
+          <button onclick="fatLoadData(false)" style="padding:4px 12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);border-radius:6px;color:var(--green);font-family:Barlow,sans-serif;font-size:11px;font-weight:600;cursor:pointer">↻ Forçar</button>
+        </div>
       </div>
 
       <!-- CONTEÚDO (KPIs + charts + tabela) -->
@@ -1549,6 +1578,7 @@ function cpSetRefreshInterval(minutes) {
   clearTimeout(cpRefreshTimer);
   clearInterval(cpCountdownTimer);
   cpNextAt = null;
+  document.getElementById('cpNextRefresh').style.display = 'none';
   if (cpRefreshSeconds > 0 && cpRawData.length > 0) cpScheduleNext();
 }
 
@@ -1556,12 +1586,19 @@ function cpScheduleNext() {
   clearTimeout(cpRefreshTimer);
   clearInterval(cpCountdownTimer);
   cpNextAt = new Date(Date.now() + cpRefreshSeconds * 1000);
+  const el = document.getElementById('cpNextRefresh');
+  if (el) el.style.display = '';
+  cpUpdateCountdown();
   cpCountdownTimer = setInterval(cpUpdateCountdown, 10000);
   cpRefreshTimer   = setTimeout(() => cpLoadSheet(true), cpRefreshSeconds * 1000);
 }
 
 function cpUpdateCountdown() {
-  // countdown removido da UI — função mantida para compatibilidade
+  if (!cpNextAt) return;
+  const diff = Math.max(0, Math.round((cpNextAt - Date.now()) / 1000));
+  const m = Math.floor(diff / 60), s = diff % 60;
+  const el = document.getElementById('cpNextRefresh');
+  if (el) el.textContent = 'Próx: ' + (m > 0 ? m + 'min ' + String(s).padStart(2,'0') + 's' : s + 's');
 }
 
 function cpSetStatus(state, msg) {
@@ -1577,7 +1614,7 @@ function cpSetStatus(state, msg) {
     if (info)    info.innerHTML = '<strong>' + cpRawData.length + ' pedidos</strong> carregados · Google Sheets';
     if (last)    { last.textContent = 'Atualizado ' + ts; last.style.color = 'var(--green)'; }
     if (homeDot) { homeDot.style.background = 'var(--green)'; homeDot.style.boxShadow = '0 0 6px var(--green)'; }
-    if (homeVal) { homeVal.textContent = 'Atualizado'; homeVal.style.color = 'var(--green)'; }
+    if (homeVal) { homeVal.textContent = 'Atualizado ' + ts2; homeVal.style.color = 'var(--green)'; }
   } else if (state === 'syncing') {
     if (dot)     { dot.style.background = 'var(--neon)'; dot.style.boxShadow = '0 0 6px var(--neon)'; }
     if (info)    info.textContent = 'Sincronizando com Google Sheets...';
@@ -1775,24 +1812,17 @@ function cpRenderKPIs() {
   const disp     = d.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0);
   const blq      = d.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0);
   const peso     = d.reduce((s,r)=>s+r.pesoBrt,0);
-  const ate30    = d.filter(r=>r.dias<=30).reduce((s,r)=>s+r.valCarteira,0);
-  const mais30   = d.filter(r=>r.dias>30).reduce((s,r)=>s+r.valCarteira,0);
-  const mais60   = d.filter(r=>r.dias>60).reduce((s,r)=>s+r.valCarteira,0);
   const kpis = [
-    {label:'Carteira Total', value:fmt(total), sub:`${d.length} pedidos`, color:'#00d4ff'},
-    {label:'Em Carga', value:fmt(emCarga), sub:`${d.filter(r=>r.statusCarga==='Em Carga').length} pedidos`, color:'#9b6bff'},
-    {label:'Disponível', value:fmt(disp), sub:`${d.filter(r=>r.statusCarga==='Disponível'&&r.bloqueio!=='BLQ').length} pedidos`, color:'#00ff88'},
-    {label:'Bloqueado', value:fmt(blq), sub:`${d.filter(r=>r.bloqueio==='BLQ').length} pedidos`, color:'#ff3d5a'},
+    {label:'Carteira Total', value:fmt(total), sub:`100% da carteira`, color:'#00d4ff'},
+    {label:'Em Carga', value:fmt(emCarga), sub:`${cpPct(emCarga,total)}% da carteira`, color:'#9b6bff'},
+    {label:'Disponível', value:fmt(disp), sub:`${cpPct(disp,total)}% da carteira`, color:'#00ff88'},
+    {label:'Bloqueado', value:fmt(blq), sub:`${cpPct(blq,total)}% da carteira`, color:'#ff3d5a'},
     {label:'Peso Total', value:fmtPeso(peso)+' kg', sub:'bruto', color:'#00e5cc'},
-    {label:'Carteira ≤ 30 dias', value:fmt(ate30), sub:`${cpPct(ate30,total)}% da carteira · ${d.filter(r=>r.dias<=30).length} pedidos`, color:'#00e5cc', highlight:true},
-    {label:'Carteira > 30 dias', value:fmt(mais30), sub:`${cpPct(mais30,total)}% da carteira`, color:'#f5c518'},
-    {label:'Carteira > 60 dias', value:fmt(mais60), sub:`${cpPct(mais60,total)}% da carteira`, color:'#ff7b2e'},
   ];
   document.getElementById('cpKpiGrid').innerHTML = kpis.map(k=>`
-    <div class="cp-kpi${k.highlight?' cp-kpi--highlight':''}" style="--k-color:${k.color}${k.highlight?';background:rgba(0,229,204,0.07);border-color:rgba(0,229,204,0.25)':''}">
-      ${k.highlight?`<div style="position:absolute;top:10px;right:10px;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);opacity:0.8;font-weight:700">DESTAQUE</div>`:''}
+    <div class="cp-kpi" style="--k-color:${k.color}">
       <div class="cp-kpi-label">${k.label}</div>
-      <div class="cp-kpi-value" style="${k.highlight?'color:var(--teal)':''}">${k.value}</div>
+      <div class="cp-kpi-value">${k.value}</div>
       <div class="cp-kpi-sub">${k.sub}</div>
     </div>
   `).join('');
@@ -2471,6 +2501,8 @@ function fatSetRefreshInterval(minutes) {
   clearInterval(fatRefreshTimer);
   clearInterval(fatCountdownTimer);
   fatNextRefreshAt = null;
+  const el = document.getElementById('homeStatFatNext');
+  if (el) el.style.display = 'none';
   if (fatRefreshSeconds > 0 && fatLastUpdated) fatScheduleNext();
 }
 
@@ -2478,16 +2510,22 @@ function fatScheduleNext() {
   clearTimeout(fatRefreshTimer);
   clearInterval(fatCountdownTimer);
   fatNextRefreshAt = new Date(Date.now() + fatRefreshSeconds * 1000);
+  const el = document.getElementById('homeStatFatNext');
+  if (el) el.style.display = '';
+  fatUpdateCountdown();
+  fatCountdownTimer = setInterval(fatUpdateCountdown, 10000);
   fatRefreshTimer   = setTimeout(() => fatLoadData(true), fatRefreshSeconds * 1000);
 }
 
 function fatUpdateCountdown() {
-  if (!fatLastUpdated) return;
-  const ts = fatLastUpdated.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-  const el = document.getElementById('homeStatLastUpdateVal');
-  if (el) el.textContent = ts;
-  const block = document.getElementById('homeStatLastUpdate');
-  if (block) block.style.display = '';
+  if (!fatNextRefreshAt) return;
+  const diff = Math.max(0, Math.round((fatNextRefreshAt - Date.now()) / 1000));
+  const m = Math.floor(diff / 60), s = diff % 60;
+  const txt = m > 0 ? m + 'min ' + String(s).padStart(2,'0') + 's' : s + 's';
+  const el = document.getElementById('homeStatFatNextVal');
+  if (el) el.textContent = txt;
+  const el2 = document.getElementById('fatInlineNext');
+  if (el2) el2.textContent = txt;
 }
 
 function fatHomeStatus(state) {
@@ -2498,11 +2536,9 @@ function fatHomeStatus(state) {
   if (state === 'ok') {
     const t = new Date();
     const ts = t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
-    fatLastUpdated = t;
     dot.style.cssText = 'background:var(--green);box-shadow:0 0 6px var(--green)';
     val.style.color = 'var(--green)';
-    val.textContent = 'Atualizado';
-    fatUpdateCountdown();
+    val.textContent = 'Atualizado ' + t.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
     // Inline bar
     if (inlineBar) {
       inlineBar.style.display = 'flex';
@@ -3019,17 +3055,18 @@ function fatLoadFile(input) {
 
 // ── INIT ──────────────────────────────────────
 cpRenderHistory();
+// Inicia carregamento da Carteira ao abrir a página
+// Carrega Carteira automaticamente ao abrir a página
 setTimeout(() => cpLoadSheet(false), 500);
 
-// Auto-refresh padrão: 10 minutos
-fatRefreshSeconds = 600;
-fatScheduleNext();
-
-// Botão Atualizar da home — força recarga de Carteira e Faturamento
-function homeForceRefresh() {
-  cpLoadSheet(false);
-  fatLoadData(false);
-}
+// Inicia auto-refresh do Faturamento assim que a página carrega
+// (primeiro carregamento acontece quando o usuário abre a aba Faturamento)
+(function initFatRefresh() {
+  const sel = document.getElementById('homeRefreshInterval');
+  if (sel) {
+    fatRefreshSeconds = parseInt(sel.value) * 60;
+  }
+})();
 </script>
 </body>
 </html>
