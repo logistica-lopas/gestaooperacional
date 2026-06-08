@@ -2526,10 +2526,14 @@ function cpGroupBy(arr,key) {
 function switchTranspTab(tab) {
   document.querySelectorAll('.transp-tab').forEach(t => t.classList.toggle('active', t.dataset.transpTab === tab));
   document.querySelectorAll('.transp-tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('transp-panel-' + tab).classList.add('active');
+  const panel = document.getElementById('transp-panel-' + tab);
+  if (panel) panel.classList.add('active');
   if (tab === 'faturamento' && fatRawData.length === 0) {
     const url = document.getElementById('fatUrlInput').value.trim();
     if (url) fatLoadData(false);
+  }
+  if (tab === 'cargas-previstas' && cargasRawData.length === 0) {
+    cargasLoad(false);
   }
 }
 
@@ -3507,15 +3511,6 @@ function cargasSortTable(colIdx) {
     return asc ? String(av||'').localeCompare(String(bv||''),'pt-BR') : String(bv||'').localeCompare(String(av||''),'pt-BR');
   });
   cargasRenderTable();
-}
-
-// ── HOOK: load when tab is first opened ──
-const _origSwitchTranspTab = switchTranspTab;
-function switchTranspTab(tab) {
-  _origSwitchTranspTab(tab);
-  if (tab === 'cargas-previstas' && cargasRawData.length === 0) {
-    cargasLoad(false);
-  }
 }
 
 // ── INIT ──────────────────────────────────────
