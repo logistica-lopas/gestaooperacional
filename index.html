@@ -310,62 +310,23 @@ body::after {
    LOGÍSTICA VIEW — SUB-MODULES SELECTOR
 ══════════════════════════════════════════════ */
 /* ── MÓDULO 01 LAYOUT: sidebar + main ── */
-.log-layout {
-  display: flex;
-  gap: 0;
-  min-height: calc(100vh - 120px);
+/* log tabs-bar — mesma estrutura do Transporte */
+.log-tabs-bar {
+  display: flex; gap: 0; padding: 0 20px;
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  overflow-x: auto;
 }
-
-/* sidebar */
-.log-sidebar {
-  width: 200px;
-  flex-shrink: 0;
-  background: var(--bg2);
-  border-right: 1px solid var(--border);
-  padding: 24px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+.log-tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 11px 20px; font-size: 12px; font-weight: 600;
+  color: var(--text3); cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent; transition: var(--trans);
+  font-family: 'Barlow', sans-serif; letter-spacing: 0.3px;
 }
-.log-sidebar-label {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  color: var(--text3);
-  text-transform: uppercase;
-  padding: 0 20px 12px;
-}
-.log-nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 11px 20px;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text2);
-  border-left: 3px solid transparent;
-  transition: var(--trans);
-  position: relative;
-}
-.log-nav-item:hover {
-  color: var(--text);
-  background: rgba(255,255,255,0.03);
-}
-.log-nav-item.active {
-  color: var(--neon);
-  border-left-color: var(--neon);
-  background: rgba(0,212,255,0.06);
-}
-.log-nav-item svg { opacity: 0.7; flex-shrink: 0; }
-.log-nav-item.active svg { opacity: 1; }
-
-/* main panel */
-.log-main {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-}
+.log-tab:hover { color: var(--text2); }
+.log-tab.active { color: var(--neon); border-bottom-color: var(--neon); }
+.log-tab-icon { opacity: 0.7; }
+.log-tab.active .log-tab-icon { opacity: 1; }
 .log-panel { display: none; }
 .log-panel.active { display: block; }
 
@@ -891,11 +852,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .cp-charts-grid { grid-template-columns: 1fr; }
   .cp-chart-card.full { grid-column: 1; }
   .home-header { flex-direction: column; align-items: flex-start; gap: 20px; }
-  .log-layout { flex-direction: column; }
-  .log-sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; padding: 12px 16px; gap: 0; border-right: none; border-bottom: 1px solid var(--border); }
-  .log-sidebar-label { display: none; }
-  .log-nav-item { border-left: none; border-bottom: 3px solid transparent; padding: 10px 16px; }
-  .log-nav-item.active { border-bottom-color: var(--neon); border-left-color: transparent; background: rgba(0,212,255,0.06); }
 }
 </style>
 </head>
@@ -1101,30 +1057,21 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         </div>
       </div>
     </div>
+    <!-- ABAS INTERNAS DA LOGÍSTICA -->
+    <div class="log-tabs-bar">
+      <div class="log-tab active" data-log-panel="carteira" onclick="switchLogPanel('carteira')">
+        <svg class="log-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/></svg>
+        Carteira
+      </div>
+      <div class="log-tab" data-log-panel="faturamento" onclick="switchLogPanel('faturamento')">
+        <svg class="log-tab-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Faturamento
+      </div>
+    </div>
   </div>
 
-  <div class="view-content" style="padding:0">
-    <div class="log-layout">
-
-      <!-- SIDEBAR -->
-      <nav class="log-sidebar">
-        <div class="log-sidebar-label">Módulo 01</div>
-        <div class="log-nav-item active" data-log-panel="carteira" onclick="switchLogPanel('carteira')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 8h10M7 12h7M7 16h5"/>
-          </svg>
-          Carteira
-        </div>
-        <div class="log-nav-item" data-log-panel="faturamento" onclick="switchLogPanel('faturamento')">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
-          </svg>
-          Faturamento
-        </div>
-      </nav>
-
-      <!-- MAIN PANELS -->
-      <div class="log-main">
+  <!-- PAINÉIS -->
+  <div>
 
         <!-- PAINEL: CARTEIRA -->
         <div class="log-panel active" id="logpanel-carteira">
@@ -1421,9 +1368,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
         </div><!-- /logpanel-faturamento -->
 
-      </div><!-- /log-main -->
-    </div><!-- /log-layout -->
-  </div><!-- /view-content -->
+  </div><!-- /painéis -->
 </div><!-- /view-logistica -->
 
 <!-- ═══════════════════════════════════════════════════
@@ -1772,10 +1717,8 @@ setInterval(updateClock, 1000);
 // SUB-MODULE SELECTOR
 // ══════════════════════════════════════════════
 function switchLogPanel(name) {
-  document.querySelectorAll('.log-nav-item').forEach(el => el.classList.remove('active'));
-  document.querySelectorAll('.log-panel').forEach(el => el.classList.remove('active'));
-  const nav = document.querySelector(`.log-nav-item[data-log-panel="${name}"]`);
-  if (nav) nav.classList.add('active');
+  document.querySelectorAll('#view-logistica .log-tab').forEach(t => t.classList.toggle('active', t.dataset.logPanel === name));
+  document.querySelectorAll('#view-logistica .log-panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('logpanel-' + name);
   if (panel) panel.classList.add('active');
 }
