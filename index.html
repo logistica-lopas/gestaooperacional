@@ -1132,8 +1132,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="cp-filters">
         <div class="cp-filter-group"><label>Data Inicial</label><input type="date" id="fDataIni"></div>
         <div class="cp-filter-group"><label>Data Final</label><input type="date" id="fDataFim"></div>
+        <div class="cp-filter-group"><label>Gerente</label><select id="fGerente"><option value="">Todos</option></select></div>
         <div class="cp-filter-group"><label>Representante</label><select id="fRep"><option value="">Todos</option></select></div>
         <div class="cp-filter-group"><label>Micro Região</label><select id="fMicro"><option value="">Todas</option></select></div>
+        <div class="cp-filter-group"><label>Grupo</label><select id="fGrupo"><option value="">Todos</option></select></div>
         <div class="cp-filter-group"><label>Cliente</label><select id="fCliente"><option value="">Todos</option></select></div>
         <div class="cp-filter-group">
           <label>Status Carga</label>
@@ -1178,12 +1180,20 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
           <div class="cp-charts-grid" id="cpChartsGrid" style="display:none">
             <div class="cp-chart-card">
-              <div class="cp-chart-title">Carteira por Micro Região</div>
+              <div class="cp-chart-title">Carteira por Região</div>
               <div class="cp-chart-toggle">
-                <button class="cp-toggle-btn active" onclick="cpSetMicroChart('valor',this)">Valor</button>
-                <button class="cp-toggle-btn" onclick="cpSetMicroChart('peso',this)">Peso</button>
+                <button class="cp-toggle-btn active" onclick="cpSetRegiaoChart('valor',this)">Valor</button>
+                <button class="cp-toggle-btn" onclick="cpSetRegiaoChart('peso',this)">Peso</button>
               </div>
-              <div class="cp-chart-container"><canvas id="cpChartMicro"></canvas></div>
+              <div class="cp-chart-container"><canvas id="cpChartRegiao"></canvas></div>
+            </div>
+            <div class="cp-chart-card">
+              <div class="cp-chart-title">Carteira por Grupo</div>
+              <div class="cp-chart-toggle">
+                <button class="cp-toggle-btn active" onclick="cpSetGrupoChart('valor',this)">Valor</button>
+                <button class="cp-toggle-btn" onclick="cpSetGrupoChart('peso',this)">Peso</button>
+              </div>
+              <div class="cp-chart-container"><canvas id="cpChartGrupo"></canvas></div>
             </div>
             <div class="cp-chart-card">
               <div class="cp-chart-title">Em Carga vs Disponível</div>
@@ -1738,7 +1748,8 @@ let cpFilteredData = [];
 let cpDetPage = 1;
 const CP_PAGE_SIZE = 50;
 let cpDetSearchVal = '';
-let cpMicroMode = 'valor';
+let cpRegiaoMode = 'valor';
+let cpGrupoMode = 'valor';
 let cpCharts = {};
 let cpSortStates = {};
 let cpDetAllFiltered = [];
@@ -1869,6 +1880,8 @@ function cpParseCSVText(csvText) {
   const iRep     = col(['REPRESENTANTE'], ['REPRESENTANTE','REPRESENT']);
   const iRegiao  = col(['REGIAO','REGIÃO'], ['REGIAO','REGIÃO']);
   const iMicro   = col(['MICRO REGIAO','MICRO REGIÃO'], ['MICRO']);
+  const iGrupo   = col(['GRUPO'], ['GRUPO']);
+  const iGerente = col(['GERENTE'], ['GERENTE']);
   const iValCart = col(['VLR CARTEIRA','VALOR CARTEIRA'], ['VLR CARTEIRA','VALOR CARTEIRA']);
   const iValCarg = col(['VLR CARGA','VALOR CARGA'], ['VLR CARGA','VALOR CARGA']);
   const iValDisp = col(['VLR DISPONIVEL','VLR DISPONÍVEL'], ['VLR DISPONIVEL','VLR DISP']);
@@ -1943,6 +1956,8 @@ function cpParseCSVText(csvText) {
       regiao: iRegiao>=0 ? String(r[iRegiao]).trim() : '',
       cidade: (()=>{ const iC=headers.indexOf('CIDADE'); return iC>=0?String(r[iC]).trim():''; })(),
       micro: iMicro>=0 ? String(r[iMicro]).trim() : '',
+      grupo: iGrupo>=0 ? String(r[iGrupo]).trim() : '',
+      gerente: iGerente>=0 ? String(r[iGerente]).trim() : '',
       valCarteira, valCarga, valDisp, pesoBrt, pesoDisp, pesoCarga,
       carga: cargaNum, bloqueio, statusCarga,
       tipoFrete: (iFrete>=0&&String(r[iFrete]).trim().toUpperCase()==='RETIRA')?'Retira':'Entrega',
@@ -1968,16 +1983,18 @@ function cpPopulateFilters() {
     });
     sel.value = cur;
   };
+  setOpts('fGerente', cpRawData.map(r=>r.gerente));
   setOpts('fRep', cpRawData.map(r=>r.representante));
   setOpts('fMicro', cpRawData.map(r=>r.micro));
+  setOpts('fGrupo', cpRawData.map(r=>r.grupo));
   setOpts('fCliente', cpRawData.map(r=>r.cliente));
-  ['fDataIni','fDataFim','fRep','fMicro','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => {
+  ['fDataIni','fDataFim','fGerente','fRep','fMicro','fGrupo','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => {
     document.getElementById(id).onchange = cpApplyFilters;
   });
 }
 
 function cpResetFilters() {
-  ['fRep','fMicro','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => document.getElementById(id).value='');
+  ['fGerente','fRep','fMicro','fGrupo','fCliente','fStatus','fBloqueio','fFrete'].forEach(id => document.getElementById(id).value='');
   ['fDataIni','fDataFim'].forEach(id => document.getElementById(id).value='');
   cpApplyFilters();
 }
@@ -1986,8 +2003,10 @@ function cpApplyFilters() {
   const fDataIni = document.getElementById('fDataIni').value ? new Date(document.getElementById('fDataIni').value) : null;
   const fDataFim = document.getElementById('fDataFim').value ? new Date(document.getElementById('fDataFim').value) : null;
   if (fDataFim) fDataFim.setHours(23,59,59);
+  const fGerente = document.getElementById('fGerente').value;
   const fRep = document.getElementById('fRep').value;
   const fMicro = document.getElementById('fMicro').value;
+  const fGrupo = document.getElementById('fGrupo').value;
   const fCliente = document.getElementById('fCliente').value;
   const fStatus = document.getElementById('fStatus').value;
   const fBlq = document.getElementById('fBloqueio').value;
@@ -1995,8 +2014,10 @@ function cpApplyFilters() {
   cpFilteredData = cpRawData.filter(r => {
     if (fDataIni&&r.dataVenda&&r.dataVenda<fDataIni) return false;
     if (fDataFim&&r.dataVenda&&r.dataVenda>fDataFim) return false;
+    if (fGerente&&r.gerente!==fGerente) return false;
     if (fRep&&r.representante!==fRep) return false;
     if (fMicro&&r.micro!==fMicro) return false;
+    if (fGrupo&&r.grupo!==fGrupo) return false;
     if (fCliente&&r.cliente!==fCliente) return false;
     if (fStatus==='em_carga'&&r.statusCarga!=='Em Carga') return false;
     if (fStatus==='disponivel'&&r.statusCarga!=='Disponível') return false;
@@ -2062,7 +2083,7 @@ function cpDestroyChart(id) {
 }
 
 function cpRenderCharts() {
-  cpRenderMicroChart(); cpRenderPizzaChart(); cpRenderRepChart(); cpRenderIdadeChart(); cpRenderDistribuicaoChart();
+  cpRenderRegiaoChart(); cpRenderGrupoChart(); cpRenderPizzaChart(); cpRenderRepChart(); cpRenderIdadeChart(); cpRenderDistribuicaoChart();
 }
 
 function cpRenderDistribuicaoChart() {
@@ -2134,30 +2155,57 @@ function cpRenderDistribuicaoChart() {
   });
 }
 
-function cpSetMicroChart(mode, btn) {
-  cpMicroMode = mode;
+function cpSetRegiaoChart(mode, btn) {
+  cpRegiaoMode = mode;
   document.querySelectorAll('.cp-toggle-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  cpRenderMicroChart();
+  cpRenderRegiaoChart();
 }
 
-function cpRenderMicroChart() {
-  cpDestroyChart('cpChartMicro');
-  const grouped = cpGroupBy(cpFilteredData, 'micro');
+function cpRenderRegiaoChart() {
+  cpDestroyChart('cpChartRegiao');
+  const grouped = cpGroupBy(cpFilteredData, 'regiao');
   const labels = Object.keys(grouped).sort((a,b)=>{
-    const sA=grouped[a].reduce((s,r)=>s+(cpMicroMode==='valor'?r.valCarteira:r.pesoBrt),0);
-    const sB=grouped[b].reduce((s,r)=>s+(cpMicroMode==='valor'?r.valCarteira:r.pesoBrt),0);
+    const sA=grouped[a].reduce((s,r)=>s+(cpRegiaoMode==='valor'?r.valCarteira:r.pesoBrt),0);
+    const sB=grouped[b].reduce((s,r)=>s+(cpRegiaoMode==='valor'?r.valCarteira:r.pesoBrt),0);
     return sB-sA;
   }).slice(0,12);
-  const vals = labels.map(l=>grouped[l].reduce((s,r)=>s+(cpMicroMode==='valor'?r.valCarteira:r.pesoBrt),0));
-  cpCharts['cpChartMicro'] = new Chart(document.getElementById('cpChartMicro'),{
+  const vals = labels.map(l=>grouped[l].reduce((s,r)=>s+(cpRegiaoMode==='valor'?r.valCarteira:r.pesoBrt),0));
+  cpCharts['cpChartRegiao'] = new Chart(document.getElementById('cpChartRegiao'),{
     type:'bar',
     data:{ labels:labels.map(l=>l.length>18?l.substring(0,18)+'…':l),
-      datasets:[{label:cpMicroMode==='valor'?'Valor (R$)':'Peso (kg)', data:vals,
+      datasets:[{label:cpRegiaoMode==='valor'?'Valor (R$)':'Peso (kg)', data:vals,
         backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:1, borderRadius:4}] },
     options:{ responsive:true, indexAxis:'y',
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>cpMicroMode==='valor'?' '+fmt(c.raw):' '+fmtPeso(c.raw)+' kg'}} },
-      scales:{ x:{ticks:{callback:v=>cpMicroMode==='valor'?fmtShort(v):fmtPesoShort(v)}} } }
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>cpRegiaoMode==='valor'?' '+fmt(c.raw):' '+fmtPeso(c.raw)+' kg'}} },
+      scales:{ x:{ticks:{callback:v=>cpRegiaoMode==='valor'?fmtShort(v):fmtPesoShort(v)}} } }
+  });
+}
+
+function cpSetGrupoChart(mode, btn) {
+  cpGrupoMode = mode;
+  document.querySelectorAll('.cp-toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  cpRenderGrupoChart();
+}
+
+function cpRenderGrupoChart() {
+  cpDestroyChart('cpChartGrupo');
+  const grouped = cpGroupBy(cpFilteredData, 'grupo');
+  const labels = Object.keys(grouped).sort((a,b)=>{
+    const sA=grouped[a].reduce((s,r)=>s+(cpGrupoMode==='valor'?r.valCarteira:r.pesoBrt),0);
+    const sB=grouped[b].reduce((s,r)=>s+(cpGrupoMode==='valor'?r.valCarteira:r.pesoBrt),0);
+    return sB-sA;
+  }).slice(0,12);
+  const vals = labels.map(l=>grouped[l].reduce((s,r)=>s+(cpGrupoMode==='valor'?r.valCarteira:r.pesoBrt),0));
+  cpCharts['cpChartGrupo'] = new Chart(document.getElementById('cpChartGrupo'),{
+    type:'bar',
+    data:{ labels:labels.map(l=>l.length>18?l.substring(0,18)+'…':l),
+      datasets:[{label:cpGrupoMode==='valor'?'Valor (R$)':'Peso (kg)', data:vals,
+        backgroundColor:'rgba(0,255,136,0.2)', borderColor:'#00ff88', borderWidth:1, borderRadius:4}] },
+    options:{ responsive:true, indexAxis:'y',
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>cpGrupoMode==='valor'?' '+fmt(c.raw):' '+fmtPeso(c.raw)+' kg'}} },
+      scales:{ x:{ticks:{callback:v=>cpGrupoMode==='valor'?fmtShort(v):fmtPesoShort(v)}} } }
   });
 }
 
