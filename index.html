@@ -1095,9 +1095,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="cp-tabs">
         <div class="cp-tab active" data-tab="dashboard">Dashboard</div>
         <div class="cp-tab" data-tab="logistica-reg">Logística</div>
-        <div class="cp-tab" data-tab="representantes">Representantes</div>
         <div class="cp-tab" data-tab="bloqueios">Bloqueios</div>
-        <div class="cp-tab" data-tab="detalhes">Detalhamento</div>
         <div class="cp-tab" data-tab="historico">Histórico</div>
         <div class="cp-tab" data-tab="assistencia">Assistência</div>
       </div>
@@ -1235,25 +1233,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
         </div>
 
-        <!-- REPRESENTANTES TAB -->
-        <div class="cp-tab-content" id="cptab-representantes">
-          <div class="cp-table-card full">
-            <div class="cp-table-header">
-              <span class="cp-table-title">Por Representante</span>
-              <input type="text" class="cp-table-search" placeholder="Buscar..." oninput="cpFilterTable('tRep',this.value)">
-            </div>
-            <div class="cp-table-wrap">
-              <table id="tRep"><thead><tr>
-                <th onclick="cpSortTable('tRep',0)">Representante ↕</th>
-                <th onclick="cpSortTable('tRep',1)">Em Carga (R$) ↕</th>
-                <th onclick="cpSortTable('tRep',2)">Disponível (R$) ↕</th>
-                <th onclick="cpSortTable('tRep',3)">Bloqueado (R$) ↕</th>
-                <th onclick="cpSortTable('tRep',4)">Total (R$) ↕</th>
-              </tr></thead><tbody id="tRepBody"></tbody></table>
-            </div>
-          </div>
-        </div>
-
         <!-- BLOQUEIOS TAB -->
         <div class="cp-tab-content" id="cptab-bloqueios">
           <div class="cp-table-card full">
@@ -1268,33 +1247,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
                 <th onclick="cpSortTable('tBloqueio',2)">Valor (R$) ↕</th>
                 <th onclick="cpSortTable('tBloqueio',3)">Dias em Aberto ↕</th>
               </tr></thead><tbody id="tBloqueioBody"></tbody></table>
-            </div>
-          </div>
-        </div>
-
-        <!-- DETALHAMENTO TAB -->
-        <div class="cp-tab-content" id="cptab-detalhes">
-          <div class="cp-table-card full">
-            <div class="cp-table-header">
-              <span class="cp-table-title">Detalhamento de Pedidos</span>
-              <input type="text" class="cp-table-search" placeholder="Buscar pedido, cliente..." oninput="cpSearchDetalhes(this.value)">
-            </div>
-            <div class="cp-table-wrap">
-              <table id="tDetalhes"><thead><tr>
-                <th onclick="cpSortTable('tDetalhes',0)">Pedido ↕</th>
-                <th onclick="cpSortTable('tDetalhes',1)">Data Venda ↕</th>
-                <th onclick="cpSortTable('tDetalhes',2)">Cliente ↕</th>
-                <th onclick="cpSortTable('tDetalhes',3)">Representante ↕</th>
-                <th onclick="cpSortTable('tDetalhes',4)">Cidade ↕</th>
-                <th onclick="cpSortTable('tDetalhes',5)">Peso (kg) ↕</th>
-                <th onclick="cpSortTable('tDetalhes',6)">Valor (R$) ↕</th>
-                <th>Frete</th><th>Status</th>
-                <th onclick="cpSortTable('tDetalhes',9)">Dias ↕</th>
-              </tr></thead><tbody id="tDetalhesBody"></tbody></table>
-            </div>
-            <div class="cp-pagination" id="cpDetPagination">
-              <span id="cpDetInfo"></span>
-              <div class="cp-page-btns" id="cpDetPageBtns"></div>
             </div>
           </div>
         </div>
@@ -1745,14 +1697,10 @@ Chart.defaults.font.family = 'Barlow, sans-serif';
 // ══════════════════════════════════════════════
 let cpRawData = [];
 let cpFilteredData = [];
-let cpDetPage = 1;
-const CP_PAGE_SIZE = 50;
-let cpDetSearchVal = '';
 let cpRegiaoMode = 'valor';
 let cpGrupoMode = 'valor';
 let cpCharts = {};
 let cpSortStates = {};
-let cpDetAllFiltered = [];
 
 // ── CARTEIRA TABS ─────────────────────────────
 document.querySelectorAll('.cp-tab').forEach(tab => {
@@ -2030,8 +1978,8 @@ function cpApplyFilters() {
 
 function cpRenderAll() {
   cpRenderKPIs(); cpRenderCharts();
-  cpRenderTableLogistica(); cpRenderTableRep();
-  cpRenderTableBloqueios(); cpRenderTableDetalhes();
+  cpRenderTableLogistica();
+  cpRenderTableBloqueios();
 }
 
 // ── KPIs ──────────────────────────────────────
@@ -2286,25 +2234,6 @@ function cpRenderTableLogistica() {
     </tr>`).join('');
 }
 
-function cpRenderTableRep() {
-  const grouped = cpGroupBy(cpFilteredData,'representante');
-  const rows = Object.entries(grouped).map(([rep,items])=>({
-    rep,
-    emCarga: items.reduce((s,r)=>s+r.valCarga,0),
-    disponivel: items.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+r.valDisp,0),
-    bloqueado: items.filter(r=>r.bloqueio==='BLQ').reduce((s,r)=>s+r.valCarteira,0),
-    total: items.reduce((s,r)=>s+r.valCarteira,0)
-  })).sort((a,b)=>b.total-a.total);
-  document.getElementById('tRepBody').innerHTML = rows.map(r=>`
-    <tr>
-      <td>${r.rep}</td>
-      <td class="num">${fmt(r.emCarga)}</td>
-      <td class="num" style="color:var(--green)">${fmt(r.disponivel)}</td>
-      <td class="num" style="color:${r.bloqueado>0?'var(--red)':'inherit'}">${fmt(r.bloqueado)}</td>
-      <td class="num"><strong>${fmt(r.total)}</strong></td>
-    </tr>`).join('');
-}
-
 function cpRenderTableBloqueios() {
   const blq = cpFilteredData.filter(r=>r.bloqueio==='BLQ').sort((a,b)=>b.dias-a.dias);
   document.getElementById('tBloqueioBody').innerHTML = blq.length===0
@@ -2321,52 +2250,6 @@ function cpRenderTableBloqueios() {
       </td>
     </tr>`).join('');
 }
-
-function cpRenderTableDetalhes() {
-  cpDetAllFiltered = cpFilteredData.filter(r => {
-    if (!cpDetSearchVal) return true;
-    const s = cpDetSearchVal.toLowerCase();
-    return r.pedido.toLowerCase().includes(s)||r.cliente.toLowerCase().includes(s)||r.representante.toLowerCase().includes(s);
-  });
-  cpDetPage = 1;
-  cpRenderDetPage();
-}
-
-function cpSearchDetalhes(val) { cpDetSearchVal = val; cpRenderTableDetalhes(); }
-
-function cpRenderDetPage() {
-  const start = (cpDetPage-1)*CP_PAGE_SIZE;
-  const page = cpDetAllFiltered.slice(start, start+CP_PAGE_SIZE);
-  document.getElementById('tDetalhesBody').innerHTML = page.map(r=>`
-    <tr>
-      <td><span class="badge badge-blue">${r.pedido}</span></td>
-      <td>${r.dataVendaStr}</td>
-      <td>${r.cliente}</td>
-      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
-      <td>${r.cidade}</td>
-      <td class="num">${fmtPeso(r.pesoBrt)}</td>
-      <td class="num">${fmt(r.valCarteira)}</td>
-      <td><span class="badge ${r.tipoFrete==='Retira'?'badge-yellow':'badge-blue'}">${r.tipoFrete}</span></td>
-      <td>
-        ${r.statusCarga==='Em Carga'?'<span class="badge badge-purple">Em Carga</span>':'<span class="badge badge-green">Disponível</span>'}
-        ${r.bloqueio==='BLQ'?'<span class="badge badge-red">BLQ</span>':''}
-      </td>
-      <td class="num">
-        <span class="badge badge-${r.semaforo==='green'?'green':r.semaforo==='yellow'?'yellow':r.semaforo==='orange'?'orange':'red'}">
-          <span class="sdot sdot-${r.semaforo}"></span>${r.dias}d
-        </span>
-      </td>
-    </tr>`).join('');
-  const total = cpDetAllFiltered.length;
-  const pages = Math.ceil(total/CP_PAGE_SIZE);
-  document.getElementById('cpDetInfo').textContent = total>0?`${start+1}–${Math.min(start+CP_PAGE_SIZE,total)} de ${total}`:'0 registros';
-  let btns = `<button class="cp-page-btn" onclick="cpDetGo(${cpDetPage-1})" ${cpDetPage===1?'disabled':''}>‹</button>`;
-  for (let i=Math.max(1,cpDetPage-3); i<=Math.min(pages,cpDetPage+3); i++)
-    btns += `<button class="cp-page-btn ${i===cpDetPage?'active':''}" onclick="cpDetGo(${i})">${i}</button>`;
-  btns += `<button class="cp-page-btn" onclick="cpDetGo(${cpDetPage+1})" ${cpDetPage>=pages?'disabled':''}>›</button>`;
-  document.getElementById('cpDetPageBtns').innerHTML = btns;
-}
-function cpDetGo(p) { if(p<1||p>Math.ceil(cpDetAllFiltered.length/CP_PAGE_SIZE)) return; cpDetPage=p; cpRenderDetPage(); }
 
 // ── ASSISTÊNCIA ───────────────────────────────
 function cpRenderTipoTab() {
