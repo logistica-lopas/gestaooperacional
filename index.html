@@ -1095,6 +1095,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <div class="cp-tabs">
         <div class="cp-tab active" data-tab="dashboard">Dashboard</div>
         <div class="cp-tab" data-tab="logistica-reg">Logística</div>
+        <div class="cp-tab" data-tab="grupos">Grupos</div>
         <div class="cp-tab" data-tab="bloqueios">Bloqueios</div>
         <div class="cp-tab" data-tab="historico">Histórico</div>
         <div class="cp-tab" data-tab="assistencia">Assistência</div>
@@ -1229,6 +1230,24 @@ tr:hover td { background: rgba(255,255,255,0.02); }
                 <th onclick="cpSortTable('tLogistica',5)">Entrega (R$) ↕</th>
                 <th onclick="cpSortTable('tLogistica',6)">Pedidos ↕</th>
               </tr></thead><tbody id="tLogisticaBody"></tbody></table>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRUPOS TAB -->
+        <div class="cp-tab-content" id="cptab-grupos">
+          <div class="cp-table-card full">
+            <div class="cp-table-header">
+              <span class="cp-table-title">Indicadores por Grupo</span>
+              <input type="text" class="cp-table-search" placeholder="Buscar..." oninput="cpFilterTable('tGrupos',this.value)">
+            </div>
+            <div class="cp-table-wrap">
+              <table id="tGrupos"><thead><tr>
+                <th onclick="cpSortTable('tGrupos',0)">Grupo ↕</th>
+                <th onclick="cpSortTable('tGrupos',1)">Valor (R$) ↕</th>
+                <th onclick="cpSortTable('tGrupos',2)">Peso (kg) ↕</th>
+                <th onclick="cpSortTable('tGrupos',3)">Pedidos ↕</th>
+              </tr></thead><tbody id="tGruposBody"></tbody></table>
             </div>
           </div>
         </div>
@@ -1979,6 +1998,7 @@ function cpApplyFilters() {
 function cpRenderAll() {
   cpRenderKPIs(); cpRenderCharts();
   cpRenderTableLogistica();
+  cpRenderTableGrupos();
   cpRenderTableBloqueios();
 }
 
@@ -2230,6 +2250,23 @@ function cpRenderTableLogistica() {
       <td class="num">${fmtPeso(r.pesoDisp)}</td>
       <td class="num" style="color:var(--teal)">${fmt(r.retira)}</td>
       <td class="num" style="color:var(--neon)">${fmt(r.entrega)}</td>
+      <td class="num">${r.pedidos}</td>
+    </tr>`).join('');
+}
+
+function cpRenderTableGrupos() {
+  const grouped = cpGroupBy(cpFilteredData,'grupo');
+  const rows = Object.entries(grouped).map(([grupo,items])=>({
+    grupo: grupo || '(Sem Grupo)',
+    valor: items.reduce((s,r)=>s+r.valCarteira,0),
+    peso: items.reduce((s,r)=>s+r.pesoBrt,0),
+    pedidos: items.length
+  })).sort((a,b)=>b.valor-a.valor);
+  document.getElementById('tGruposBody').innerHTML = rows.map(r=>`
+    <tr>
+      <td>${r.grupo}</td>
+      <td class="num"><strong>${fmt(r.valor)}</strong></td>
+      <td class="num">${fmtPeso(r.peso)}</td>
       <td class="num">${r.pedidos}</td>
     </tr>`).join('');
 }
