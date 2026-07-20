@@ -411,7 +411,7 @@ body::after {
   font-size: 10px; color: var(--text3); font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.5px;
 }
-.cp-filter-group select, .cp-filter-group input[type="date"] {
+.cp-filter-group select, .cp-filter-group input[type="date"], .cp-filter-group input[type="text"], .cp-filter-group input[type="number"] {
   padding: 6px 10px;
   background: var(--bg4); border: 1px solid var(--border2);
   border-radius: 6px; color: var(--text);
@@ -852,6 +852,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   .cp-charts-grid { grid-template-columns: 1fr; }
   .cp-chart-card.full { grid-column: 1; }
   .home-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+  .lf-grid-2col { grid-template-columns: 1fr !important; }
 }
 </style>
 </head>
@@ -1358,16 +1359,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <!-- KPIs -->
             <div class="cp-kpi-grid" id="lfKpiGrid"></div>
 
-            <!-- META -->
-            <div style="display:flex;align-items:center;gap:10px;margin:16px 0 20px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px">
-              <label style="font-size:12px;color:var(--text2);font-weight:600">Meta de Faturamento do Mês (R$):</label>
-              <input type="text" id="lfMetaMes" placeholder="Ex: 500000" style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:Space Mono,monospace;width:160px" oninput="lfRenderKPIs()">
-            </div>
-
             <!-- GRÁFICO DIÁRIO -->
-            <div class="cp-chart-card full" style="margin-bottom:20px">
+            <div class="cp-chart-card full" style="margin:20px 0">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-                <div class="cp-chart-title" style="margin:0">Faturamento Diário (Data Nota)</div>
+                <div class="cp-chart-title" style="margin:0">Faturamento Diário</div>
                 <div class="cp-chart-toggle">
                   <button class="cp-toggle-btn active" onclick="lfSetChartMode('valor',this)">Valor</button>
                   <button class="cp-toggle-btn" onclick="lfSetChartMode('peso',this)">Peso</button>
@@ -1376,43 +1371,96 @@ tr:hover td { background: rgba(255,255,255,0.02); }
               <div class="cp-chart-container"><canvas id="lfChartDia" style="max-height:300px"></canvas></div>
             </div>
 
-            <!-- TABELAS -->
-            <div class="cp-table-card full" style="margin-bottom:20px">
-              <div class="cp-table-header"><span class="cp-table-title">Faturamento por Gerente</span></div>
-              <div class="cp-table-wrap">
-                <table id="lfTableGerente"><thead><tr>
-                  <th onclick="cpSortTable('lfTableGerente',0)">Gerente ↕</th>
-                  <th onclick="cpSortTable('lfTableGerente',1)">Valor Líq (R$) ↕</th>
-                  <th onclick="cpSortTable('lfTableGerente',2)">% Valor ↕</th>
-                  <th onclick="cpSortTable('lfTableGerente',3)">Peso Líq (kg) ↕</th>
-                  <th onclick="cpSortTable('lfTableGerente',4)">% Peso ↕</th>
-                </tr></thead><tbody id="lfTableGerenteBody"></tbody></table>
+            <!-- TABELAS: Gerente + Classificação -->
+            <div class="lf-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+              <div class="cp-table-card">
+                <div class="cp-table-header"><span class="cp-table-title">Faturamento por Gerente</span></div>
+                <div class="cp-table-wrap">
+                  <table id="lfTableGerente"><thead><tr>
+                    <th onclick="cpSortTable('lfTableGerente',0)">Gerente ↕</th>
+                    <th onclick="cpSortTable('lfTableGerente',1)">Valor Líq (R$) ↕</th>
+                    <th onclick="cpSortTable('lfTableGerente',2)">% Valor ↕</th>
+                    <th onclick="cpSortTable('lfTableGerente',3)">Peso Líq (kg) ↕</th>
+                    <th onclick="cpSortTable('lfTableGerente',4)">% Peso ↕</th>
+                  </tr></thead><tbody id="lfTableGerenteBody"></tbody></table>
+                </div>
+              </div>
+
+              <div class="cp-table-card">
+                <div class="cp-table-header"><span class="cp-table-title">Faturamento por Classificação</span></div>
+                <div class="cp-table-wrap">
+                  <table id="lfTableClass"><thead><tr>
+                    <th onclick="cpSortTable('lfTableClass',0)">Classificação ↕</th>
+                    <th onclick="cpSortTable('lfTableClass',1)">Valor Líq (R$) ↕</th>
+                    <th onclick="cpSortTable('lfTableClass',2)">% Valor ↕</th>
+                    <th onclick="cpSortTable('lfTableClass',3)">Peso Líq (kg) ↕</th>
+                    <th onclick="cpSortTable('lfTableClass',4)">% Peso ↕</th>
+                  </tr></thead><tbody id="lfTableClassBody"></tbody></table>
+                </div>
               </div>
             </div>
 
-            <div class="cp-table-card full" style="margin-bottom:20px">
-              <div class="cp-table-header"><span class="cp-table-title">Faturamento por Grupo</span></div>
-              <div class="cp-table-wrap">
-                <table id="lfTableGrupo"><thead><tr>
-                  <th onclick="cpSortTable('lfTableGrupo',0)">Grupo ↕</th>
-                  <th onclick="cpSortTable('lfTableGrupo',1)">Valor Líq (R$) ↕</th>
-                  <th onclick="cpSortTable('lfTableGrupo',2)">% Valor ↕</th>
-                  <th onclick="cpSortTable('lfTableGrupo',3)">Peso Líq (kg) ↕</th>
-                  <th onclick="cpSortTable('lfTableGrupo',4)">% Peso ↕</th>
-                </tr></thead><tbody id="lfTableGrupoBody"></tbody></table>
+            <!-- TABELAS: Grupo + Detalhamento Diário -->
+            <div class="lf-grid-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+              <div class="cp-table-card">
+                <div class="cp-table-header"><span class="cp-table-title">Faturamento por Grupo</span></div>
+                <div class="cp-table-wrap">
+                  <table id="lfTableGrupo"><thead><tr>
+                    <th onclick="cpSortTable('lfTableGrupo',0)">Grupo ↕</th>
+                    <th onclick="cpSortTable('lfTableGrupo',1)">Valor Líq (R$) ↕</th>
+                    <th onclick="cpSortTable('lfTableGrupo',2)">% Valor ↕</th>
+                    <th onclick="cpSortTable('lfTableGrupo',3)">Peso Líq (kg) ↕</th>
+                    <th onclick="cpSortTable('lfTableGrupo',4)">% Peso ↕</th>
+                  </tr></thead><tbody id="lfTableGrupoBody"></tbody></table>
+                </div>
+              </div>
+
+              <div class="cp-table-card">
+                <div class="cp-table-header"><span class="cp-table-title">Detalhamento Diário</span></div>
+                <div class="cp-table-wrap">
+                  <table id="lfTableDia"><thead><tr>
+                    <th onclick="cpSortTable('lfTableDia',0)">Data ↕</th>
+                    <th onclick="cpSortTable('lfTableDia',1)">Peso (kg) ↕</th>
+                    <th onclick="cpSortTable('lfTableDia',2)">Valor (R$) ↕</th>
+                    <th onclick="cpSortTable('lfTableDia',3)">% Valor ↕</th>
+                  </tr></thead><tbody id="lfTableDiaBody"></tbody></table>
+                </div>
               </div>
             </div>
 
+            <!-- CARD DE CÁLCULOS -->
             <div class="cp-table-card full">
-              <div class="cp-table-header"><span class="cp-table-title">Faturamento por Classificação</span></div>
-              <div class="cp-table-wrap">
-                <table id="lfTableClass"><thead><tr>
-                  <th onclick="cpSortTable('lfTableClass',0)">Classificação ↕</th>
-                  <th onclick="cpSortTable('lfTableClass',1)">Valor Líq (R$) ↕</th>
-                  <th onclick="cpSortTable('lfTableClass',2)">% Valor ↕</th>
-                  <th onclick="cpSortTable('lfTableClass',3)">Peso Líq (kg) ↕</th>
-                  <th onclick="cpSortTable('lfTableClass',4)">% Peso ↕</th>
-                </tr></thead><tbody id="lfTableClassBody"></tbody></table>
+              <div class="cp-table-header"><span class="cp-table-title">Cálculos de Meta</span></div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:16px">
+                <div class="cp-filter-group">
+                  <label>Meta do Mês (R$)</label>
+                  <input type="text" id="lfCalcMeta" placeholder="Ex: 5000000" oninput="lfRenderCalcCard()">
+                </div>
+                <div class="cp-filter-group">
+                  <label>Dias Previstos</label>
+                  <input type="number" id="lfCalcDiasPrevistos" value="22" oninput="lfRenderCalcCard()">
+                </div>
+                <div class="cp-filter-group">
+                  <label>Dias Passados</label>
+                  <input type="number" id="lfCalcDiasPassados" oninput="lfRenderCalcCard()">
+                </div>
+              </div>
+              <div class="cp-kpi-grid" style="padding:0 16px 16px">
+                <div class="cp-kpi" style="--k-color:#9b6bff">
+                  <div class="cp-kpi-label">Média de Faturamento</div>
+                  <div class="cp-kpi-value" id="lfCalcMediaOut">—</div>
+                  <div class="cp-kpi-sub">Faturamento Total ÷ Dias Passados</div>
+                </div>
+                <div class="cp-kpi" style="--k-color:#ff3d5a">
+                  <div class="cp-kpi-label">Necessidade Diária p/ Meta</div>
+                  <div class="cp-kpi-value" id="lfCalcNecessidadeOut">—</div>
+                  <div class="cp-kpi-sub" id="lfCalcNecessidadeSub">Preencha a meta e os dias</div>
+                </div>
+                <div class="cp-kpi" style="--k-color:#ffb020">
+                  <div class="cp-kpi-label">Previsão de Faturamento</div>
+                  <div class="cp-kpi-value" id="lfCalcPrevisaoOut">—</div>
+                  <div class="cp-kpi-sub" id="lfCalcPrevisaoSub">Dias restantes × média diária</div>
+                </div>
               </div>
             </div>
           </div>
@@ -3725,6 +3773,9 @@ function lfRenderAll() {
   lfRenderBreakdownTable('gerente', 'lfTableGerenteBody');
   lfRenderBreakdownTable('grupo', 'lfTableGrupoBody');
   lfRenderBreakdownTable('classificacao', 'lfTableClassBody');
+  lfRenderTableDiario();
+  lfEnsureDiasPassadosDefault();
+  lfRenderCalcCard();
 }
 
 function lfRenderKPIs() {
@@ -3736,27 +3787,11 @@ function lfRenderKPIs() {
   const mediaDiaValor = totalValor / numDias;
   const mediaDiaPeso  = totalPeso / numDias;
 
-  let previsaoMes = 0, faturadoMes = 0, diasRestantes = 0, necessidadeDiaria = null;
-  if (d.length) {
-    const maxDate = new Date(Math.max(...d.map(r=>r.dataNota.getTime())));
-    const ano = maxDate.getFullYear(), mes = maxDate.getMonth();
-    const diasNoMes = new Date(ano, mes+1, 0).getDate();
-    const diaAtual = maxDate.getDate();
-    diasRestantes = Math.max(0, diasNoMes - diaAtual);
-    faturadoMes = d.filter(r=>r.dataNota.getFullYear()===ano && r.dataNota.getMonth()===mes).reduce((s,r)=>s+r.valLiq,0);
-    previsaoMes = faturadoMes + mediaDiaValor * diasRestantes;
-    const metaInput = document.getElementById('lfMetaMes');
-    const meta = metaInput ? lfParseNumber(metaInput.value) : 0;
-    if (meta > 0) necessidadeDiaria = diasRestantes > 0 ? Math.max(0, (meta - faturadoMes) / diasRestantes) : 0;
-  }
-
   const kpis = [
     {label:'Faturamento Total (Período)', value:fmt(totalValor), sub:'Valor líquido filtrado', color:'#00d4ff'},
     {label:'Peso Total (Período)', value:fmtPeso(totalPeso)+' kg', sub:'Peso líquido filtrado', color:'#00e5cc'},
     {label:'Média Dia — Valor', value:fmt(mediaDiaValor), sub:`${numDias} dia(s) com faturamento`, color:'#9b6bff'},
     {label:'Média Dia — Peso', value:fmtPeso(mediaDiaPeso)+' kg', sub:`${numDias} dia(s) com faturamento`, color:'#00ff88'},
-    {label:'Previsão Faturamento do Mês', value:fmt(previsaoMes), sub:`Faturado ${fmt(faturadoMes)} + ${diasRestantes}d restantes × média`, color:'#ffb020'},
-    {label:'Necessidade Diária p/ Meta', value: necessidadeDiaria!==null ? fmt(necessidadeDiaria) : '—', sub: necessidadeDiaria!==null ? `p/ bater a meta em ${diasRestantes}d restantes` : 'Informe a meta do mês acima', color:'#ff3d5a'},
   ];
   document.getElementById('lfKpiGrid').innerHTML = kpis.map(k=>`
     <div class="cp-kpi" style="--k-color:${k.color}">
@@ -3814,6 +3849,59 @@ function lfRenderBreakdownTable(key, bodyId) {
       <td class="num">${fmtPeso(r.peso)}</td>
       <td class="num">${cpPct(r.peso,totalPeso)}%</td>
     </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">Sem dados</td></tr>';
+}
+
+function lfRenderTableDiario() {
+  const d = lfFiltered;
+  const totalValor = d.reduce((s,r)=>s+r.valLiq,0);
+  const grouped = {};
+  d.forEach(r => {
+    const key = r.dataNota.getFullYear()+'-'+String(r.dataNota.getMonth()+1).padStart(2,'0')+'-'+String(r.dataNota.getDate()).padStart(2,'0');
+    if (!grouped[key]) grouped[key] = {valor:0, peso:0};
+    grouped[key].valor += r.valLiq;
+    grouped[key].peso  += r.pesoLiq;
+  });
+  const rows = Object.entries(grouped).map(([data,v])=>({data, ...v})).sort((a,b)=>b.data.localeCompare(a.data));
+  document.getElementById('lfTableDiaBody').innerHTML = rows.length ? rows.map(r=>{
+    const p = r.data.split('-');
+    return `
+    <tr>
+      <td>${p[2]}/${p[1]}/${p[0]}</td>
+      <td class="num">${fmtPeso(r.peso)}</td>
+      <td class="num"><strong>${fmt(r.valor)}</strong></td>
+      <td class="num">${cpPct(r.valor,totalValor)}%</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:20px">Sem dados</td></tr>';
+}
+
+// ── CÁLCULOS DE META ───────────────────────────
+function lfEnsureDiasPassadosDefault() {
+  const el = document.getElementById('lfCalcDiasPassados');
+  if (!el) return;
+  if (el.value === '' || el.dataset.autofill === '1') {
+    const numDias = new Set(lfFiltered.map(r=>r.dataNota.toDateString())).size;
+    el.value = numDias;
+    el.dataset.autofill = '1';
+  }
+}
+
+function lfRenderCalcCard() {
+  const diasPassadosEl = document.getElementById('lfCalcDiasPassados');
+  if (diasPassadosEl) diasPassadosEl.dataset.autofill = '0'; // usuário pode ter editado
+  const totalValor = lfFiltered.reduce((s,r)=>s+r.valLiq,0);
+  const meta = lfParseNumber(document.getElementById('lfCalcMeta').value);
+  const diasPrevistos = parseInt(document.getElementById('lfCalcDiasPrevistos').value) || 0;
+  const diasPassados = parseInt(diasPassadosEl ? diasPassadosEl.value : 0) || 0;
+  const diasRestantes = Math.max(0, diasPrevistos - diasPassados);
+  const media = diasPassados > 0 ? totalValor / diasPassados : 0;
+  const necessidade = diasRestantes > 0 ? Math.max(0, (meta - totalValor) / diasRestantes) : 0;
+  const previsao = diasRestantes * media;
+
+  document.getElementById('lfCalcMediaOut').textContent = fmt(media);
+  document.getElementById('lfCalcNecessidadeOut').textContent = (meta>0 && diasRestantes>0) ? fmt(necessidade) : '—';
+  document.getElementById('lfCalcNecessidadeSub').textContent = (meta>0 && diasRestantes>0) ? `p/ bater a meta em ${diasRestantes}d restantes` : 'Informe a meta e os dias';
+  document.getElementById('lfCalcPrevisaoOut').textContent = fmt(previsao);
+  document.getElementById('lfCalcPrevisaoSub').textContent = `${diasRestantes}d restantes × média diária`;
 }
 </script>
 </body>
