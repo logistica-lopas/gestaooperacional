@@ -1332,18 +1332,87 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <!-- PAINEL: FATURAMENTO -->
         <div class="log-panel" id="logpanel-faturamento">
           <div style="padding:32px 28px">
-            <div style="margin-bottom:24px">
-              <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:6px">Módulo 01 — Logística</div>
-              <div style="font-size:22px;font-weight:700;color:var(--text)">Faturamento</div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden">
-                <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--green)">Relatório por Consultor</div>
-                <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pubhtml?gid=0&single=true" style="width:100%;height:520px;border:none;display:block"></iframe>
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+              <div>
+                <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;margin-bottom:6px">Módulo 01 — Logística</div>
+                <div style="font-size:22px;font-weight:700;color:var(--text)">Faturamento</div>
               </div>
-              <div style="background:var(--bg3);border:1px solid var(--border);border-radius:12px;overflow:hidden">
-                <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--green)">Relatório por Gerente</div>
-                <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pubhtml?gid=1&single=true" style="width:100%;height:520px;border:none;display:block"></iframe>
+              <span class="cp-update" id="lfLastUpdate" style="font-family:Space Mono,monospace;font-size:11px;color:var(--text3)">Sincronizando...</span>
+            </div>
+
+            <input type="hidden" id="lfSheetUrl" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vTatcp_0oyKgOjLdH4Nkf4RgFBIKagL6VbgepsK5WKuqSqBPoEEokplJkDihNKtUPj3gyujPpMZKrjJ/pub?gid=289455641&single=true&output=csv">
+            <div id="lfUrlWarning" style="display:none;background:rgba(255,61,90,0.08);border:1px solid var(--red);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--red);margin-bottom:16px">
+              ⚠️ O link publicado retornou os dados da aba de Carteira, não os de Faturamento. Publique a aba de Faturamento separadamente no Google Sheets (Arquivo → Compartilhar → Publicar na Web → selecione a aba correta) e atualize o link em <code>lfSheetUrl</code>.
+            </div>
+
+            <!-- FILTROS -->
+            <div class="cp-filters" style="margin-bottom:20px">
+              <div class="cp-filter-group"><label>Data Nota Início</label><input type="date" id="lfDataIni"></div>
+              <div class="cp-filter-group"><label>Data Nota Fim</label><input type="date" id="lfDataFim"></div>
+              <div class="cp-filter-group"><label>Gerente</label><select id="lfFiltGerente"><option value="">Todos</option></select></div>
+              <div class="cp-filter-group"><label>Grupo</label><select id="lfFiltGrupo"><option value="">Todos</option></select></div>
+              <div class="cp-filter-group"><label>Classificação</label><select id="lfFiltClass"><option value="">Todas</option></select></div>
+              <button class="cp-filter-reset" onclick="lfResetFilters()">Limpar Filtros</button>
+            </div>
+
+            <!-- KPIs -->
+            <div class="cp-kpi-grid" id="lfKpiGrid"></div>
+
+            <!-- META -->
+            <div style="display:flex;align-items:center;gap:10px;margin:16px 0 20px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px">
+              <label style="font-size:12px;color:var(--text2);font-weight:600">Meta de Faturamento do Mês (R$):</label>
+              <input type="text" id="lfMetaMes" placeholder="Ex: 500000" style="background:var(--bg4);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-family:Space Mono,monospace;width:160px" oninput="lfRenderKPIs()">
+            </div>
+
+            <!-- GRÁFICO DIÁRIO -->
+            <div class="cp-chart-card full" style="margin-bottom:20px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                <div class="cp-chart-title" style="margin:0">Faturamento Diário (Data Nota)</div>
+                <div class="cp-chart-toggle">
+                  <button class="cp-toggle-btn active" onclick="lfSetChartMode('valor',this)">Valor</button>
+                  <button class="cp-toggle-btn" onclick="lfSetChartMode('peso',this)">Peso</button>
+                </div>
+              </div>
+              <div class="cp-chart-container"><canvas id="lfChartDia" style="max-height:300px"></canvas></div>
+            </div>
+
+            <!-- TABELAS -->
+            <div class="cp-table-card full" style="margin-bottom:20px">
+              <div class="cp-table-header"><span class="cp-table-title">Faturamento por Gerente</span></div>
+              <div class="cp-table-wrap">
+                <table id="lfTableGerente"><thead><tr>
+                  <th onclick="cpSortTable('lfTableGerente',0)">Gerente ↕</th>
+                  <th onclick="cpSortTable('lfTableGerente',1)">Valor Líq (R$) ↕</th>
+                  <th onclick="cpSortTable('lfTableGerente',2)">% Valor ↕</th>
+                  <th onclick="cpSortTable('lfTableGerente',3)">Peso Líq (kg) ↕</th>
+                  <th onclick="cpSortTable('lfTableGerente',4)">% Peso ↕</th>
+                </tr></thead><tbody id="lfTableGerenteBody"></tbody></table>
+              </div>
+            </div>
+
+            <div class="cp-table-card full" style="margin-bottom:20px">
+              <div class="cp-table-header"><span class="cp-table-title">Faturamento por Grupo</span></div>
+              <div class="cp-table-wrap">
+                <table id="lfTableGrupo"><thead><tr>
+                  <th onclick="cpSortTable('lfTableGrupo',0)">Grupo ↕</th>
+                  <th onclick="cpSortTable('lfTableGrupo',1)">Valor Líq (R$) ↕</th>
+                  <th onclick="cpSortTable('lfTableGrupo',2)">% Valor ↕</th>
+                  <th onclick="cpSortTable('lfTableGrupo',3)">Peso Líq (kg) ↕</th>
+                  <th onclick="cpSortTable('lfTableGrupo',4)">% Peso ↕</th>
+                </tr></thead><tbody id="lfTableGrupoBody"></tbody></table>
+              </div>
+            </div>
+
+            <div class="cp-table-card full">
+              <div class="cp-table-header"><span class="cp-table-title">Faturamento por Classificação</span></div>
+              <div class="cp-table-wrap">
+                <table id="lfTableClass"><thead><tr>
+                  <th onclick="cpSortTable('lfTableClass',0)">Classificação ↕</th>
+                  <th onclick="cpSortTable('lfTableClass',1)">Valor Líq (R$) ↕</th>
+                  <th onclick="cpSortTable('lfTableClass',2)">% Valor ↕</th>
+                  <th onclick="cpSortTable('lfTableClass',3)">Peso Líq (kg) ↕</th>
+                  <th onclick="cpSortTable('lfTableClass',4)">% Peso ↕</th>
+                </tr></thead><tbody id="lfTableClassBody"></tbody></table>
               </div>
             </div>
           </div>
@@ -1702,6 +1771,7 @@ function switchLogPanel(name) {
   document.querySelectorAll('#view-logistica .log-panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('logpanel-' + name);
   if (panel) panel.classList.add('active');
+  if (name === 'faturamento' && typeof lfRawData !== 'undefined' && lfRawData.length === 0) lfLoadSheet();
 }
 
 // ══════════════════════════════════════════════
@@ -3488,6 +3558,263 @@ setTimeout(() => cpLoadSheet(false), 500);
     fatRefreshSeconds = parseInt(sel.value) * 60;
   }
 })();
+
+// ══════════════════════════════════════════════
+// FATURAMENTO — MÓDULO 01 LOGÍSTICA
+// ══════════════════════════════════════════════
+let lfRawData  = [];
+let lfFiltered = [];
+let lfCharts   = {};
+let lfChartMode = 'valor';
+
+function lfEsc(s) {
+  return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function lfParseNumber(v) {
+  if (v===null||v===undefined||v==='') return 0;
+  let s = String(v).trim().replace(/[R$\s]/g,'');
+  if (s.includes(',')) s = s.replace(/\./g,'').replace(',','.');
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+}
+
+function lfParseDate(v) {
+  if (!v) return null;
+  const s = String(v).trim();
+  if (!s) return null;
+  const m = s.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+  if (m) { const d = new Date(parseInt(m[3]), parseInt(m[2])-1, parseInt(m[1])); return isNaN(d)?null:d; }
+  const m2 = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m2) { const d = new Date(parseInt(m2[1]),parseInt(m2[2])-1,parseInt(m2[3])); return isNaN(d)?null:d; }
+  const ts = Date.parse(s);
+  if (!isNaN(ts)) { const d = new Date(ts); if (d.getFullYear()>1990&&d.getFullYear()<2100) return d; }
+  return null;
+}
+
+async function lfLoadSheet() {
+  const url = document.getElementById('lfSheetUrl').value.trim();
+  if (!url) return;
+  lfSetStatus('syncing');
+  try {
+    const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const text = await res.text();
+    if (!text || text.trim().length < 5) throw new Error('Resposta vazia');
+    if (text.trim().startsWith('<!DOCTYPE') || text.trim().startsWith('<html'))
+      throw new Error('Google retornou HTML — verifique se a planilha está publicada como CSV');
+    lfParseCSVText(text);
+    lfSetStatus('ok');
+  } catch(e) {
+    lfSetStatus('error', e.message);
+  }
+}
+
+function lfSetStatus(state, msg) {
+  const last = document.getElementById('lfLastUpdate');
+  if (state === 'ok') {
+    const ts = new Date().toLocaleString('pt-BR', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    if (last) { last.textContent = 'Atualizado ' + ts; last.style.color = 'var(--green)'; }
+  } else if (state === 'syncing') {
+    if (last) { last.textContent = 'Sincronizando...'; last.style.color = 'var(--neon)'; }
+  } else if (state === 'error') {
+    if (last) { last.textContent = 'Erro na sync'; last.style.color = 'var(--red)'; }
+  }
+}
+
+function lfParseCSVText(csvText) {
+  function parseLine(line) {
+    const result = []; let cur = ''; let inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    result.push(cur.trim()); return result;
+  }
+  const lines = csvText.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return;
+  const rawHeaders = parseLine(lines[0]);
+  const headers = rawHeaders.map(h => String(h).trim().toUpperCase());
+  const dataRows = lines.slice(1).map(l => parseLine(l)).filter(r => r.some(c => c !== ''));
+
+  const col = (exactKeys, partialKeys) => {
+    for (const k of exactKeys) { const idx = headers.findIndex(h => h===k); if (idx>=0) return idx; }
+    if (partialKeys) { for (const k of partialKeys) { const idx = headers.findIndex(h => h.includes(k)); if (idx>=0) return idx; } }
+    return -1;
+  };
+
+  const iDataNota = col(['DATA NOTA'], ['DATA NOTA']);
+  const iGerente  = col(['GERENTE'], ['GERENTE']);
+  const iGrupo    = col(['GRUPO'], ['GRUPO']);
+  const iClass    = col(['CLASSIFICACAO','CLASSIFICAÇÃO'], ['CLASSIFICACAO','CLASSIFICAÇÃO']);
+  const iValLiq   = col(['VLR LIQ','VALOR LIQUIDO','VALOR LÍQUIDO'], ['VLR LIQ','VALOR LIQ']);
+  const iPesoLiq  = col(['PESO LIQ','PESO LIQUIDO','PESO LÍQUIDO'], ['PESO LIQ']);
+  const iNumPed   = col(['NUM PED'], ['NUM PED']);
+  const iNf       = col(['NF'], ['NF']);
+
+  const warn = document.getElementById('lfUrlWarning');
+  if (warn) warn.style.display = (iDataNota<0 || iValLiq<0) ? '' : 'none';
+
+  lfRawData = dataRows.map(r => {
+    const dataNota = lfParseDate(iDataNota>=0 ? r[iDataNota] : null);
+    return {
+      dataNota,
+      pedido: iNumPed>=0 ? String(r[iNumPed]).trim() : (iNf>=0?String(r[iNf]).trim():''),
+      gerente: (iGerente>=0 ? String(r[iGerente]).trim() : '') || '(Vazio)',
+      grupo: (iGrupo>=0 ? String(r[iGrupo]).trim() : '') || '(Vazio)',
+      classificacao: (iClass>=0 ? String(r[iClass]).trim() : '') || '(Vazio)',
+      valLiq: iValLiq>=0 ? lfParseNumber(r[iValLiq]) : 0,
+      pesoLiq: iPesoLiq>=0 ? lfParseNumber(r[iPesoLiq]) : 0,
+    };
+  }).filter(r => r.dataNota);
+
+  lfPopulateFilters();
+  lfApplyFilters();
+}
+
+// ── FILTROS ───────────────────────────────────
+function lfPopulateFilters() {
+  const setOpts = (id, vals) => {
+    const sel = document.getElementById(id);
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Todos</option>';
+    [...new Set(vals)].filter(Boolean).sort().forEach(v => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+    sel.value = cur;
+  };
+  setOpts('lfFiltGerente', lfRawData.map(r=>r.gerente));
+  setOpts('lfFiltGrupo', lfRawData.map(r=>r.grupo));
+  setOpts('lfFiltClass', lfRawData.map(r=>r.classificacao));
+  ['lfDataIni','lfDataFim','lfFiltGerente','lfFiltGrupo','lfFiltClass'].forEach(id => {
+    document.getElementById(id).onchange = lfApplyFilters;
+  });
+}
+
+function lfResetFilters() {
+  ['lfFiltGerente','lfFiltGrupo','lfFiltClass'].forEach(id => document.getElementById(id).value='');
+  ['lfDataIni','lfDataFim'].forEach(id => document.getElementById(id).value='');
+  lfApplyFilters();
+}
+
+function lfApplyFilters() {
+  const dIni = document.getElementById('lfDataIni').value ? new Date(document.getElementById('lfDataIni').value) : null;
+  const dFim = document.getElementById('lfDataFim').value ? new Date(document.getElementById('lfDataFim').value) : null;
+  if (dFim) dFim.setHours(23,59,59);
+  const fGerente = document.getElementById('lfFiltGerente').value;
+  const fGrupo = document.getElementById('lfFiltGrupo').value;
+  const fClass = document.getElementById('lfFiltClass').value;
+  lfFiltered = lfRawData.filter(r => {
+    if (dIni && r.dataNota < dIni) return false;
+    if (dFim && r.dataNota > dFim) return false;
+    if (fGerente && r.gerente !== fGerente) return false;
+    if (fGrupo && r.grupo !== fGrupo) return false;
+    if (fClass && r.classificacao !== fClass) return false;
+    return true;
+  });
+  lfRenderAll();
+}
+
+// ── RENDER ────────────────────────────────────
+function lfRenderAll() {
+  lfRenderKPIs();
+  lfRenderChartDia();
+  lfRenderBreakdownTable('gerente', 'lfTableGerenteBody');
+  lfRenderBreakdownTable('grupo', 'lfTableGrupoBody');
+  lfRenderBreakdownTable('classificacao', 'lfTableClassBody');
+}
+
+function lfRenderKPIs() {
+  const d = lfFiltered;
+  const totalValor = d.reduce((s,r)=>s+r.valLiq,0);
+  const totalPeso  = d.reduce((s,r)=>s+r.pesoLiq,0);
+  const diasSet = new Set(d.map(r=>r.dataNota.toDateString()));
+  const numDias = diasSet.size || 1;
+  const mediaDiaValor = totalValor / numDias;
+  const mediaDiaPeso  = totalPeso / numDias;
+
+  let previsaoMes = 0, faturadoMes = 0, diasRestantes = 0, necessidadeDiaria = null;
+  if (d.length) {
+    const maxDate = new Date(Math.max(...d.map(r=>r.dataNota.getTime())));
+    const ano = maxDate.getFullYear(), mes = maxDate.getMonth();
+    const diasNoMes = new Date(ano, mes+1, 0).getDate();
+    const diaAtual = maxDate.getDate();
+    diasRestantes = Math.max(0, diasNoMes - diaAtual);
+    faturadoMes = d.filter(r=>r.dataNota.getFullYear()===ano && r.dataNota.getMonth()===mes).reduce((s,r)=>s+r.valLiq,0);
+    previsaoMes = faturadoMes + mediaDiaValor * diasRestantes;
+    const metaInput = document.getElementById('lfMetaMes');
+    const meta = metaInput ? lfParseNumber(metaInput.value) : 0;
+    if (meta > 0) necessidadeDiaria = diasRestantes > 0 ? Math.max(0, (meta - faturadoMes) / diasRestantes) : 0;
+  }
+
+  const kpis = [
+    {label:'Faturamento Total (Período)', value:fmt(totalValor), sub:'Valor líquido filtrado', color:'#00d4ff'},
+    {label:'Peso Total (Período)', value:fmtPeso(totalPeso)+' kg', sub:'Peso líquido filtrado', color:'#00e5cc'},
+    {label:'Média Dia — Valor', value:fmt(mediaDiaValor), sub:`${numDias} dia(s) com faturamento`, color:'#9b6bff'},
+    {label:'Média Dia — Peso', value:fmtPeso(mediaDiaPeso)+' kg', sub:`${numDias} dia(s) com faturamento`, color:'#00ff88'},
+    {label:'Previsão Faturamento do Mês', value:fmt(previsaoMes), sub:`Faturado ${fmt(faturadoMes)} + ${diasRestantes}d restantes × média`, color:'#ffb020'},
+    {label:'Necessidade Diária p/ Meta', value: necessidadeDiaria!==null ? fmt(necessidadeDiaria) : '—', sub: necessidadeDiaria!==null ? `p/ bater a meta em ${diasRestantes}d restantes` : 'Informe a meta do mês acima', color:'#ff3d5a'},
+  ];
+  document.getElementById('lfKpiGrid').innerHTML = kpis.map(k=>`
+    <div class="cp-kpi" style="--k-color:${k.color}">
+      <div class="cp-kpi-label">${k.label}</div>
+      <div class="cp-kpi-value">${k.value}</div>
+      <div class="cp-kpi-sub">${k.sub}</div>
+    </div>
+  `).join('');
+}
+
+function lfDestroyChart(id) { if (lfCharts[id]) { lfCharts[id].destroy(); delete lfCharts[id]; } }
+
+function lfSetChartMode(mode, btn) {
+  lfChartMode = mode;
+  document.querySelectorAll('#logpanel-faturamento .cp-toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  lfRenderChartDia();
+}
+
+function lfRenderChartDia() {
+  lfDestroyChart('lfChartDia');
+  const grouped = {};
+  lfFiltered.forEach(r => {
+    const key = r.dataNota.getFullYear()+'-'+String(r.dataNota.getMonth()+1).padStart(2,'0')+'-'+String(r.dataNota.getDate()).padStart(2,'0');
+    if (!grouped[key]) grouped[key] = {valor:0, peso:0};
+    grouped[key].valor += r.valLiq;
+    grouped[key].peso  += r.pesoLiq;
+  });
+  const labels = Object.keys(grouped).sort();
+  const vals = labels.map(l => lfChartMode==='valor' ? grouped[l].valor : grouped[l].peso);
+  const labelsFmt = labels.map(l => { const p=l.split('-'); return p[2]+'/'+p[1]; });
+  lfCharts['lfChartDia'] = new Chart(document.getElementById('lfChartDia'), {
+    type: 'bar',
+    data: { labels: labelsFmt, datasets: [{ label: lfChartMode==='valor'?'Valor (R$)':'Peso (kg)', data: vals,
+      backgroundColor:'rgba(0,212,255,0.2)', borderColor:'#00d4ff', borderWidth:1, borderRadius:4 }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>lfChartMode==='valor'?' '+fmt(c.raw):' '+fmtPeso(c.raw)+' kg'}} },
+      scales:{ y:{ ticks:{ callback:v=>lfChartMode==='valor'?fmtShort(v):fmtPesoShort(v) } } } }
+  });
+}
+
+function lfRenderBreakdownTable(key, bodyId) {
+  const d = lfFiltered;
+  const totalValor = d.reduce((s,r)=>s+r.valLiq,0);
+  const totalPeso  = d.reduce((s,r)=>s+r.pesoLiq,0);
+  const grouped = d.reduce((acc,r)=>{ (acc[r[key]] = acc[r[key]]||[]).push(r); return acc; }, {});
+  const rows = Object.entries(grouped).map(([nome,items])=>({
+    nome, valor: items.reduce((s,r)=>s+r.valLiq,0), peso: items.reduce((s,r)=>s+r.pesoLiq,0)
+  })).sort((a,b)=>b.valor-a.valor);
+  document.getElementById(bodyId).innerHTML = rows.length ? rows.map(r=>`
+    <tr>
+      <td>${lfEsc(r.nome)}</td>
+      <td class="num"><strong>${fmt(r.valor)}</strong></td>
+      <td class="num">${cpPct(r.valor,totalValor)}%</td>
+      <td class="num">${fmtPeso(r.peso)}</td>
+      <td class="num">${cpPct(r.peso,totalPeso)}%</td>
+    </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:var(--text2);padding:20px">Sem dados</td></tr>';
+}
 </script>
 </body>
 </html>
