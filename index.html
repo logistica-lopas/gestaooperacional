@@ -2284,14 +2284,34 @@ function cpRenderGrupoChart() {
     return sB-sA;
   }).slice(0,12);
   const vals = labels.map(l=>grouped[l].reduce((s,r)=>s+(cpGrupoMode==='valor'?r.valCarteira:r.pesoBrt),0));
+  // % Em Carga / % Disponível por grupo, exibidos no tooltip sem quebrar a coluna em segmentos
+  const pctInfo = labels.map(l=>{
+    const items = grouped[l];
+    const total  = items.reduce((s,r)=>s+(cpGrupoMode==='valor'?r.valCarteira:r.pesoBrt),0);
+    const carga  = items.reduce((s,r)=>s+(cpGrupoMode==='valor'?r.valCarga:r.pesoCarga),0);
+    const disp   = items.filter(r=>r.bloqueio!=='BLQ').reduce((s,r)=>s+(cpGrupoMode==='valor'?r.valDisp:r.pesoDisp),0);
+    return {
+      pctCarga: total>0 ? carga/total*100 : 0,
+      pctDisp:  total>0 ? disp/total*100  : 0
+    };
+  });
   cpCharts['cpChartGrupo'] = new Chart(document.getElementById('cpChartGrupo'),{
     type:'bar',
     data:{ labels:labels.map(l=>l.length>18?l.substring(0,18)+'…':l),
       datasets:[{label:cpGrupoMode==='valor'?'Valor (R$)':'Peso (kg)', data:vals,
         backgroundColor:'rgba(0,255,136,0.2)', borderColor:'#00ff88', borderWidth:1, borderRadius:4}] },
-    options:{ responsive:true, indexAxis:'y',
-      plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>cpGrupoMode==='valor'?' '+fmt(c.raw):' '+fmtPeso(c.raw)+' kg'}} },
-      scales:{ x:{ticks:{callback:v=>cpGrupoMode==='valor'?fmtShort(v):fmtPesoShort(v)}} } }
+    options:{ responsive:true,
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{
+        label:c=>cpGrupoMode==='valor'?' '+fmt(c.raw):' '+fmtPeso(c.raw)+' kg',
+        afterLabel:c=>{
+          const p = pctInfo[c.dataIndex];
+          return [` Em Carga: ${p.pctCarga.toFixed(1)}%`, ` Disponível: ${p.pctDisp.toFixed(1)}%`];
+        }
+      }} },
+      scales:{
+        x:{ ticks:{ autoSkip:false, maxRotation:40, minRotation:0, font:{size:10} } },
+        y:{ ticks:{callback:v=>cpGrupoMode==='valor'?fmtShort(v):fmtPesoShort(v)} }
+      } }
   });
 }
 
