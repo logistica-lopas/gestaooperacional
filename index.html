@@ -4562,10 +4562,20 @@ function lfRenderCalcCard() {
     container.innerHTML = '';
     MF_DEFS.forEach(def => container.appendChild(rtBuildMultiFilter(def)));
 
-    rtMap = L.map('rt-map', { zoomControl:true, attributionControl:false }).setView([-15,-48], 4);
-    L.geoJSON(RT_STATES, { style:{color:'#24405f', weight:1, fillOpacity:0, interactive:false} }).addTo(rtMap);
-    rtClusterGroup = L.markerClusterGroup({ maxClusterRadius:50, spiderfyOnMaxZoom:true });
-    rtMap.addLayer(rtClusterGroup);
+    // O mapa (Leaflet) é opcional: se falhar (CDN indisponível, bloqueio, etc.)
+    // o restante do painel (lista, filtros, carrinho) continua funcionando normalmente.
+    try {
+      if (typeof L === 'undefined') throw new Error('Leaflet não carregado');
+      rtMap = L.map('rt-map', { zoomControl:true, attributionControl:false }).setView([-15,-48], 4);
+      L.geoJSON(RT_STATES, { style:{color:'#24405f', weight:1, fillOpacity:0, interactive:false} }).addTo(rtMap);
+      rtClusterGroup = L.markerClusterGroup({ maxClusterRadius:50, spiderfyOnMaxZoom:true });
+      rtMap.addLayer(rtClusterGroup);
+    } catch(e) {
+      console.error('Roteirização: mapa indisponível, seguindo sem mapa.', e);
+      rtMap = null; rtClusterGroup = null;
+      const mapWrap = document.querySelector('#rt-panel .rt-map-wrap');
+      if (mapWrap) mapWrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--rt-text-lo);font-family:var(--rt-font-mono);font-size:12px;text-align:center;padding:20px">Mapa indisponível no momento.<br>A lista e o carrinho continuam funcionando normalmente.</div>';
+    }
 
     document.getElementById('rtSearchInput').addEventListener('input', e => { rtState.search = e.target.value; rtRenderList(); });
     document.getElementById('rtModalGroup').addEventListener('click', e => {
@@ -4599,10 +4609,10 @@ function lfRenderCalcCard() {
       if (card) {
         const id = Number(card.dataset.id);
         const point = rtPoints.find(p => p._id===id);
-        if (!point || point.lat==null || point.lon==null) return;
+        if (!point || point.lat==null || point.lon==null || !rtMap) return;
         rtMap.flyTo([point.lat, point.lon], 9, {duration:0.6});
         const m = rtMarkerById.get(id);
-        if (m && rtClusterGroup.hasLayer(m)) rtClusterGroup.zoomToShowLayer(m, () => m.openPopup());
+        if (m && rtClusterGroup && rtClusterGroup.hasLayer(m)) rtClusterGroup.zoomToShowLayer(m, () => m.openPopup());
       }
     });
     document.getElementById('rtCartList').addEventListener('click', e => {
@@ -4625,7 +4635,10 @@ function lfRenderCalcCard() {
   };
   // chamado ao abrir a aba Roteirização
   window.rtRenderAll = function(){
-    if (!rtInitialized) rtInit();
+    if (!rtInitialized) {
+      try { rtInit(); }
+      catch(e) { console.error('Roteirização: erro na inicialização.', e); rtInitialized = true; }
+    }
     rtBuildPoints();
     rtRenderList();
     rtRenderCart();
