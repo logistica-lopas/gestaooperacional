@@ -2050,6 +2050,157 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 </style>
 
+<!-- ══════════════════════════════════════════════
+     MÓDULO 02 — TRANSPORTE: TEMA VISUAL "TREVO"
+     Escopado 100% dentro de #view-transporte.
+     Nenhuma aba foi criada/removida — apenas estética.
+══════════════════════════════════════════════ -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+#view-transporte {
+  --tp-ink-900:#22252A;
+  --tp-ink-700:#3A3E42;
+  --tp-grey-700:#5A5D5E;
+  --tp-grey-500:#8B8E8C;
+  --tp-grey-300:#C7C9C4;
+  --tp-grey-200:#E2E4DF;
+  --tp-grey-100:#EEF0EB;
+  --tp-bg:#F6F7F3;
+  --tp-card:#FFFFFF;
+  --tp-line:#E2E4DF;
+  --tp-green-700:#3E7A2C;
+  --tp-green-600:#4C8A34;
+  --tp-green-500:#6FAF46;
+  --tp-green-100:#E7F2DD;
+  --tp-green-050:#F2F8EC;
+  --tp-red:#BE5147;
+  --tp-red-100:#F6E4E1;
+  --tp-amber:#CE9A3E;
+  --tp-amber-100:#F5EBD6;
+  --tp-blue:#4C7C9E;
+  --tp-blue-100:#E4EDF2;
+  --tp-purple:#8D6E9A;
+  --tp-purple-100:#EFE7F2;
+  --tp-font-display:'Space Grotesk','Barlow',sans-serif;
+  --tp-font-body:'Inter','Barlow',sans-serif;
+  --tp-shadow-card:0 1px 2px rgba(34,37,42,0.04), 0 4px 16px rgba(34,37,42,0.06);
+
+  /* remapeia as variáveis globais do app somente dentro do Módulo 02 —
+     todo elemento que usa var(--bg2), var(--green), var(--text2) etc.
+     herda automaticamente estes novos valores dentro desta view */
+  --bg: var(--tp-bg);
+  --bg2: var(--tp-card);
+  --bg3: var(--tp-card);
+  --bg4: var(--tp-grey-100);
+  --border: var(--tp-line);
+  --border2: var(--tp-grey-300);
+  --text: var(--tp-ink-900);
+  --text2: var(--tp-grey-700);
+  --text3: var(--tp-grey-500);
+  --green: var(--tp-green-600);
+  --green2: var(--tp-green-500);
+  --neon: var(--tp-blue);
+  --neon2: var(--tp-blue);
+  --yellow: var(--tp-amber);
+  --orange: #B9702E;
+  --purple: var(--tp-purple);
+  --red: var(--tp-red);
+  --teal: var(--tp-blue);
+
+  background: var(--tp-bg);
+  min-height: 100vh;
+  color: var(--tp-ink-900);
+  font-family: var(--tp-font-body);
+}
+
+#view-transporte, #view-transporte * { font-family: var(--tp-font-body); }
+
+#view-transporte h1, #view-transporte h2, #view-transporte h3, #view-transporte h4,
+#view-transporte .view-title,
+#view-transporte .fat-table-title, #view-transporte .cp2-table-title,
+#view-transporte .fat-chart-title,
+#view-transporte .transp-tab {
+  font-family: var(--tp-font-display);
+}
+
+/* preserva o tratamento monoespaçado para valores numéricos */
+#view-transporte .fat-kpi-value,
+#view-transporte .cp2-kpi-value,
+#view-transporte .num,
+#view-transporte .fat-table-count,
+#view-transporte .cp2-table-count,
+#view-transporte .fat-status-text {
+  font-family: 'Space Mono', monospace;
+}
+
+/* ---- cabeçalho / botão voltar ---- */
+#view-transporte .back-btn {
+  background: var(--tp-grey-100);
+  border: 1px solid var(--tp-line);
+  color: var(--tp-grey-700);
+}
+#view-transporte .back-btn:hover { background: var(--tp-grey-200); color: var(--tp-ink-900); }
+#view-transporte .view-module-label { color: var(--tp-green-600) !important; opacity: 0.85; }
+
+/* ---- abas internas ---- */
+#view-transporte .transp-tab.active { color: var(--tp-green-600); border-bottom-color: var(--tp-green-600); }
+
+/* ---- cards KPI (Faturamento + Cargas Previstas) ---- */
+#view-transporte .fat-kpi,
+#view-transporte .cp2-kpi {
+  background: var(--tp-card);
+  box-shadow: var(--tp-shadow-card);
+  border-radius: 14px;
+}
+#view-transporte .fat-kpi-label, #view-transporte .cp2-kpi-label { color: var(--tp-grey-500); }
+
+/* ---- cards de gráfico e tabelas ---- */
+#view-transporte .fat-chart-card,
+#view-transporte .fat-table-wrap,
+#view-transporte .cp2-table-wrap {
+  box-shadow: var(--tp-shadow-card);
+  border-radius: 14px;
+}
+
+/* ---- linhas de tabela / cabeçalho ---- */
+#view-transporte tr:hover td { background: var(--tp-grey-100) !important; }
+
+/* ---- tags de status, com paleta harmônica ---- */
+#view-transporte .fat-tag-saida  { background: var(--tp-blue-100); border-color: rgba(76,124,158,0.3); }
+#view-transporte .fat-tag-retorno, #view-transporte .cp2-tag-fret { background: var(--tp-purple-100); border-color: rgba(141,110,154,0.3); }
+#view-transporte .fat-tag-outro, #view-transporte .cp2-tag-pend { background: var(--tp-amber-100); border-color: rgba(206,154,62,0.3); }
+#view-transporte .cp2-tag-conf { background: var(--tp-green-100); border-color: rgba(76,138,52,0.3); }
+
+/* ---- faixas / caixas de ajuda em tom verde ---- */
+#view-transporte .fat-help-box,
+#view-transporte .cp2-status-bar,
+#view-transporte .transp-import-btn {
+  background: var(--tp-green-050);
+  border-color: var(--tp-green-100);
+}
+#view-transporte .transp-import-btn:hover { background: var(--tp-green-100); }
+#view-transporte #fatInlineStatus {
+  background: var(--tp-green-050) !important;
+  border: 1px solid var(--tp-green-100) !important;
+}
+
+/* ---- estados vazios / spinner ---- */
+#view-transporte .fat-empty-icon {
+  background: var(--tp-green-050);
+  border: 1px solid var(--tp-green-100);
+  color: var(--tp-green-600);
+}
+#view-transporte .fat-spinner {
+  border: 2px solid var(--tp-green-100);
+  border-top-color: var(--tp-green-600);
+}
+
+/* ---- scrollbar local ---- */
+#view-transporte ::-webkit-scrollbar-thumb { background: rgba(76,138,52,0.25); }
+#view-transporte ::-webkit-scrollbar-thumb:hover { background: rgba(76,138,52,0.4); }
+</style>
+
 <script>
 // ══════════════════════════════════════════════
 // NAVIGATION
@@ -3397,16 +3548,16 @@ function fatRenderAll() {
           {
             label: 'Saída',
             data: mesesSort.map(k => porMes[k]?.saida || 0),
-            backgroundColor: 'rgba(0,212,255,0.6)',
-            borderColor: '#00d4ff',
+            backgroundColor: 'rgba(76,124,158,0.65)',
+            borderColor: '#4C7C9E',
             borderWidth: 1,
             borderRadius: 6,
           },
           {
             label: 'Retorno',
             data: mesesSort.map(k => porMes[k]?.retorno || 0),
-            backgroundColor: 'rgba(155,107,255,0.6)',
-            borderColor: '#9b6bff',
+            backgroundColor: 'rgba(141,110,154,0.65)',
+            borderColor: '#8D6E9A',
             borderWidth: 1,
             borderRadius: 6,
           },
@@ -3415,9 +3566,11 @@ function fatRenderAll() {
       options: {
         responsive: true,
         interaction: { mode: 'index', intersect: false },
+        color: '#5A5D5E',
         plugins: {
-          legend: { position: 'bottom' },
+          legend: { position: 'bottom', labels: { color: '#5A5D5E' } },
           tooltip: {
+            backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff',
             callbacks: {
               label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
               footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
@@ -3425,9 +3578,9 @@ function fatRenderAll() {
           }
         },
         scales: {
-          x: { stacked: true, ticks: { font: { size: 11 } } },
-          y: { stacked: true, ticks: { callback: v => fatFmtShort(v) }, beginAtZero: true,
-            grid: { color: 'rgba(255,255,255,0.04)' } }
+          x: { stacked: true, ticks: { font: { size: 11 }, color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.06)' } },
+          y: { stacked: true, ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' }, beginAtZero: true,
+            grid: { color: 'rgba(34,37,42,0.08)' } }
         }
       }
     });
@@ -3437,12 +3590,13 @@ function fatRenderAll() {
   const tiposGrp = {};
   fatFiltered.forEach(r => { tiposGrp[r.tipo] = (tiposGrp[r.tipo]||0) + r.vlr; });
   const tipoLabels = Object.keys(tiposGrp);
-  const tipoCores  = tipoLabels.map(t => t==='SAIDA'?'#00d4ff':t==='RETORNO'?'#9b6bff':'#f5c518');
+  const tipoCores  = tipoLabels.map(t => t==='SAIDA'?'#4C7C9E':t==='RETORNO'?'#8D6E9A':'#CE9A3E');
   fatCharts.pizza = new Chart(document.getElementById('fatChartPizza'), {
     type: 'doughnut',
-    data: { labels: tipoLabels, datasets: [{ data: tipoLabels.map(t=>tiposGrp[t]), backgroundColor: tipoCores, borderWidth: 0, hoverOffset: 6 }] },
-    options: { responsive: true, cutout: '65%',
-      plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: c => ' ' + fatFmt(c.raw) + ' (' + Math.round(c.raw/totalVlr*100) + '%)' } } } }
+    data: { labels: tipoLabels, datasets: [{ data: tipoLabels.map(t=>tiposGrp[t]), backgroundColor: tipoCores, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
+    options: { responsive: true, cutout: '65%', color: '#5A5D5E',
+      plugins: { legend: { position: 'bottom', labels: { color: '#5A5D5E' } },
+        tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => ' ' + fatFmt(c.raw) + ' (' + Math.round(c.raw/totalVlr*100) + '%)' } } } }
   });
 
   // ── PESO BAR ──
@@ -3450,9 +3604,13 @@ function fatRenderAll() {
   fatFiltered.forEach(r => { pesoPorTipo[r.tipo] = (pesoPorTipo[r.tipo]||0) + r.peso; });
   fatCharts.peso = new Chart(document.getElementById('fatChartPeso'), {
     type: 'bar',
-    data: { labels: Object.keys(pesoPorTipo), datasets: [{ label: 'Peso BRT (kg)', data: Object.values(pesoPorTipo), backgroundColor: Object.keys(pesoPorTipo).map(t=>t==='SAIDA'?'rgba(0,212,255,0.6)':t==='RETORNO'?'rgba(155,107,255,0.6)':'rgba(245,197,24,0.6)'), borderRadius: 6 }] },
-    options: { responsive: true, plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ' ' + Math.round(c.raw).toLocaleString('pt-BR') + ' kg' } } },
-      scales: { y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v } } } }
+    data: { labels: Object.keys(pesoPorTipo), datasets: [{ label: 'Peso BRT (kg)', data: Object.values(pesoPorTipo), backgroundColor: Object.keys(pesoPorTipo).map(t=>t==='SAIDA'?'rgba(76,124,158,0.65)':t==='RETORNO'?'rgba(141,110,154,0.65)':'rgba(206,154,62,0.65)'), borderRadius: 6 }] },
+    options: { responsive: true, color: '#5A5D5E',
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => ' ' + Math.round(c.raw).toLocaleString('pt-BR') + ' kg' } } },
+      scales: {
+        x: { ticks: { color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.06)' } },
+        y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v, color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.08)' } }
+      } }
   });
 
   // ── TOP 5 CLIENTES RETORNO ──
@@ -3468,7 +3626,7 @@ function fatRenderAll() {
   if (top5.length > 0) {
     const maxVal = top5[0][1];
     const top5Labels = top5.map(([k]) => k.length > 28 ? k.slice(0,26)+'…' : k);
-    const top5Colors = ['rgba(155,107,255,0.75)','rgba(155,107,255,0.62)','rgba(155,107,255,0.50)','rgba(155,107,255,0.38)','rgba(155,107,255,0.28)'];
+    const top5Colors = ['rgba(141,110,154,0.85)','rgba(141,110,154,0.70)','rgba(141,110,154,0.56)','rgba(141,110,154,0.42)','rgba(141,110,154,0.30)'];
     fatCharts.top5 = new Chart(document.getElementById('fatChartTop5'), {
       type: 'bar',
       data: {
@@ -3485,18 +3643,19 @@ function fatRenderAll() {
       options: {
         indexAxis: 'y',
         responsive: true,
+        color: '#5A5D5E',
         plugins: {
           legend: { display: false },
-          tooltip: { callbacks: { label: c => '  ' + fatFmt(c.raw) } }
+          tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => '  ' + fatFmt(c.raw) } }
         },
         scales: {
           x: {
             beginAtZero: true,
-            ticks: { callback: v => fatFmtShort(v) },
-            grid: { color: 'rgba(255,255,255,0.04)' }
+            ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' },
+            grid: { color: 'rgba(34,37,42,0.08)' }
           },
           y: {
-            ticks: { font: { size: 11 } },
+            ticks: { font: { size: 11 }, color: '#5A5D5E' },
             grid: { display: false }
           }
         }
@@ -3507,8 +3666,8 @@ function fatRenderAll() {
     if (canvas) {
       const ctx = canvas.getContext('2d');
       canvas.height = 60;
-      ctx.fillStyle = 'rgba(155,107,255,0.3)';
-      ctx.font = '13px Barlow, sans-serif';
+      ctx.fillStyle = 'rgba(141,110,154,0.55)';
+      ctx.font = '13px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Nenhum CT-e de Retorno no período selecionado', canvas.width/2, 35);
     }
@@ -3525,16 +3684,16 @@ function fatRenderAll() {
         {
           label: 'Saída',
           data: diasSort.map(d => porDia[d]?.saida || 0),
-          backgroundColor: 'rgba(0,212,255,0.55)',
-          borderColor: '#00d4ff',
+          backgroundColor: 'rgba(76,124,158,0.6)',
+          borderColor: '#4C7C9E',
           borderWidth: 1,
           borderRadius: 4,
         },
         {
           label: 'Retorno',
           data: diasSort.map(d => porDia[d]?.retorno || 0),
-          backgroundColor: 'rgba(155,107,255,0.55)',
-          borderColor: '#9b6bff',
+          backgroundColor: 'rgba(141,110,154,0.6)',
+          borderColor: '#8D6E9A',
           borderWidth: 1,
           borderRadius: 4,
         },
@@ -3543,9 +3702,11 @@ function fatRenderAll() {
     options: {
       responsive: true,
       interaction: { mode: 'index', intersect: false },
+      color: '#5A5D5E',
       plugins: {
-        legend: { position: 'bottom' },
+        legend: { position: 'bottom', labels: { color: '#5A5D5E' } },
         tooltip: {
+          backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff',
           callbacks: {
             label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
             footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
@@ -3553,8 +3714,8 @@ function fatRenderAll() {
         }
       },
       scales: {
-        x: { stacked: true, ticks: { maxRotation: 45, font: { size: 10 } } },
-        y: { stacked: true, ticks: { callback: v => fatFmtShort(v) }, beginAtZero: true }
+        x: { stacked: true, ticks: { maxRotation: 45, font: { size: 10 }, color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.06)' } },
+        y: { stacked: true, ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' }, beginAtZero: true, grid: { color: 'rgba(34,37,42,0.08)' } }
       }
     }
   });
