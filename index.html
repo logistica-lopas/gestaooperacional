@@ -2080,8 +2080,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   --tp-amber-100:#F5EBD6;
   --tp-blue:#4C7C9E;
   --tp-blue-100:#E4EDF2;
-  --tp-purple:#8D6E9A;
-  --tp-purple-100:#EFE7F2;
+  --tp-purple:#BE5147;
+  --tp-purple-100:#F6E4E1;
   --tp-font-display:'Space Grotesk','Barlow',sans-serif;
   --tp-font-body:'Inter','Barlow',sans-serif;
   --tp-shadow-card:0 1px 2px rgba(34,37,42,0.04), 0 4px 16px rgba(34,37,42,0.06);
@@ -2168,7 +2168,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
 /* ---- tags de status, com paleta harmônica ---- */
 #view-transporte .fat-tag-saida  { background: var(--tp-blue-100); border-color: rgba(76,124,158,0.3); }
-#view-transporte .fat-tag-retorno, #view-transporte .cp2-tag-fret { background: var(--tp-purple-100); border-color: rgba(141,110,154,0.3); }
+#view-transporte .fat-tag-retorno, #view-transporte .cp2-tag-fret { background: var(--tp-purple-100); border-color: rgba(190,81,71,0.3); }
 #view-transporte .fat-tag-outro, #view-transporte .cp2-tag-pend { background: var(--tp-amber-100); border-color: rgba(206,154,62,0.3); }
 #view-transporte .cp2-tag-conf { background: var(--tp-green-100); border-color: rgba(76,138,52,0.3); }
 
@@ -3548,18 +3548,16 @@ function fatRenderAll() {
           {
             label: 'Saída',
             data: mesesSort.map(k => porMes[k]?.saida || 0),
-            backgroundColor: 'rgba(76,124,158,0.65)',
-            borderColor: '#4C7C9E',
-            borderWidth: 1,
-            borderRadius: 6,
+            backgroundColor: '#4C7C9E',
+            borderRadius: 4,
+            maxBarThickness: 34,
           },
           {
             label: 'Retorno',
             data: mesesSort.map(k => porMes[k]?.retorno || 0),
-            backgroundColor: 'rgba(141,110,154,0.65)',
-            borderColor: '#8D6E9A',
-            borderWidth: 1,
-            borderRadius: 6,
+            backgroundColor: '#BE5147',
+            borderRadius: 4,
+            maxBarThickness: 34,
           },
         ]
       },
@@ -3568,9 +3566,9 @@ function fatRenderAll() {
         interaction: { mode: 'index', intersect: false },
         color: '#5A5D5E',
         plugins: {
-          legend: { position: 'bottom', labels: { color: '#5A5D5E' } },
+          legend: { position: 'bottom', labels: { color: '#5A5D5E', usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
           tooltip: {
-            backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff',
+            backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10,
             callbacks: {
               label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
               footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
@@ -3578,9 +3576,9 @@ function fatRenderAll() {
           }
         },
         scales: {
-          x: { stacked: true, ticks: { font: { size: 11 }, color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.06)' } },
+          x: { stacked: true, ticks: { font: { size: 11 }, color: '#5A5D5E' }, grid: { display: false } },
           y: { stacked: true, ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' }, beginAtZero: true,
-            grid: { color: 'rgba(34,37,42,0.08)' } }
+            grid: { color: '#E2E4DF' } }
         }
       }
     });
@@ -3590,13 +3588,13 @@ function fatRenderAll() {
   const tiposGrp = {};
   fatFiltered.forEach(r => { tiposGrp[r.tipo] = (tiposGrp[r.tipo]||0) + r.vlr; });
   const tipoLabels = Object.keys(tiposGrp);
-  const tipoCores  = tipoLabels.map(t => t==='SAIDA'?'#4C7C9E':t==='RETORNO'?'#8D6E9A':'#CE9A3E');
+  const tipoCores  = tipoLabels.map(t => t==='SAIDA'?'#4C7C9E':t==='RETORNO'?'#BE5147':'#CE9A3E');
   fatCharts.pizza = new Chart(document.getElementById('fatChartPizza'), {
     type: 'doughnut',
     data: { labels: tipoLabels, datasets: [{ data: tipoLabels.map(t=>tiposGrp[t]), backgroundColor: tipoCores, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
     options: { responsive: true, cutout: '65%', color: '#5A5D5E',
-      plugins: { legend: { position: 'bottom', labels: { color: '#5A5D5E' } },
-        tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => ' ' + fatFmt(c.raw) + ' (' + Math.round(c.raw/totalVlr*100) + '%)' } } } }
+      plugins: { legend: { position: 'bottom', labels: { color: '#5A5D5E', usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
+        tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10, callbacks: { label: c => ' ' + fatFmt(c.raw) + ' (' + Math.round(c.raw/totalVlr*100) + '%)' } } } }
   });
 
   // ── PESO BAR ──
@@ -3604,12 +3602,12 @@ function fatRenderAll() {
   fatFiltered.forEach(r => { pesoPorTipo[r.tipo] = (pesoPorTipo[r.tipo]||0) + r.peso; });
   fatCharts.peso = new Chart(document.getElementById('fatChartPeso'), {
     type: 'bar',
-    data: { labels: Object.keys(pesoPorTipo), datasets: [{ label: 'Peso BRT (kg)', data: Object.values(pesoPorTipo), backgroundColor: Object.keys(pesoPorTipo).map(t=>t==='SAIDA'?'rgba(76,124,158,0.65)':t==='RETORNO'?'rgba(141,110,154,0.65)':'rgba(206,154,62,0.65)'), borderRadius: 6 }] },
+    data: { labels: Object.keys(pesoPorTipo), datasets: [{ label: 'Peso BRT (kg)', data: Object.values(pesoPorTipo), backgroundColor: Object.keys(pesoPorTipo).map(t=>t==='SAIDA'?'#4C7C9E':t==='RETORNO'?'#BE5147':'#CE9A3E'), borderRadius: 4, maxBarThickness: 46 }] },
     options: { responsive: true, color: '#5A5D5E',
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => ' ' + Math.round(c.raw).toLocaleString('pt-BR') + ' kg' } } },
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10, callbacks: { label: c => ' ' + Math.round(c.raw).toLocaleString('pt-BR') + ' kg' } } },
       scales: {
-        x: { ticks: { color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.06)' } },
-        y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v, color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.08)' } }
+        x: { ticks: { color: '#5A5D5E' }, grid: { display: false } },
+        y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v, color: '#5A5D5E' }, grid: { color: '#E2E4DF' } }
       } }
   });
 
@@ -3626,7 +3624,7 @@ function fatRenderAll() {
   if (top5.length > 0) {
     const maxVal = top5[0][1];
     const top5Labels = top5.map(([k]) => k.length > 28 ? k.slice(0,26)+'…' : k);
-    const top5Colors = ['rgba(141,110,154,0.85)','rgba(141,110,154,0.70)','rgba(141,110,154,0.56)','rgba(141,110,154,0.42)','rgba(141,110,154,0.30)'];
+    const top5Colors = ['#BE5147','rgba(190,81,71,0.82)','rgba(190,81,71,0.65)','rgba(190,81,71,0.48)','rgba(190,81,71,0.32)'];
     fatCharts.top5 = new Chart(document.getElementById('fatChartTop5'), {
       type: 'bar',
       data: {
@@ -3635,9 +3633,8 @@ function fatRenderAll() {
           label: 'Faturamento Retorno',
           data: top5.map(([,v]) => v),
           backgroundColor: top5Colors,
-          borderColor: top5Colors.map(c => c.replace('0.','1.').replace(/,[^,]+\)$/,')')),
-          borderWidth: 1,
-          borderRadius: 6,
+          borderRadius: 4,
+          maxBarThickness: 26,
         }]
       },
       options: {
@@ -3646,13 +3643,13 @@ function fatRenderAll() {
         color: '#5A5D5E',
         plugins: {
           legend: { display: false },
-          tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', callbacks: { label: c => '  ' + fatFmt(c.raw) } }
+          tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10, callbacks: { label: c => '  ' + fatFmt(c.raw) } }
         },
         scales: {
           x: {
             beginAtZero: true,
             ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' },
-            grid: { color: 'rgba(34,37,42,0.08)' }
+            grid: { color: '#E2E4DF' }
           },
           y: {
             ticks: { font: { size: 11 }, color: '#5A5D5E' },
@@ -3666,7 +3663,7 @@ function fatRenderAll() {
     if (canvas) {
       const ctx = canvas.getContext('2d');
       canvas.height = 60;
-      ctx.fillStyle = 'rgba(141,110,154,0.55)';
+      ctx.fillStyle = 'rgba(190,81,71,0.55)';
       ctx.font = '13px Inter, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Nenhum CT-e de Retorno no período selecionado', canvas.width/2, 35);
@@ -3684,18 +3681,16 @@ function fatRenderAll() {
         {
           label: 'Saída',
           data: diasSort.map(d => porDia[d]?.saida || 0),
-          backgroundColor: 'rgba(76,124,158,0.6)',
-          borderColor: '#4C7C9E',
-          borderWidth: 1,
-          borderRadius: 4,
+          backgroundColor: '#4C7C9E',
+          borderRadius: 3,
+          maxBarThickness: 22,
         },
         {
           label: 'Retorno',
           data: diasSort.map(d => porDia[d]?.retorno || 0),
-          backgroundColor: 'rgba(141,110,154,0.6)',
-          borderColor: '#8D6E9A',
-          borderWidth: 1,
-          borderRadius: 4,
+          backgroundColor: '#BE5147',
+          borderRadius: 3,
+          maxBarThickness: 22,
         },
       ]
     },
@@ -3704,9 +3699,9 @@ function fatRenderAll() {
       interaction: { mode: 'index', intersect: false },
       color: '#5A5D5E',
       plugins: {
-        legend: { position: 'bottom', labels: { color: '#5A5D5E' } },
+        legend: { position: 'bottom', labels: { color: '#5A5D5E', usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
         tooltip: {
-          backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff',
+          backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10,
           callbacks: {
             label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
             footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
@@ -3714,8 +3709,8 @@ function fatRenderAll() {
         }
       },
       scales: {
-        x: { stacked: true, ticks: { maxRotation: 45, font: { size: 10 }, color: '#5A5D5E' }, grid: { color: 'rgba(34,37,42,0.06)' } },
-        y: { stacked: true, ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' }, beginAtZero: true, grid: { color: 'rgba(34,37,42,0.08)' } }
+        x: { stacked: true, ticks: { maxRotation: 45, font: { size: 10 }, color: '#5A5D5E' }, grid: { display: false } },
+        y: { stacked: true, ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' }, beginAtZero: true, grid: { color: '#E2E4DF' } }
       }
     }
   });
