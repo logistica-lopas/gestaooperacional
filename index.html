@@ -1183,20 +1183,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       </div>
     </div>
 
-    <!-- COMING SOON -->
-    <div class="soon-grid">
-      <div class="soon-card">
-        <div class="soon-icon">📊</div>
-        <div><div class="soon-name">Dashboard Executivo</div><div class="soon-desc">KPIs consolidados · Análise gerencial</div></div>
-        <div class="soon-badge">Em breve</div>
-      </div>
-      <div class="soon-card">
-        <div class="soon-icon">📋</div>
-        <div><div class="soon-name">Central de Relatórios</div><div class="soon-desc">Exportação PDF/Excel · Filtros avançados</div></div>
-        <div class="soon-badge">Em breve</div>
-      </div>
-    </div>
-
   </div>
 </div><!-- /view-home -->
 
@@ -2059,32 +2045,32 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 #view-transporte {
-  --tp-ink-900:#22252A;
-  --tp-ink-700:#3A3E42;
-  --tp-grey-700:#5A5D5E;
-  --tp-grey-500:#8B8E8C;
-  --tp-grey-300:#C7C9C4;
-  --tp-grey-200:#E2E4DF;
-  --tp-grey-100:#EEF0EB;
-  --tp-bg:#F6F7F3;
-  --tp-card:#FFFFFF;
-  --tp-line:#E2E4DF;
-  --tp-green-700:#3E7A2C;
-  --tp-green-600:#4C8A34;
-  --tp-green-500:#6FAF46;
-  --tp-green-100:#E7F2DD;
-  --tp-green-050:#F2F8EC;
-  --tp-red:#BE5147;
-  --tp-red-100:#F6E4E1;
-  --tp-amber:#CE9A3E;
-  --tp-amber-100:#F5EBD6;
-  --tp-blue:#4C7C9E;
-  --tp-blue-100:#E4EDF2;
-  --tp-purple:#BE5147;
-  --tp-purple-100:#F6E4E1;
+  --tp-ink-900:#F1F5F2;
+  --tp-ink-700:#C7D1CA;
+  --tp-grey-700:#93A199;
+  --tp-grey-500:#647069;
+  --tp-grey-300:#333D36;
+  --tp-grey-200:#212B24;
+  --tp-grey-100:#151C17;
+  --tp-bg:#080B09;
+  --tp-card:#0F1512;
+  --tp-line:rgba(255,255,255,0.08);
+  --tp-green-700:#00A85E;
+  --tp-green-600:#00FF88;
+  --tp-green-500:#5CFFB0;
+  --tp-green-100:rgba(0,255,136,0.16);
+  --tp-green-050:rgba(0,255,136,0.07);
+  --tp-red:#FF3D5A;
+  --tp-red-100:rgba(255,61,90,0.16);
+  --tp-amber:#F5C518;
+  --tp-amber-100:rgba(245,197,24,0.16);
+  --tp-blue:#00D4FF;
+  --tp-blue-100:rgba(0,212,255,0.16);
+  --tp-purple:#9B6BFF;
+  --tp-purple-100:rgba(155,107,255,0.16);
   --tp-font-display:'Space Grotesk','Barlow',sans-serif;
   --tp-font-body:'Inter','Barlow',sans-serif;
-  --tp-shadow-card:0 1px 2px rgba(34,37,42,0.04), 0 4px 16px rgba(34,37,42,0.06);
+  --tp-shadow-card:0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.5);
 
   /* remapeia as variáveis globais do app somente dentro do Módulo 02 —
      todo elemento que usa var(--bg2), var(--green), var(--text2) etc.
@@ -2103,7 +2089,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   --neon: var(--tp-blue);
   --neon2: var(--tp-blue);
   --yellow: var(--tp-amber);
-  --orange: #B9702E;
+  --orange: #FF9142;
   --purple: var(--tp-purple);
   --red: var(--tp-red);
   --teal: var(--tp-blue);
@@ -2141,7 +2127,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
   color: var(--tp-grey-700);
 }
 #view-transporte .back-btn:hover { background: var(--tp-grey-200); color: var(--tp-ink-900); }
-#view-transporte .view-module-label { color: var(--tp-green-600) !important; opacity: 0.85; }
+#view-transporte .view-module-label { color: var(--tp-green-600) !important; opacity: 0.95; }
 
 /* ---- abas internas ---- */
 #view-transporte .transp-tab.active { color: var(--tp-green-600); border-bottom-color: var(--tp-green-600); }
@@ -2150,6 +2136,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 #view-transporte .fat-kpi,
 #view-transporte .cp2-kpi {
   background: var(--tp-card);
+  border: 1px solid var(--tp-line);
   box-shadow: var(--tp-shadow-card);
   border-radius: 14px;
 }
@@ -2159,6 +2146,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 #view-transporte .fat-chart-card,
 #view-transporte .fat-table-wrap,
 #view-transporte .cp2-table-wrap {
+  border: 1px solid var(--tp-line);
   box-shadow: var(--tp-shadow-card);
   border-radius: 14px;
 }
@@ -2167,10 +2155,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 #view-transporte tr:hover td { background: var(--tp-grey-100) !important; }
 
 /* ---- tags de status, com paleta harmônica ---- */
-#view-transporte .fat-tag-saida  { background: var(--tp-blue-100); border-color: rgba(76,124,158,0.3); }
-#view-transporte .fat-tag-retorno, #view-transporte .cp2-tag-fret { background: var(--tp-purple-100); border-color: rgba(190,81,71,0.3); }
-#view-transporte .fat-tag-outro, #view-transporte .cp2-tag-pend { background: var(--tp-amber-100); border-color: rgba(206,154,62,0.3); }
-#view-transporte .cp2-tag-conf { background: var(--tp-green-100); border-color: rgba(76,138,52,0.3); }
+#view-transporte .fat-tag-saida  { background: var(--tp-blue-100); border-color: rgba(0,212,255,0.35); }
+#view-transporte .fat-tag-retorno, #view-transporte .cp2-tag-fret { background: var(--tp-purple-100); border-color: rgba(155,107,255,0.35); }
+#view-transporte .fat-tag-outro, #view-transporte .cp2-tag-pend { background: var(--tp-amber-100); border-color: rgba(245,197,24,0.35); }
+#view-transporte .cp2-tag-conf { background: var(--tp-green-100); border-color: rgba(0,255,136,0.35); }
 
 /* ---- faixas / caixas de ajuda em tom verde ---- */
 #view-transporte .fat-help-box,
@@ -2197,8 +2185,8 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 
 /* ---- scrollbar local ---- */
-#view-transporte ::-webkit-scrollbar-thumb { background: rgba(76,138,52,0.25); }
-#view-transporte ::-webkit-scrollbar-thumb:hover { background: rgba(76,138,52,0.4); }
+#view-transporte ::-webkit-scrollbar-thumb { background: rgba(0,255,136,0.25); }
+#view-transporte ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,136,0.4); }
 </style>
 
 <script>
