@@ -1207,7 +1207,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <div class="cp-tab active" data-tab="dashboard">Dashboard</div>
         <div class="cp-tab" data-tab="logistica-reg">Logística</div>
         <div class="cp-tab" data-tab="grupos">Grupos</div>
-        <div class="cp-tab" data-tab="bloqueios">Bloqueios</div>
         <div class="cp-tab" data-tab="historico">Histórico</div>
         <div class="cp-tab" data-tab="assistencia">Assistência</div>
       </div>
@@ -1359,24 +1358,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
                 <th onclick="cpSortTable('tGrupos',2)">Peso (kg) ↕</th>
                 <th onclick="cpSortTable('tGrupos',3)">Pedidos ↕</th>
               </tr></thead><tbody id="tGruposBody"></tbody></table>
-            </div>
-          </div>
-        </div>
-
-        <!-- BLOQUEIOS TAB -->
-        <div class="cp-tab-content" id="cptab-bloqueios">
-          <div class="cp-table-card full">
-            <div class="cp-table-header">
-              <span class="cp-table-title">Pedidos Bloqueados</span>
-              <input type="text" class="cp-table-search" placeholder="Buscar..." oninput="cpFilterTable('tBloqueio',this.value)">
-            </div>
-            <div class="cp-table-wrap">
-              <table id="tBloqueio"><thead><tr>
-                <th onclick="cpSortTable('tBloqueio',0)">Cliente ↕</th>
-                <th onclick="cpSortTable('tBloqueio',1)">Representante ↕</th>
-                <th onclick="cpSortTable('tBloqueio',2)">Valor (R$) ↕</th>
-                <th onclick="cpSortTable('tBloqueio',3)">Dias em Aberto ↕</th>
-              </tr></thead><tbody id="tBloqueioBody"></tbody></table>
             </div>
           </div>
         </div>
@@ -2480,7 +2461,6 @@ function cpRenderAll() {
   cpRenderKPIs(); cpRenderCharts();
   cpRenderTableLogistica();
   cpRenderTableGrupos();
-  cpRenderTableBloqueios();
   if (window.rtOnDataChange) window.rtOnDataChange();
 }
 
@@ -2770,23 +2750,6 @@ function cpRenderTableGrupos() {
       <td class="num"><strong>${fmt(r.valor)}</strong></td>
       <td class="num">${fmtPeso(r.peso)}</td>
       <td class="num">${r.pedidos}</td>
-    </tr>`).join('');
-}
-
-function cpRenderTableBloqueios() {
-  const blq = cpFilteredData.filter(r=>r.bloqueio==='BLQ').sort((a,b)=>b.dias-a.dias);
-  document.getElementById('tBloqueioBody').innerHTML = blq.length===0
-    ? '<tr><td colspan="4" style="text-align:center;color:var(--text2);padding:24px">Nenhum pedido bloqueado</td></tr>'
-    : blq.map(r=>`
-    <tr>
-      <td>${r.cliente}</td>
-      <td>${r.representante.split(' ').slice(0,2).join(' ')}</td>
-      <td class="num">${fmt(r.valCarteira)}</td>
-      <td class="num">
-        <span class="badge badge-${r.semaforo==='red'?'red':r.semaforo==='orange'?'orange':'yellow'}">
-          <span class="sdot sdot-${r.semaforo}"></span>${r.dias}d
-        </span>
-      </td>
     </tr>`).join('');
 }
 
