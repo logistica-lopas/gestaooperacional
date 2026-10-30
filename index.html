@@ -1706,30 +1706,65 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <input type="hidden" id="fatLoadBtn">
       <span id="fatStatusText" style="display:none"></span>
 
+      <!-- CABEÇALHO (estilo "Visão Geral") -->
+      <div class="fat-hd" id="fatHeader" style="display:none">
+        <div>
+          <div class="fat-hd-title">Faturamento Transporte: Visão Geral</div>
+          <div class="fat-hd-sub" id="fatHdSub">—</div>
+        </div>
+        <div class="fat-meta-wrap">
+          <button type="button" class="fat-btn" onclick="fatToggleMetas()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            Metas
+          </button>
+          <div class="fat-meta-pop" id="fatMetaPop" style="display:none">
+            <div class="fat-meta-pop-t">Meta mensal de faturamento</div>
+            <label>Saída (Entrega) — R$/mês</label>
+            <input type="text" id="fatMetaSaida" inputmode="decimal">
+            <label>Retorno — R$/mês</label>
+            <input type="text" id="fatMetaRetorno" inputmode="decimal">
+            <div class="fat-meta-pop-hint">Metas trimestrais e anuais são calculadas multiplicando a meta mensal. Ficam salvas neste navegador.</div>
+            <div class="fat-meta-pop-act">
+              <button type="button" class="fat-btn fat-btn-ghost" onclick="fatResetMetas()">Restaurar padrão</button>
+              <button type="button" class="fat-btn fat-btn-primary" onclick="fatSaveMetasUI()">Salvar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- FILTROS -->
       <div class="fat-filters" id="fatFilters" style="display:none">
         <div class="fat-filter-group">
-          <label>Tipo de Frete</label>
-          <select class="fat-select" id="fatFiltroTipo">
-            <option value="">Todos</option>
-            <option value="SAIDA">Saída</option>
-            <option value="RETORNO">Retorno</option>
-          </select>
+          <label>Período</label>
+          <div class="fat-seg" id="fatSeg">
+            <button type="button" data-p="mensal" onclick="fatSetPeriodo('mensal')">Mensal</button>
+            <button type="button" data-p="trimestral" onclick="fatSetPeriodo('trimestral')">Trimestral</button>
+            <button type="button" data-p="anual" onclick="fatSetPeriodo('anual')">Anual</button>
+          </div>
         </div>
-        <div class="fat-filter-group">
-          <label>Data Início</label>
-          <input type="date" class="fat-date-input" id="fatFiltroDataIni">
+        <div class="fat-filters-right">
+          <div class="fat-filter-group">
+            <label>Ano</label>
+            <select class="fat-select" id="fatSelAno" onchange="fatApplyFilters()"></select>
+          </div>
+          <div class="fat-filter-group" id="fatSubGroup">
+            <label id="fatSubLabel">Mês</label>
+            <select class="fat-select" id="fatSelSub" onchange="fatApplyFilters()"></select>
+          </div>
+          <div class="fat-filter-group">
+            <label>Tipo de Frete</label>
+            <select class="fat-select" id="fatSelTipo" onchange="fatApplyFilters()">
+              <option value="">Todos</option>
+              <option value="SAIDA">Saída</option>
+              <option value="RETORNO">Retorno</option>
+            </select>
+          </div>
+          <div class="fat-filter-group" id="fatUfGroup">
+            <label>UF</label>
+            <select class="fat-select" id="fatSelUf" onchange="fatApplyFilters()"></select>
+          </div>
+          <button type="button" class="fat-btn fat-btn-ghost" onclick="fatClearFilters()">Limpar</button>
         </div>
-        <div class="fat-filter-group">
-          <label>Data Fim</label>
-          <input type="date" class="fat-date-input" id="fatFiltroDataFim">
-        </div>
-        <div class="fat-filter-group">
-          <label>Busca</label>
-          <input type="text" class="fat-date-input" id="fatFiltroBusca" placeholder="CTE, cliente..." style="width:180px">
-        </div>
-        <button class="fat-apply-btn" onclick="fatApplyFilters()">Aplicar</button>
-        <button class="fat-apply-btn" style="background:transparent;border-color:var(--border);color:var(--text2)" onclick="fatClearFilters()">Limpar</button>
       </div>
 
       <!-- BARRA DE STATUS INLINE -->
@@ -1983,32 +2018,32 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 #view-transporte {
-  --tp-ink-900:#F1F5F2;
-  --tp-ink-700:#C7D1CA;
-  --tp-grey-700:#93A199;
-  --tp-grey-500:#647069;
-  --tp-grey-300:#333D36;
-  --tp-grey-200:#212B24;
-  --tp-grey-100:#151C17;
-  --tp-bg:#080B09;
-  --tp-card:#0F1512;
-  --tp-line:rgba(255,255,255,0.08);
-  --tp-green-700:#00A85E;
-  --tp-green-600:#00FF88;
-  --tp-green-500:#5CFFB0;
-  --tp-green-100:rgba(0,255,136,0.16);
-  --tp-green-050:rgba(0,255,136,0.07);
-  --tp-red:#FF3D5A;
-  --tp-red-100:rgba(255,61,90,0.16);
-  --tp-amber:#F5C518;
-  --tp-amber-100:rgba(245,197,24,0.16);
-  --tp-blue:#00D4FF;
-  --tp-blue-100:rgba(0,212,255,0.16);
-  --tp-purple:#9B6BFF;
-  --tp-purple-100:rgba(155,107,255,0.16);
+  --tp-ink-900:#1E2420;
+  --tp-ink-700:#3A423D;
+  --tp-grey-700:#5A5D5E;
+  --tp-grey-500:#858B86;
+  --tp-grey-300:#D5D9D2;
+  --tp-grey-200:#E9ECE6;
+  --tp-grey-100:#F1F3EE;
+  --tp-bg:#F6F7F3;
+  --tp-card:#FFFFFF;
+  --tp-line:#E2E4DF;
+  --tp-green-700:#1F6B45;
+  --tp-green-600:#2E8B57;
+  --tp-green-500:#4CAF7A;
+  --tp-green-100:rgba(46,139,87,0.14);
+  --tp-green-050:rgba(46,139,87,0.06);
+  --tp-red:#BE5147;
+  --tp-red-100:rgba(190,81,71,0.12);
+  --tp-amber:#CE9A3E;
+  --tp-amber-100:rgba(206,154,62,0.14);
+  --tp-blue:#4C7C9E;
+  --tp-blue-100:rgba(76,124,158,0.12);
+  --tp-purple:#BE5147;
+  --tp-purple-100:rgba(190,81,71,0.12);
   --tp-font-display:'Space Grotesk','Barlow',sans-serif;
   --tp-font-body:'Inter','Barlow',sans-serif;
-  --tp-shadow-card:0 1px 2px rgba(0,0,0,0.4), 0 10px 30px rgba(0,0,0,0.5);
+  --tp-shadow-card:0 1px 2px rgba(30,36,32,0.04), 0 6px 18px rgba(30,36,32,0.05);
 
   /* remapeia as variáveis globais do app somente dentro do Módulo 02 —
      todo elemento que usa var(--bg2), var(--green), var(--text2) etc.
@@ -2093,10 +2128,10 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 #view-transporte tr:hover td { background: var(--tp-grey-100) !important; }
 
 /* ---- tags de status, com paleta harmônica ---- */
-#view-transporte .fat-tag-saida  { background: var(--tp-blue-100); border-color: rgba(0,212,255,0.35); }
-#view-transporte .fat-tag-retorno, #view-transporte .cp2-tag-fret { background: var(--tp-purple-100); border-color: rgba(155,107,255,0.35); }
-#view-transporte .fat-tag-outro, #view-transporte .cp2-tag-pend { background: var(--tp-amber-100); border-color: rgba(245,197,24,0.35); }
-#view-transporte .cp2-tag-conf { background: var(--tp-green-100); border-color: rgba(0,255,136,0.35); }
+#view-transporte .fat-tag-saida  { background: var(--tp-blue-100); border-color: rgba(76,124,158,0.35); }
+#view-transporte .fat-tag-retorno, #view-transporte .cp2-tag-fret { background: var(--tp-purple-100); border-color: rgba(190,81,71,0.35); }
+#view-transporte .fat-tag-outro, #view-transporte .cp2-tag-pend { background: var(--tp-amber-100); border-color: rgba(206,154,62,0.35); }
+#view-transporte .cp2-tag-conf { background: var(--tp-green-100); border-color: rgba(46,139,87,0.35); }
 
 /* ---- faixas / caixas de ajuda em tom verde ---- */
 #view-transporte .fat-help-box,
@@ -2123,8 +2158,108 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 }
 
 /* ---- scrollbar local ---- */
-#view-transporte ::-webkit-scrollbar-thumb { background: rgba(0,255,136,0.25); }
-#view-transporte ::-webkit-scrollbar-thumb:hover { background: rgba(0,255,136,0.4); }
+#view-transporte ::-webkit-scrollbar-thumb { background: rgba(46,139,87,0.25); }
+#view-transporte ::-webkit-scrollbar-thumb:hover { background: rgba(46,139,87,0.45); }
+/* ══════════════════════════════════════════════
+   FATURAMENTO TRANSPORTE — LAYOUT "VISÃO GERAL"
+   (escopado em #view-transporte #fat-panel)
+══════════════════════════════════════════════ */
+#view-transporte #fat-panel { max-width: 1340px; padding-top: 22px; }
+#view-transporte .fat-hd { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+#view-transporte .fat-hd-title { font:700 22px var(--tp-font-display); letter-spacing:.2px; color:var(--tp-ink-900); text-transform:uppercase; }
+#view-transporte .fat-hd-sub { font-size:12px; color:var(--tp-grey-500); margin-top:3px; }
+#view-transporte .fat-btn { display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:9px; border:1px solid var(--tp-line); background:var(--tp-card); color:var(--tp-ink-700); font:600 12px var(--tp-font-body); cursor:pointer; box-shadow:var(--tp-shadow-card); }
+#view-transporte .fat-btn:hover { background:var(--tp-grey-100); }
+#view-transporte .fat-btn-primary { background:var(--tp-green-600); border-color:var(--tp-green-600); color:#fff; }
+#view-transporte .fat-btn-primary:hover { background:var(--tp-green-700); }
+#view-transporte .fat-btn-ghost { box-shadow:none; background:transparent; color:var(--tp-grey-700); }
+#view-transporte .fat-meta-wrap { position:relative; }
+#view-transporte .fat-meta-pop { position:absolute; right:0; top:calc(100% + 8px); z-index:50; width:290px; background:var(--tp-card); border:1px solid var(--tp-line); border-radius:12px; padding:14px 16px; box-shadow:0 12px 32px rgba(30,36,32,0.14); }
+#view-transporte .fat-meta-pop-t { font:600 13px var(--tp-font-display); color:var(--tp-ink-900); margin-bottom:10px; }
+#view-transporte .fat-meta-pop label { display:block; font-size:10px; text-transform:uppercase; letter-spacing:.8px; color:var(--tp-grey-500); margin:8px 0 4px; }
+#view-transporte .fat-meta-pop input { width:100%; padding:8px 10px; border:1px solid var(--tp-line); border-radius:8px; font:600 13px var(--tp-font-body); color:var(--tp-ink-900); background:var(--tp-grey-100); box-sizing:border-box; }
+#view-transporte .fat-meta-pop input:focus { outline:none; border-color:var(--tp-green-600); background:#fff; }
+#view-transporte .fat-meta-pop-hint { font-size:11px; color:var(--tp-grey-500); line-height:1.45; margin-top:10px; }
+#view-transporte .fat-meta-pop-act { display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
+
+#view-transporte .fat-filters { display:flex; justify-content:space-between; align-items:flex-end; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+#view-transporte .fat-filters-right { display:flex; align-items:flex-end; gap:10px; flex-wrap:wrap; }
+#view-transporte .fat-filter-group label { color:var(--tp-grey-500); font-size:10px; letter-spacing:.8px; }
+#view-transporte .fat-select { background:var(--tp-card); border:1px solid var(--tp-line); color:var(--tp-ink-900); font-family:var(--tp-font-body); padding:7px 10px; border-radius:8px; min-width:110px; }
+#view-transporte .fat-select:focus { border-color:var(--tp-green-600); }
+#view-transporte .fat-seg { display:inline-flex; background:var(--tp-grey-200); border:1px solid var(--tp-line); border-radius:10px; padding:3px; gap:2px; }
+#view-transporte .fat-seg button { border:0; background:transparent; padding:6px 16px; border-radius:7px; font:600 12px var(--tp-font-body); color:var(--tp-grey-700); cursor:pointer; }
+#view-transporte .fat-seg button:hover { color:var(--tp-ink-900); }
+#view-transporte .fat-seg button.active { background:var(--tp-green-600); color:#fff; box-shadow:0 1px 3px rgba(31,107,69,.35); }
+
+/* KPIs */
+#view-transporte .fat-k-row { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:14px; }
+#view-transporte .fat-k { position:relative; background:var(--tp-card); border:1px solid var(--tp-line); border-radius:14px; padding:16px 18px; box-shadow:var(--tp-shadow-card); min-height:122px; overflow:hidden; }
+#view-transporte .fat-k.hl { border-color:var(--tp-green-500); box-shadow:inset 0 0 0 1px var(--tp-green-500), var(--tp-shadow-card); background:linear-gradient(180deg,#fff 0%, #F3F9F5 100%); }
+#view-transporte .fat-k-l { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.7px; color:var(--tp-grey-500); }
+#view-transporte .fat-k-v { font:700 28px var(--tp-font-display); color:var(--tp-ink-900); margin:6px 0 6px; letter-spacing:-.3px; white-space:nowrap; }
+#view-transporte .fat-k-v small { font-size:15px; font-weight:600; color:var(--tp-grey-500); margin-left:3px; }
+#view-transporte .fat-k-s { font-size:12px; color:var(--tp-grey-700); display:flex; flex-wrap:wrap; gap:4px 8px; align-items:center; position:relative; z-index:1; }
+#view-transporte .fat-k-s2 { font-size:11px; color:var(--tp-grey-500); margin-top:6px; position:relative; z-index:1; }
+#view-transporte .fat-dl { font-weight:700; }
+#view-transporte .fat-dl.up { color:var(--tp-green-600); }
+#view-transporte .fat-dl.down { color:var(--tp-red); }
+#view-transporte .fat-dl.na { color:var(--tp-grey-500); font-weight:500; }
+#view-transporte .fat-k.hl .fat-k-s, #view-transporte .fat-k.hl .fat-k-s2 { max-width:calc(100% - 128px); }
+#view-transporte .fat-k-spark { position:absolute; right:16px; bottom:16px; display:flex; align-items:flex-end; gap:3px; height:42px; }
+#view-transporte .fat-k-spark i { display:block; width:7px; border-radius:2px 2px 0 0; background:#BFE0CB; }
+#view-transporte .fat-k-spark i.on { background:var(--tp-green-600); }
+#view-transporte .fat-k-bar { height:6px; border-radius:6px; background:var(--tp-grey-200); margin-top:8px; overflow:hidden; position:relative; z-index:1; }
+#view-transporte .fat-k-bar > span { display:block; height:100%; border-radius:6px; background:var(--tp-green-600); }
+
+/* Cards */
+#view-transporte .fat-g2 { display:grid; grid-template-columns:1.55fr 1fr; gap:14px; margin-bottom:14px; }
+#view-transporte .fat-g3 { display:grid; grid-template-columns:1.35fr 1fr 1.1fr; gap:14px; margin-bottom:14px; }
+#view-transporte .fat-c { background:var(--tp-card); border:1px solid var(--tp-line); border-radius:14px; padding:16px 18px; box-shadow:var(--tp-shadow-card); min-width:0; }
+#view-transporte .fat-c-t { font:600 14px var(--tp-font-display); color:var(--tp-ink-900); margin-bottom:12px; display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+#view-transporte .fat-c-t span { font:500 11px var(--tp-font-body); color:var(--tp-grey-500); }
+#view-transporte .fat-c-box { position:relative; height:270px; }
+#view-transporte .fat-c-empty { height:100%; display:flex; align-items:center; justify-content:center; text-align:center; font-size:12px; color:var(--tp-grey-500); padding:0 20px; }
+
+/* Rosca + metas */
+#view-transporte .fat-mix { display:grid; grid-template-columns:150px 1fr; gap:14px; align-items:center; }
+#view-transporte .fat-mix-box { position:relative; height:150px; }
+#view-transporte .fat-mix-leg div { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--tp-grey-700); margin-bottom:8px; }
+#view-transporte .fat-mix-leg b { color:var(--tp-ink-900); margin-left:auto; font-weight:700; }
+#view-transporte .fat-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+#view-transporte .fat-mt { margin-top:14px; padding-top:12px; border-top:1px solid var(--tp-line); }
+#view-transporte .fat-mt-t { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.8px; color:var(--tp-grey-500); margin-bottom:8px; }
+#view-transporte .fat-mt-r { margin-bottom:10px; }
+#view-transporte .fat-mt-h { display:flex; justify-content:space-between; font-size:12px; color:var(--tp-grey-700); }
+#view-transporte .fat-mt-h b { color:var(--tp-ink-900); }
+#view-transporte .fat-mt-bar { height:7px; border-radius:7px; background:var(--tp-grey-200); margin-top:5px; overflow:hidden; }
+#view-transporte .fat-mt-bar span { display:block; height:100%; border-radius:7px; }
+#view-transporte .fat-mt-f { font-size:11px; color:var(--tp-grey-500); margin-top:3px; }
+
+/* Tabela resumo */
+#view-transporte .fat-rt-wrap { max-height:372px; overflow:auto; margin:0 -6px; }
+#view-transporte .fat-rt { width:100%; border-collapse:collapse; font-size:12px; }
+#view-transporte .fat-rt th { position:sticky; top:0; background:var(--tp-grey-100); color:var(--tp-grey-700); font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.5px; text-align:left; padding:8px 8px; white-space:nowrap; }
+#view-transporte .fat-rt td { padding:7px 8px; border-bottom:1px solid var(--tp-line); color:var(--tp-ink-700); white-space:nowrap; }
+#view-transporte .fat-rt .r { text-align:right; font-variant-numeric:tabular-nums; }
+#view-transporte .fat-rt tbody tr { cursor:pointer; }
+#view-transporte .fat-rt tbody tr.sel td { background:var(--tp-green-050); font-weight:600; color:var(--tp-ink-900); }
+#view-transporte .fat-rt tfoot td { font-weight:700; color:var(--tp-ink-900); border-top:2px solid var(--tp-line); border-bottom:0; background:var(--tp-grey-100); }
+#view-transporte .fat-pill { display:inline-block; min-width:52px; text-align:center; padding:2px 7px; border-radius:6px; font-weight:700; font-size:11px; }
+#view-transporte .fat-pill.p1 { background:#2E8B57; color:#fff; }
+#view-transporte .fat-pill.p2 { background:#CFE8D8; color:#1F6B45; }
+#view-transporte .fat-pill.p3 { background:var(--tp-amber-100); color:#8A6420; }
+#view-transporte .fat-pill.p4 { background:var(--tp-red-100); color:#9A3B32; }
+
+@media (max-width: 1100px) {
+  #view-transporte .fat-k-row { grid-template-columns:1fr 1fr; }
+  #view-transporte .fat-g2, #view-transporte .fat-g3 { grid-template-columns:1fr; }
+}
+@media (max-width: 600px) {
+  #view-transporte .fat-k-row { grid-template-columns:1fr; }
+  #view-transporte .fat-mix { grid-template-columns:1fr; }
+}
+
 </style>
 
 <script>
@@ -3077,6 +3212,14 @@ function fatFindCol(headers, candidates) {
   return -1;
 }
 
+// UF: busca estrita (evita casar 'UF' dentro de outros cabeçalhos)
+function fatFindUfCol(headers) {
+  const hs = headers.map(h => String(h).toUpperCase().trim());
+  const exatos = ['UF','UF DESTINO','UF DEST','UF DESTINATARIO','UF DESTINATÁRIO','UF ENTREGA','ESTADO','UF_DESTINO'];
+  for (const c of exatos) { const i = hs.indexOf(c); if (i >= 0) return i; }
+  return hs.findIndex(h => /^UF[\s_]/.test(h) || /[\s_]UF$/.test(h));
+}
+
 function fatParseNumber(v) {
   if (v === null || v === undefined || v === '') return 0;
   // Remove R$, espaços, pontos de milhar; troca vírgula decimal por ponto
@@ -3236,6 +3379,8 @@ function fatParseCSV(text) {
   const colData    = fatFindCol(headers, FAT_COLS.data);
   const colCte     = fatFindCol(headers, FAT_COLS.cte);
   const colCliente = fatFindCol(headers, FAT_COLS.cliente);
+  const colUf      = fatFindUfCol(headers);
+  fatHasUf = colUf >= 0;
 
   // Mostra aviso de quais colunas foram ou não encontradas
   const colStatus = [
@@ -3273,45 +3418,193 @@ function fatParseCSV(text) {
       vlr:     fatParseNumber(colVlr  >= 0 ? cols[colVlr]  : 0),
       tipo:    fatNormTipo(colTipo >= 0 ? cols[colTipo] : ''),
       peso:    fatParseNumber(colPeso >= 0 ? cols[colPeso] : 0),
+      uf:      colUf >= 0 ? String(cols[colUf] || '').trim().toUpperCase() : '',
     });
+    const last = fatRawData[fatRawData.length - 1];
+    last.dt = fatParseDate(last.data);
   }
 
   fatFiltered = [...fatRawData];
   fatSetStatus(`✓ ${fatRawData.length} registros carregados`, 'var(--green)');
+  fatInitFilters();
+  fatRenderAll();
+}
+
+// ══════════════════════════════════════════════
+// FATURAMENTO TRANSPORTE — ESTADO DE VISÃO / FILTROS / METAS
+// ══════════════════════════════════════════════
+const FAT_MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const FAT_META_KEY = 'tpFatMetas';
+const FAT_META_DEFAULT = { saida: 2100000, retorno: 100000 };
+let fatView = { periodo: 'mensal', ano: null, mes: null, tri: null, tipo: '', uf: '' };
+let fatHasUf = false;
+
+function fatEsc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function fatGetMetas() {
+  try {
+    const m = JSON.parse(localStorage.getItem(FAT_META_KEY) || 'null');
+    if (m && isFinite(m.saida) && isFinite(m.retorno)) return { saida: +m.saida, retorno: +m.retorno };
+  } catch (e) {}
+  return { ...FAT_META_DEFAULT };
+}
+function fatStoreMetas(m) { try { localStorage.setItem(FAT_META_KEY, JSON.stringify(m)); } catch (e) {} }
+function fatMetaMensal(tipo) {
+  const m = fatGetMetas();
+  if (tipo === 'SAIDA') return m.saida;
+  if (tipo === 'RETORNO') return m.retorno;
+  return m.saida + m.retorno;
+}
+function fatFmtInput(n) { return (Number(n) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+function fatToggleMetas() {
+  const pop = document.getElementById('fatMetaPop');
+  if (!pop) return;
+  const open = pop.style.display === 'none';
+  if (open) {
+    const m = fatGetMetas();
+    document.getElementById('fatMetaSaida').value = fatFmtInput(m.saida);
+    document.getElementById('fatMetaRetorno').value = fatFmtInput(m.retorno);
+  }
+  pop.style.display = open ? 'block' : 'none';
+}
+function fatSaveMetasUI() {
+  const s = fatParseNumber(document.getElementById('fatMetaSaida').value);
+  const r = fatParseNumber(document.getElementById('fatMetaRetorno').value);
+  fatStoreMetas({ saida: Math.max(0, s), retorno: Math.max(0, r) });
+  document.getElementById('fatMetaPop').style.display = 'none';
+  if (fatRawData.length) fatRenderAll();
+}
+function fatResetMetas() {
+  fatStoreMetas({ ...FAT_META_DEFAULT });
+  document.getElementById('fatMetaSaida').value = fatFmtInput(FAT_META_DEFAULT.saida);
+  document.getElementById('fatMetaRetorno').value = fatFmtInput(FAT_META_DEFAULT.retorno);
+  if (fatRawData.length) fatRenderAll();
+}
+document.addEventListener('click', e => {
+  const pop = document.getElementById('fatMetaPop');
+  if (pop && pop.style.display !== 'none' && !e.target.closest('.fat-meta-wrap')) pop.style.display = 'none';
+});
+
+function fatMaxDate() {
+  let max = null;
+  fatRawData.forEach(r => { if (r.dt && (!max || r.dt > max)) max = r.dt; });
+  return max;
+}
+
+// Prepara selects (Ano, Mês/Trimestre, UF) preservando a seleção atual nas recargas automáticas
+function fatInitFilters() {
+  const anos = [...new Set(fatRawData.filter(r => r.dt).map(r => r.dt.getFullYear()))].sort((a, b) => a - b);
+  const maxD = fatMaxDate();
+  if (!fatView.ano || !anos.includes(fatView.ano)) {
+    fatView.ano = maxD ? maxD.getFullYear() : new Date().getFullYear();
+    fatView.mes = null; fatView.tri = null;
+  }
+  if (!fatView.mes) fatView.mes = (maxD && maxD.getFullYear() === fatView.ano) ? maxD.getMonth() + 1 : 12;
+  if (!fatView.tri) fatView.tri = Math.ceil(fatView.mes / 3);
+
+  const selAno = document.getElementById('fatSelAno');
+  selAno.innerHTML = (anos.length ? anos : [fatView.ano]).slice().reverse().map(a => `<option value="${a}">${a}</option>`).join('');
+  selAno.value = String(fatView.ano);
+
+  const ufs = [...new Set(fatRawData.map(r => r.uf).filter(u => u))].sort();
+  const selUf = document.getElementById('fatSelUf');
+  selUf.innerHTML = '<option value="">Todas</option>' + ufs.map(u => `<option value="${fatEsc(u)}">${fatEsc(u)}</option>`).join('');
+  if (!ufs.includes(fatView.uf)) fatView.uf = '';
+  selUf.value = fatView.uf;
+  document.getElementById('fatUfGroup').style.display = fatHasUf ? '' : 'none';
+  document.getElementById('fatSelTipo').value = fatView.tipo;
+
+  fatSyncPeriodoUI();
   document.getElementById('fatFilters').style.display = 'flex';
+  document.getElementById('fatHeader').style.display = 'flex';
+}
+
+function fatSyncPeriodoUI() {
+  document.querySelectorAll('#fatSeg button').forEach(b => b.classList.toggle('active', b.dataset.p === fatView.periodo));
+  const grp = document.getElementById('fatSubGroup');
+  const sel = document.getElementById('fatSelSub');
+  const lbl = document.getElementById('fatSubLabel');
+  if (fatView.periodo === 'anual') { grp.style.display = 'none'; return; }
+  grp.style.display = '';
+  if (fatView.periodo === 'mensal') {
+    lbl.textContent = 'Mês';
+    sel.innerHTML = FAT_MESES.map((m, i) => `<option value="${i + 1}">${m}</option>`).join('');
+    sel.value = String(fatView.mes);
+  } else {
+    lbl.textContent = 'Trimestre';
+    sel.innerHTML = [1, 2, 3, 4].map(t => `<option value="${t}">${t}º Trimestre</option>`).join('');
+    sel.value = String(fatView.tri);
+  }
+}
+
+function fatSetPeriodo(p) {
+  fatView.periodo = p;
+  if (p === 'trimestral') fatView.tri = Math.ceil(fatView.mes / 3);
+  fatSyncPeriodoUI();
+  fatRenderAll();
+}
+
+function fatGoMes(m) {
+  fatView.periodo = 'mensal'; fatView.mes = m; fatView.tri = Math.ceil(m / 3);
+  fatSyncPeriodoUI();
   fatRenderAll();
 }
 
 function fatApplyFilters() {
-  const tipo  = document.getElementById('fatFiltroTipo').value;
-  const dtIni = document.getElementById('fatFiltroDataIni').value;
-  const dtFim = document.getElementById('fatFiltroDataFim').value;
-  const busca = document.getElementById('fatFiltroBusca').value.toLowerCase();
-
-  const dIni = fatInputToDate(dtIni, false);
-  const dFim = fatInputToDate(dtFim, true);
-
-  fatFiltered = fatRawData.filter(r => {
-    if (tipo && r.tipo !== tipo) return false;
-    if (busca && !r.cte.toLowerCase().includes(busca) && !r.cliente.toLowerCase().includes(busca)) return false;
-    if (dIni || dFim) {
-      const d = fatParseDate(r.data);
-      if (!d) return true; // sem data: não filtra
-      if (dIni && d < dIni) return false;
-      if (dFim && d > dFim) return false;
-    }
-    return true;
-  });
+  fatView.ano  = parseInt(document.getElementById('fatSelAno').value) || fatView.ano;
+  fatView.tipo = document.getElementById('fatSelTipo').value;
+  fatView.uf   = document.getElementById('fatSelUf').value;
+  const sub = parseInt(document.getElementById('fatSelSub').value);
+  if (fatView.periodo === 'mensal' && sub) { fatView.mes = sub; fatView.tri = Math.ceil(sub / 3); }
+  if (fatView.periodo === 'trimestral' && sub) { fatView.tri = sub; if (Math.ceil(fatView.mes / 3) !== sub) fatView.mes = sub * 3; }
   fatRenderAll();
 }
 
 function fatClearFilters() {
-  document.getElementById('fatFiltroTipo').value = '';
-  document.getElementById('fatFiltroDataIni').value = '';
-  document.getElementById('fatFiltroDataFim').value = '';
-  document.getElementById('fatFiltroBusca').value = '';
-  fatFiltered = [...fatRawData];
+  fatView = { periodo: 'mensal', ano: null, mes: null, tri: null, tipo: '', uf: '' };
+  fatInitFilters();
   fatRenderAll();
+}
+
+// Intervalo do período selecionado + período anterior (com corte "mesmos dias" quando o período ainda está em andamento)
+function fatRanges() {
+  const v = fatView, a = v.ano;
+  let ini, fim, pIni, label, prevLabel, nMeses;
+  if (v.periodo === 'anual') {
+    ini = new Date(a, 0, 1); fim = new Date(a + 1, 0, 1); pIni = new Date(a - 1, 0, 1);
+    label = String(a); prevLabel = String(a - 1); nMeses = 12;
+  } else if (v.periodo === 'trimestral') {
+    const t = v.tri;
+    ini = new Date(a, (t - 1) * 3, 1); fim = new Date(a, t * 3, 1); pIni = new Date(a, (t - 1) * 3 - 3, 1);
+    label = t + 'º Tri/' + a;
+    const pt = t === 1 ? 4 : t - 1, pa = t === 1 ? a - 1 : a;
+    prevLabel = pt + 'º Tri/' + pa; nMeses = 3;
+  } else {
+    const m = v.mes;
+    ini = new Date(a, m - 1, 1); fim = new Date(a, m, 1); pIni = new Date(a, m - 2, 1);
+    label = FAT_MESES[m - 1] + '/' + a;
+    prevLabel = FAT_MESES[pIni.getMonth()] + '/' + pIni.getFullYear(); nMeses = 1;
+  }
+  let pFim = ini, parcial = false;
+  const maxD = fatMaxDate();
+  if (maxD && maxD >= ini && maxD < fim) {
+    // período em andamento: compara com o mesmo nº de dias do período anterior
+    const dm = (maxD.getFullYear() - ini.getFullYear()) * 12 + maxD.getMonth() - ini.getMonth();
+    const cap = new Date(pIni.getFullYear(), pIni.getMonth() + dm, maxD.getDate() + 1);
+    if (cap < pFim) { pFim = cap; parcial = true; }
+  }
+  // acumulado no ano: 1º/jan até o fim do período selecionado
+  const accIni = new Date(a, 0, 1), accFim = fim;
+  let accPFim = new Date(a - 1, fim.getMonth() + (fim.getFullYear() - a) * 12, 1);
+  if (maxD && maxD >= accIni && maxD < accFim) {
+    const capY = new Date(a - 1, maxD.getMonth(), maxD.getDate() + 1);
+    if (capY < accPFim) accPFim = capY;
+  }
+  const accMeses = (fim.getFullYear() - a) * 12 + fim.getMonth();
+  return { ini, fim, pIni, pFim, label, prevLabel, nMeses, parcial,
+           accIni, accFim, accPIni: new Date(a - 1, 0, 1), accPFim, accMeses: accMeses || 12 };
 }
 
 function fatParseDate(s) {
@@ -3346,287 +3639,319 @@ function fatFmtLabel(s) {
   return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
 }
 
+function fatFmtMi(n) {
+  n = n || 0;
+  const a = Math.abs(n);
+  if (a >= 1e6) return 'R$ ' + (n / 1e6).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' mi';
+  if (a >= 1e3) return 'R$ ' + Math.round(n / 1e3).toLocaleString('pt-BR') + ' mil';
+  return 'R$ ' + Math.round(n).toLocaleString('pt-BR');
+}
+function fatPctTxt(p, dec) { return (p || 0).toLocaleString('pt-BR', { minimumFractionDigits: dec ?? 1, maximumFractionDigits: dec ?? 1 }) + '%'; }
+function fatDelta(cur, prev, suffix) {
+  if (!prev || prev <= 0) return `<span class="fat-dl na">— sem base de comparação</span>`;
+  const p = (cur / prev - 1) * 100;
+  const up = p >= 0;
+  return `<span class="fat-dl ${up ? 'up' : 'down'}">${up ? '↑' : '↓'} ${fatPctTxt(Math.abs(p))}</span><span>${suffix}</span>`;
+}
+function fatPillCls(p) { return p >= 100 ? 'p1' : p >= 85 ? 'p2' : p >= 70 ? 'p3' : 'p4'; }
+
+// Rótulos de valor nas barras (plugin local)
+function fatLabelsPlugin(fmt, horizontal) {
+  return {
+    id: 'fatLbl',
+    afterDatasetsDraw(chart) {
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = '600 11px Inter, sans-serif';
+      ctx.fillStyle = '#3A423D';
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (meta.hidden) return;
+        meta.data.forEach((el, i) => {
+          const v = ds.data[i];
+          if (!v) return;
+          if (horizontal) { ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(fmt(v), el.x + 6, el.y); }
+          else { ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(fmt(v), el.x, el.y - 4); }
+        });
+      });
+      ctx.restore();
+    }
+  };
+}
+
+const FAT_TT = { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', footerColor: '#fff', cornerRadius: 6, padding: 10 };
+const FAT_C = { saida: '#4C7C9E', retorno: '#BE5147', verde: '#2E8B57', verdeClaro: '#A9D3B8', grid: '#E2E4DF', tick: '#5A5D5E' };
+
 function fatRenderAll() {
-  // ── KPIs ──────────────────────────────────────
-  const totalVlr   = fatFiltered.reduce((s,r) => s + r.vlr,  0);
-  const totalPeso  = fatFiltered.reduce((s,r) => s + r.peso, 0);
-  const totalCtes  = fatFiltered.length;
-  const saida      = fatFiltered.filter(r => r.tipo === 'SAIDA');
-  const retorno    = fatFiltered.filter(r => r.tipo === 'RETORNO');
-  const vlrSaida   = saida.reduce((s,r) => s + r.vlr, 0);
-  const vlrRetorno = retorno.reduce((s,r) => s + r.vlr, 0);
-  const ticketMed  = totalCtes > 0 ? totalVlr / totalCtes : 0;
-
-  // ── por dia (últimos 15 dias com dados) ──────
-  const porDia = {};
-  fatFiltered.forEach(r => {
-    const d = r.data || 'S/D';
-    if (!porDia[d]) porDia[d] = {vlr:0,peso:0,saida:0,retorno:0};
-    porDia[d].vlr   += r.vlr;
-    porDia[d].peso  += r.peso;
-    if (r.tipo==='SAIDA')   porDia[d].saida  += r.vlr;
-    if (r.tipo==='RETORNO') porDia[d].retorno+= r.vlr;
-  });
-  const diasSort = Object.keys(porDia).sort((a,b) => {
-    const da = fatParseDate(a), db = fatParseDate(b);
-    if (da && db) return da - db;
-    return a.localeCompare(b);
-  }).slice(-20);
-
-  // ── destroy old charts ─────────────────────
-  Object.values(fatCharts).forEach(c => { try { c.destroy(); } catch{} });
+  Object.values(fatCharts).forEach(c => { try { c.destroy(); } catch (e) {} });
   fatCharts = {};
-
   const content = document.getElementById('fatContent');
-  // ── por mês ───────────────────────────────────
-  const porMes = {};
-  fatFiltered.forEach(r => {
-    const d = fatParseDate(r.data);
-    if (!d) return;
-    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
-    if (!porMes[key]) porMes[key] = { total: 0, saida: 0, retorno: 0 };
-    porMes[key].total   += r.vlr;
-    if (r.tipo === 'SAIDA')   porMes[key].saida   += r.vlr;
-    if (r.tipo === 'RETORNO') porMes[key].retorno += r.vlr;
+  if (!fatRawData.length) return;
+  if (!fatView.ano) fatInitFilters();
+
+  const v = fatView;
+  const R = fatRanges();
+  const metas = fatGetMetas();
+  const metaMes = fatMetaMensal(v.tipo);
+
+  // base = registros com data, respeitando filtros de Tipo e UF
+  const comData = fatRawData.filter(r => r.dt);
+  const porUf   = comData.filter(r => !v.uf || r.uf === v.uf);
+  const base    = porUf.filter(r => !v.tipo || r.tipo === v.tipo);
+  const inR = (r, a, b) => r.dt >= a && r.dt < b;
+  const soma = (rows, k) => rows.reduce((s, r) => s + (r[k] || 0), 0);
+
+  const cur  = base.filter(r => inR(r, R.ini, R.fim));
+  const prev = base.filter(r => inR(r, R.pIni, R.pFim));
+  const acc  = base.filter(r => inR(r, R.accIni, R.accFim));
+  const accP = base.filter(r => inR(r, R.accPIni, R.accPFim));
+  fatFiltered = cur;
+
+  const vCur = soma(cur, 'vlr'), vPrev = soma(prev, 'vlr');
+  const vAcc = soma(acc, 'vlr'), vAccP = soma(accP, 'vlr');
+  const pCur = soma(cur, 'peso'), pPrev = soma(prev, 'peso');
+  const cliCur = new Set(cur.map(r => r.cliente)).size, cliPrev = new Set(prev.map(r => r.cliente)).size;
+  const metaPer = metaMes * R.nMeses;
+  const metaAcc = metaMes * R.accMeses;
+  const pctMetaPer = metaPer > 0 ? vCur / metaPer * 100 : 0;
+  const pctMetaAcc = metaAcc > 0 ? vAcc / metaAcc * 100 : 0;
+
+  // totais mensais (para mini-barras, comparativo e resumo)
+  const mensal = {};
+  base.forEach(r => {
+    const k = r.dt.getFullYear() * 12 + r.dt.getMonth();
+    if (!mensal[k]) mensal[k] = { vlr: 0, saida: 0, retorno: 0, peso: 0, ctes: 0 };
+    const m = mensal[k];
+    m.vlr += r.vlr; m.peso += r.peso; m.ctes++;
+    if (r.tipo === 'SAIDA') m.saida += r.vlr;
+    if (r.tipo === 'RETORNO') m.retorno += r.vlr;
   });
-  const mesesSort = Object.keys(porMes).sort();
-  const mesesLabels = mesesSort.map(k => {
-    const [y, m] = k.split('-');
-    const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-    return nomes[+m-1] + '/' + y.slice(2);
-  });
+  const endK = R.fim.getFullYear() * 12 + R.fim.getMonth() - 1;
+  const iniK = R.ini.getFullYear() * 12 + R.ini.getMonth();
+  const sparkKeys = Array.from({ length: 12 }, (_, i) => endK - 11 + i);
+  const sparkMax = Math.max(1, ...sparkKeys.map(k => mensal[k]?.vlr || 0));
+  const spark = sparkKeys.map(k => {
+    const val = mensal[k]?.vlr || 0;
+    const h = val > 0 ? Math.max(3, Math.round(val / sparkMax * 42)) : 2;
+    const nm = FAT_MESES[((k % 12) + 12) % 12] + '/' + String(Math.floor(k / 12)).slice(2);
+    return `<i class="${k >= iniK && k <= endK ? 'on' : ''}" style="height:${h}px" title="${nm}: ${fatFmt(val)}"></i>`;
+  }).join('');
+
+  const nomePer = { mensal: 'Mensal', trimestral: 'Trimestral', anual: 'Anual' }[v.periodo];
+  const sufPrev = ` vs ${R.prevLabel}${R.parcial ? ' (mesmos dias)' : ''}`;
+  const tipoTxt = v.tipo === 'SAIDA' ? 'Saída' : v.tipo === 'RETORNO' ? 'Retorno' : '';
+  const filtrosTxt = [tipoTxt, v.uf ? 'UF ' + v.uf : ''].filter(Boolean).join(' · ');
+  const atual = (fatLastUpdated || new Date());
+  document.getElementById('fatHdSub').textContent =
+    `${R.label}${filtrosTxt ? ' · ' + filtrosTxt : ''} · Atualizado: ${atual.toLocaleDateString('pt-BR')} ${atual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+
+  // ── Mix Saída × Retorno e metas por tipo (independe do filtro de tipo) ──
+  const curUf = porUf.filter(r => inR(r, R.ini, R.fim));
+  const sCur = soma(curUf.filter(r => r.tipo === 'SAIDA'), 'vlr');
+  const rCur = soma(curUf.filter(r => r.tipo === 'RETORNO'), 'vlr');
+  const oCur = soma(curUf.filter(r => r.tipo !== 'SAIDA' && r.tipo !== 'RETORNO'), 'vlr');
+  const mixTot = sCur + rCur + oCur;
+  const metaRow = (nome, real, meta, cor) => {
+    const p = meta > 0 ? real / meta * 100 : 0;
+    return `<div class="fat-mt-r">
+      <div class="fat-mt-h"><span>${nome}</span><b>${fatPctTxt(p)}</b></div>
+      <div class="fat-mt-bar"><span style="width:${Math.min(100, p)}%;background:${cor}"></span></div>
+      <div class="fat-mt-f">${fatFmtMi(real)} de ${fatFmtMi(meta)}${p < 100 && meta > 0 ? ' · faltam ' + fatFmtMi(meta - real) : ''}</div>
+    </div>`;
+  };
+
+  // ── Resumo mensal do ano ──
+  const anoK0 = v.ano * 12;
+  let resumoRows = '', tS = 0, tR = 0, tT = 0, tP = 0, tC = 0, tMeses = 0;
+  for (let m = 0; m < 12; m++) {
+    const d = mensal[anoK0 + m];
+    if (!d) continue;
+    tMeses++; tS += d.saida; tR += d.retorno; tT += d.vlr; tP += d.peso; tC += d.ctes;
+    const p = metaMes > 0 ? d.vlr / metaMes * 100 : 0;
+    const sel = (anoK0 + m) >= iniK && (anoK0 + m) <= endK;
+    resumoRows += `<tr class="${sel ? 'sel' : ''}" onclick="fatGoMes(${m + 1})" title="${FAT_MESES[m]}/${v.ano}: ${d.ctes.toLocaleString('pt-BR')} CT-es · ${(d.peso / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} t — clique para ver o mês">
+      <td>${FAT_MESES[m]}</td>
+      <td class="r">${fatFmtMi(d.saida)}</td>
+      <td class="r">${fatFmtMi(d.retorno)}</td>
+      <td class="r"><b>${fatFmtMi(d.vlr)}</b></td>
+      <td class="r"><span class="fat-pill ${fatPillCls(p)}">${fatPctTxt(p)}</span></td>
+    </tr>`;
+  }
+  const pTot = metaMes > 0 && tMeses ? tT / (metaMes * tMeses) * 100 : 0;
 
   content.innerHTML = `
-    <!-- KPIs -->
-    <div class="fat-kpi-row">
-      <div class="fat-kpi" style="--fat-kpi-color:var(--green)">
-        <div class="fat-kpi-label">Faturamento Total</div>
-        <div class="fat-kpi-value">${fatFmt(totalVlr)}</div>
-        <div class="fat-kpi-sub">Faturamento bruto do período</div>
-        <div class="fat-kpi-icon">💰</div>
+    <div class="fat-k-row">
+      <div class="fat-k hl">
+        <div class="fat-k-l">Faturamento ${nomePer} (${fatEsc(R.label)})</div>
+        <div class="fat-k-v">${fatFmt(vCur)}</div>
+        <div class="fat-k-s">${fatDelta(vCur, vPrev, sufPrev)}</div>
+        <div class="fat-k-s2">Meta ${fatFmtMi(metaPer)} · <b style="color:var(--tp-ink-900)">${fatPctTxt(pctMetaPer)}</b></div>
+        <div class="fat-k-spark">${spark}</div>
       </div>
-      <div class="fat-kpi" style="--fat-kpi-color:var(--neon)">
-        <div class="fat-kpi-label">Frete Saída</div>
-        <div class="fat-kpi-value" style="color:var(--neon)">${fatFmt(vlrSaida)}</div>
-        <div class="fat-kpi-sub">${totalVlr>0?Math.round(vlrSaida/totalVlr*100):0}% do total</div>
-        <div class="fat-kpi-icon">🚛</div>
+      <div class="fat-k">
+        <div class="fat-k-l">Faturamento Acumulado (${v.ano})</div>
+        <div class="fat-k-v">${fatFmt(vAcc)}</div>
+        <div class="fat-k-s">${fatDelta(vAcc, vAccP, ' vs mesmo período de ' + (v.ano - 1))}</div>
+        <div class="fat-k-s2">Meta acumulada ${fatFmtMi(metaAcc)} · <b style="color:var(--tp-ink-900)">${fatPctTxt(pctMetaAcc)}</b></div>
+        <div class="fat-k-bar"><span style="width:${Math.min(100, pctMetaAcc)}%"></span></div>
       </div>
-      <div class="fat-kpi" style="--fat-kpi-color:var(--purple)">
-        <div class="fat-kpi-label">Frete Retorno</div>
-        <div class="fat-kpi-value" style="color:var(--purple)">${fatFmt(vlrRetorno)}</div>
-        <div class="fat-kpi-sub">${totalVlr>0?Math.round(vlrRetorno/totalVlr*100):0}% do total</div>
-        <div class="fat-kpi-icon">↩️</div>
+      <div class="fat-k">
+        <div class="fat-k-l">Peso Transportado</div>
+        <div class="fat-k-v">${(pCur / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}<small>t</small></div>
+        <div class="fat-k-s">${fatDelta(pCur, pPrev, sufPrev)}</div>
+        <div class="fat-k-s2">Frete médio: ${pCur > 0 ? 'R$ ' + (vCur / pCur).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 }) + '/kg' : '—'}</div>
       </div>
-      <div class="fat-kpi" style="--fat-kpi-color:var(--yellow)">
-        <div class="fat-kpi-label">Peso BRT Total</div>
-        <div class="fat-kpi-value" style="color:var(--yellow)">${Math.round(totalPeso).toLocaleString('pt-BR')} kg</div>
-        <div class="fat-kpi-sub">Peso bruto transportado</div>
-        <div class="fat-kpi-icon">⚖️</div>
+      <div class="fat-k">
+        <div class="fat-k-l">Clientes Ativos</div>
+        <div class="fat-k-v">${cliCur.toLocaleString('pt-BR')}</div>
+        <div class="fat-k-s">${fatDelta(cliCur, cliPrev, sufPrev)}</div>
+        <div class="fat-k-s2">${cur.length.toLocaleString('pt-BR')} CT-es emitidos · ticket médio ${cur.length ? fatFmt(vCur / cur.length) : '—'}</div>
       </div>
     </div>
 
-    <!-- CHARTS -->
-    <div class="fat-charts-grid">
-      <div class="fat-chart-card full">
-        <div class="fat-chart-title">Faturamento Bruto Mensal <span style="font-size:10px;color:var(--text3);font-weight:400">(Saída + Retorno)</span></div>
-        <div class="fat-chart-container"><canvas id="fatChartMensal" style="max-height:260px"></canvas></div>
+    <div class="fat-g2">
+      <div class="fat-c">
+        <div class="fat-c-t">Evolução do Faturamento Mensal <span>Comparativo ${v.ano} × ${v.ano - 1} · linha tracejada = meta</span></div>
+        <div class="fat-c-box"><canvas id="fatChartComp"></canvas></div>
       </div>
-      <div class="fat-chart-card">
-        <div class="fat-chart-title">Faturamento por Tipo de Frete</div>
-        <div class="fat-chart-container"><canvas id="fatChartPizza"></canvas></div>
+      <div class="fat-c">
+        <div class="fat-c-t">Faturamento por UF (Top 5) <span>${fatEsc(R.label)}</span></div>
+        <div class="fat-c-box" id="fatUfBox"><canvas id="fatChartUf"></canvas></div>
       </div>
-      <div class="fat-chart-card">
-        <div class="fat-chart-title">Peso BRT por Tipo</div>
-        <div class="fat-chart-container"><canvas id="fatChartPeso"></canvas></div>
+    </div>
+
+    <div class="fat-g3">
+      <div class="fat-c">
+        <div class="fat-c-t">Principais Clientes <span>${fatEsc(R.label)}</span></div>
+        <div class="fat-c-box" id="fatCliBox" style="height:300px"><canvas id="fatChartCli"></canvas></div>
       </div>
-      <div class="fat-chart-card full">
-        <div class="fat-chart-title">Evolução Diária do Faturamento</div>
-        <div class="fat-chart-container"><canvas id="fatChartDia" style="max-height:220px"></canvas></div>
+      <div class="fat-c">
+        <div class="fat-c-t">Saída × Retorno <span>${fatEsc(R.label)}${v.uf ? ' · UF ' + fatEsc(v.uf) : ''}</span></div>
+        <div class="fat-mix">
+          <div class="fat-mix-box"><canvas id="fatChartMix"></canvas></div>
+          <div class="fat-mix-leg">
+            <div><span class="fat-dot" style="background:${FAT_C.saida}"></span>Saída<b>${mixTot ? fatPctTxt(sCur / mixTot * 100, 0) : '—'}</b></div>
+            <div><span class="fat-dot" style="background:${FAT_C.retorno}"></span>Retorno<b>${mixTot ? fatPctTxt(rCur / mixTot * 100, 0) : '—'}</b></div>
+            ${oCur > 0 ? `<div><span class="fat-dot" style="background:#CE9A3E"></span>Outros<b>${fatPctTxt(oCur / mixTot * 100, 0)}</b></div>` : ''}
+          </div>
+        </div>
+        <div class="fat-mt">
+          <div class="fat-mt-t">Atingimento da meta · ${fatEsc(R.label)}</div>
+          ${metaRow('Saída (Entrega)', sCur, metas.saida * R.nMeses, FAT_C.saida)}
+          ${metaRow('Retorno', rCur, metas.retorno * R.nMeses, FAT_C.retorno)}
+        </div>
       </div>
-      <div class="fat-chart-card full">
-        <div class="fat-chart-title">Top 5 Clientes — Frete Retorno <span style="font-size:10px;color:var(--text3);font-weight:400">(por valor faturado)</span></div>
-        <div class="fat-chart-container"><canvas id="fatChartTop5" style="max-height:220px"></canvas></div>
+      <div class="fat-c">
+        <div class="fat-c-t">Resumo Mensal × Meta <span>${v.ano} · clique no mês para filtrar</span></div>
+        <div class="fat-rt-wrap">
+          ${resumoRows ? `<table class="fat-rt">
+            <thead><tr><th>Mês</th><th class="r">Saída</th><th class="r">Retorno</th><th class="r">Total</th><th class="r">Meta</th></tr></thead>
+            <tbody>${resumoRows}</tbody>
+            <tfoot><tr><td title="${tC.toLocaleString('pt-BR')} CT-es · ${(tP / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} t">Total</td><td class="r">${fatFmtMi(tS)}</td><td class="r">${fatFmtMi(tR)}</td><td class="r">${fatFmtMi(tT)}</td><td class="r"><span class="fat-pill ${fatPillCls(pTot)}">${fatPctTxt(pTot)}</span></td></tr></tfoot>
+          </table>` : `<div class="fat-c-empty" style="height:200px">Sem faturamento em ${v.ano} para os filtros selecionados.</div>`}
+        </div>
       </div>
     </div>`;
 
-  // render table rows (removed - tabela de detalhamento removida)
-
-  // ── MENSAL ──
-  if (mesesSort.length > 0) {
-    fatCharts.mensal = new Chart(document.getElementById('fatChartMensal'), {
-      type: 'bar',
-      data: {
-        labels: mesesLabels,
-        datasets: [
-          {
-            label: 'Saída',
-            data: mesesSort.map(k => porMes[k]?.saida || 0),
-            backgroundColor: '#4C7C9E',
-            borderRadius: 4,
-            maxBarThickness: 34,
-          },
-          {
-            label: 'Retorno',
-            data: mesesSort.map(k => porMes[k]?.retorno || 0),
-            backgroundColor: '#BE5147',
-            borderRadius: 4,
-            maxBarThickness: 34,
-          },
-        ]
-      },
-      options: {
-        responsive: true,
-        interaction: { mode: 'index', intersect: false },
-        color: '#5A5D5E',
-        plugins: {
-          legend: { position: 'bottom', labels: { color: '#5A5D5E', usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
-          tooltip: {
-            backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10,
-            callbacks: {
-              label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
-              footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
-            }
-          }
-        },
-        scales: {
-          x: { stacked: true, ticks: { font: { size: 11 }, color: '#5A5D5E' }, grid: { display: false } },
-          y: { stacked: true, ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' }, beginAtZero: true,
-            grid: { color: '#E2E4DF' } }
-        }
-      }
-    });
-  }
-
-  // ── PIZZA ──
-  const tiposGrp = {};
-  fatFiltered.forEach(r => { tiposGrp[r.tipo] = (tiposGrp[r.tipo]||0) + r.vlr; });
-  const tipoLabels = Object.keys(tiposGrp);
-  const tipoCores  = tipoLabels.map(t => t==='SAIDA'?'#4C7C9E':t==='RETORNO'?'#BE5147':'#CE9A3E');
-  fatCharts.pizza = new Chart(document.getElementById('fatChartPizza'), {
-    type: 'doughnut',
-    data: { labels: tipoLabels, datasets: [{ data: tipoLabels.map(t=>tiposGrp[t]), backgroundColor: tipoCores, borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }] },
-    options: { responsive: true, cutout: '65%', color: '#5A5D5E',
-      plugins: { legend: { position: 'bottom', labels: { color: '#5A5D5E', usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
-        tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10, callbacks: { label: c => ' ' + fatFmt(c.raw) + ' (' + Math.round(c.raw/totalVlr*100) + '%)' } } } }
-  });
-
-  // ── PESO BAR ──
-  const pesoPorTipo = {};
-  fatFiltered.forEach(r => { pesoPorTipo[r.tipo] = (pesoPorTipo[r.tipo]||0) + r.peso; });
-  fatCharts.peso = new Chart(document.getElementById('fatChartPeso'), {
-    type: 'bar',
-    data: { labels: Object.keys(pesoPorTipo), datasets: [{ label: 'Peso BRT (kg)', data: Object.values(pesoPorTipo), backgroundColor: Object.keys(pesoPorTipo).map(t=>t==='SAIDA'?'#4C7C9E':t==='RETORNO'?'#BE5147':'#CE9A3E'), borderRadius: 4, maxBarThickness: 46 }] },
-    options: { responsive: true, color: '#5A5D5E',
-      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10, callbacks: { label: c => ' ' + Math.round(c.raw).toLocaleString('pt-BR') + ' kg' } } },
-      scales: {
-        x: { ticks: { color: '#5A5D5E' }, grid: { display: false } },
-        y: { ticks: { callback: v => v>=1000?(v/1000).toFixed(0)+'t':v, color: '#5A5D5E' }, grid: { color: '#E2E4DF' } }
-      } }
-  });
-
-  // ── TOP 5 CLIENTES RETORNO ──
-  const retornoClientes = {};
-  fatFiltered.filter(r => r.tipo === 'RETORNO').forEach(r => {
-    const cli = r.cliente || '—';
-    retornoClientes[cli] = (retornoClientes[cli] || 0) + r.vlr;
-  });
-  const top5 = Object.entries(retornoClientes)
-    .sort((a,b) => b[1]-a[1])
-    .slice(0,5);
-
-  if (top5.length > 0) {
-    const maxVal = top5[0][1];
-    const top5Labels = top5.map(([k]) => k.length > 28 ? k.slice(0,26)+'…' : k);
-    const top5Colors = ['#BE5147','rgba(190,81,71,0.82)','rgba(190,81,71,0.65)','rgba(190,81,71,0.48)','rgba(190,81,71,0.32)'];
-    fatCharts.top5 = new Chart(document.getElementById('fatChartTop5'), {
-      type: 'bar',
-      data: {
-        labels: top5Labels,
-        datasets: [{
-          label: 'Faturamento Retorno',
-          data: top5.map(([,v]) => v),
-          backgroundColor: top5Colors,
-          borderRadius: 4,
-          maxBarThickness: 26,
-        }]
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        color: '#5A5D5E',
-        plugins: {
-          legend: { display: false },
-          tooltip: { backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10, callbacks: { label: c => '  ' + fatFmt(c.raw) } }
-        },
-        scales: {
-          x: {
-            beginAtZero: true,
-            ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' },
-            grid: { color: '#E2E4DF' }
-          },
-          y: {
-            ticks: { font: { size: 11 }, color: '#5A5D5E' },
-            grid: { display: false }
-          }
-        }
-      }
-    });
-  } else {
-    const canvas = document.getElementById('fatChartTop5');
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      canvas.height = 60;
-      ctx.fillStyle = 'rgba(190,81,71,0.55)';
-      ctx.font = '13px Inter, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('Nenhum CT-e de Retorno no período selecionado', canvas.width/2, 35);
-    }
-  }
-
-  // ── EVOLUÇÃO DIÁRIA ──
-  // Labels formatados dd/mm, ordenados cronologicamente
-  const diasLabels = diasSort.map(d => fatFmtLabel(d));
-  fatCharts.dia = new Chart(document.getElementById('fatChartDia'), {
-    type: 'bar',
-    data: {
-      labels: diasLabels,
-      datasets: [
-        {
-          label: 'Saída',
-          data: diasSort.map(d => porDia[d]?.saida || 0),
-          backgroundColor: '#4C7C9E',
-          borderRadius: 3,
-          maxBarThickness: 22,
-        },
-        {
-          label: 'Retorno',
-          data: diasSort.map(d => porDia[d]?.retorno || 0),
-          backgroundColor: '#BE5147',
-          borderRadius: 3,
-          maxBarThickness: 22,
-        },
-      ]
-    },
+  // ── Comparativo anual (área) ──
+  const maxD = fatMaxDate();
+  const ultimoMes = (maxD && maxD.getFullYear() === v.ano) ? maxD.getMonth() : 11;
+  const serieAno  = FAT_MESES.map((_, m) => m <= ultimoMes ? (mensal[anoK0 + m]?.vlr || 0) : null);
+  const serieAnt  = FAT_MESES.map((_, m) => mensal[anoK0 - 12 + m]?.vlr || 0);
+  const temAnt = serieAnt.some(x => x > 0);
+  const dsComp = [
+    { label: String(v.ano), data: serieAno, borderColor: FAT_C.verde, backgroundColor: 'rgba(46,139,87,0.18)', fill: true, tension: 0.3, pointRadius: 3, pointBackgroundColor: FAT_C.verde, borderWidth: 2.5, spanGaps: false },
+  ];
+  if (temAnt) dsComp.push({ label: String(v.ano - 1), data: serieAnt, borderColor: FAT_C.verdeClaro, backgroundColor: 'rgba(169,211,184,0.22)', fill: true, tension: 0.3, pointRadius: 2, pointBackgroundColor: FAT_C.verdeClaro, borderWidth: 2 });
+  if (metaMes > 0) dsComp.push({ label: 'Meta mensal', data: FAT_MESES.map(() => metaMes), borderColor: '#CE9A3E', borderDash: [6, 5], borderWidth: 1.5, pointRadius: 0, fill: false });
+  fatCharts.comp = new Chart(document.getElementById('fatChartComp'), {
+    type: 'line',
+    data: { labels: FAT_MESES, datasets: dsComp },
     options: {
-      responsive: true,
+      responsive: true, maintainAspectRatio: false,
       interaction: { mode: 'index', intersect: false },
-      color: '#5A5D5E',
       plugins: {
-        legend: { position: 'bottom', labels: { color: '#5A5D5E', usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
-        tooltip: {
-          backgroundColor: '#22252A', titleColor: '#fff', bodyColor: '#fff', cornerRadius: 6, padding: 10,
-          callbacks: {
-            label: c => ' ' + c.dataset.label + ': ' + fatFmt(c.raw),
-            footer: items => ' Total: ' + fatFmt(items.reduce((s,i) => s + i.raw, 0))
-          }
-        }
+        legend: { position: 'bottom', labels: { color: FAT_C.tick, usePointStyle: true, boxWidth: 8, boxHeight: 8 } },
+        tooltip: { ...FAT_TT, callbacks: { label: c => c.raw == null ? null : ' ' + c.dataset.label + ': ' + fatFmt(c.raw) } }
       },
       scales: {
-        x: { stacked: true, ticks: { maxRotation: 45, font: { size: 10 }, color: '#5A5D5E' }, grid: { display: false } },
-        y: { stacked: true, ticks: { callback: v => fatFmtShort(v), color: '#5A5D5E' }, beginAtZero: true, grid: { color: '#E2E4DF' } }
+        x: { ticks: { color: FAT_C.tick }, grid: { display: false } },
+        y: { beginAtZero: true, ticks: { color: FAT_C.tick, callback: x => fatFmtShort(x) }, grid: { color: FAT_C.grid } }
       }
     }
   });
+
+  // ── UF Top 5 ──
+  const ufBox = document.getElementById('fatUfBox');
+  if (!fatHasUf) {
+    ufBox.innerHTML = '<div class="fat-c-empty">Coluna UF não encontrada na planilha de faturamento.</div>';
+  } else {
+    const ufG = {};
+    cur.forEach(r => { const u = r.uf || 'S/UF'; ufG[u] = (ufG[u] || 0) + r.vlr; });
+    const ufTop = Object.entries(ufG).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    if (!ufTop.length) {
+      ufBox.innerHTML = '<div class="fat-c-empty">Sem faturamento no período.</div>';
+    } else {
+      const tons = ['#1F6B45', '#2E8B57', '#4CAF7A', '#7DC49A', '#A9D3B8'];
+      fatCharts.uf = new Chart(document.getElementById('fatChartUf'), {
+        type: 'bar',
+        data: { labels: ufTop.map(e => e[0]), datasets: [{ label: 'Faturamento', data: ufTop.map(e => e[1]), backgroundColor: tons.slice(0, ufTop.length), borderRadius: 5, maxBarThickness: 64 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false, layout: { padding: { top: 22 } },
+          plugins: { legend: { display: false }, tooltip: { ...FAT_TT, callbacks: { label: c => ' ' + fatFmt(c.raw) + ' (' + fatPctTxt(vCur ? c.raw / vCur * 100 : 0) + ')' } } },
+          scales: {
+            x: { ticks: { color: FAT_C.tick, font: { weight: 600 } }, grid: { display: false } },
+            y: { beginAtZero: true, ticks: { color: FAT_C.tick, callback: x => fatFmtShort(x) }, grid: { color: FAT_C.grid } }
+          }
+        },
+        plugins: [fatLabelsPlugin(fatFmtMi, false)]
+      });
+    }
+  }
+
+  // ── Principais clientes (Top 8) ──
+  const cliG = {};
+  cur.forEach(r => { const c = r.cliente || '—'; cliG[c] = (cliG[c] || 0) + r.vlr; });
+  const cliTop = Object.entries(cliG).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  if (!cliTop.length) {
+    document.getElementById('fatCliBox').innerHTML = '<div class="fat-c-empty">Sem faturamento no período.</div>';
+  } else {
+    const n = cliTop.length;
+    fatCharts.cli = new Chart(document.getElementById('fatChartCli'), {
+      type: 'bar',
+      data: {
+        labels: cliTop.map(e => e[0].length > 26 ? e[0].slice(0, 25) + '…' : e[0]),
+        datasets: [{ label: 'Faturamento', data: cliTop.map(e => e[1]),
+          backgroundColor: cliTop.map((_, i) => `rgba(46,139,87,${(1 - i / (n + 1) * 0.75).toFixed(2)})`),
+          borderRadius: 4, maxBarThickness: 22 }]
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false, layout: { padding: { right: 78 } },
+        plugins: { legend: { display: false },
+          tooltip: { ...FAT_TT, callbacks: { title: it => cliTop[it[0].dataIndex][0], label: c => ' ' + fatFmt(c.raw) + ' (' + fatPctTxt(vCur ? c.raw / vCur * 100 : 0) + ')' } } },
+        scales: {
+          x: { beginAtZero: true, ticks: { color: FAT_C.tick, callback: x => fatFmtShort(x) }, grid: { color: FAT_C.grid } },
+          y: { ticks: { color: FAT_C.tick, font: { size: 11 } }, grid: { display: false } }
+        }
+      },
+      plugins: [fatLabelsPlugin(fatFmtMi, true)]
+    });
+  }
+
+  // ── Rosca Saída × Retorno ──
+  if (mixTot > 0) {
+    const mixL = ['Saída', 'Retorno'], mixV = [sCur, rCur], mixC = [FAT_C.saida, FAT_C.retorno];
+    if (oCur > 0) { mixL.push('Outros'); mixV.push(oCur); mixC.push('#CE9A3E'); }
+    fatCharts.mix = new Chart(document.getElementById('fatChartMix'), {
+      type: 'doughnut',
+      data: { labels: mixL, datasets: [{ data: mixV, backgroundColor: mixC, borderWidth: 2, borderColor: '#fff', hoverOffset: 5 }] },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '64%',
+        plugins: { legend: { display: false }, tooltip: { ...FAT_TT, callbacks: { label: c => ' ' + c.label + ': ' + fatFmt(c.raw) + ' (' + fatPctTxt(c.raw / mixTot * 100) + ')' } } } }
+    });
+  }
+
+  const cnt = document.getElementById('fatInlineCount');
+  if (cnt) cnt.textContent = cur.length + ' CT-es no período · ' + fatRawData.length + ' total';
 }
 
 function fatFmt(n) { return 'R$ ' + Math.round(n||0).toLocaleString('pt-BR'); }
